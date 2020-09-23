@@ -5,8 +5,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    client = new Client();
     ui->setupUi(this);
-    //prova commit
 }
 
 MainWindow::~MainWindow()
@@ -14,3 +14,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::on_loginButton_clicked()
+{
+
+    QString username = ui->loginUsername->text();
+    QString password = ui->loginPassword->text();
+    client->login(username, password);
+
+}
