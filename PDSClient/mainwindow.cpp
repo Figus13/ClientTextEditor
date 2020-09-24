@@ -2,11 +2,11 @@
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent, Client *client)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow), client(client)
 {
-    client = new Client();
+
     ui->setupUi(this);
 }
 
@@ -21,7 +21,11 @@ void MainWindow::on_loginButton_clicked()
     QString username = ui->loginUsername->text();
     QString password = ui->loginPassword->text();
     client->login(username, password);
+}
 
+void MainWindow::onLoginSuccess(){
+    FilesSelection fs;
+    fs.show();//dove va sta roba??? boooh
 }
 
 void MainWindow::on_registrationButton_clicked()
