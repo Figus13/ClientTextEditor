@@ -71,6 +71,8 @@ void Client::onReadyRead(){
                 files.append(filename);
             }
         }
+     case 1:
+        std::cout<< "registration\n";
     default: break;
     }
 }
@@ -86,6 +88,17 @@ void Client::login(QString username, QString password){
     out << 0 << username << password;
 
     socket->write(buf);
+
+}
+
+void Client::registration(QString username, QString password, QString nickName){
+
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    out << 1 << username << password << nickName;
+
+    socket->write(buf);
+
 
 }
 

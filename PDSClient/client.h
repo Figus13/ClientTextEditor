@@ -11,6 +11,7 @@ public:
     explicit Client(QObject* parent = 0);
     ~Client();
     void login(QString username, QString password);
+    void registration(QString username, QString password, QString nick);
 private slots:
     void onConnected();
     void onReadyRead();

@@ -112,6 +112,7 @@ font:bold;
 	color:#717072;
 	border-bottom:1px solid #717072;
 	font-family: Roboto;
+	type: password
 }</string>
           </property>
           <property name="inputMask">
@@ -122,6 +123,9 @@ font:bold;
           </property>
           <property name="maxLength">
            <number>32767</number>
+          </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Password</enum>
           </property>
           <property name="placeholderText">
            <string>Password</string>
@@ -137,6 +141,7 @@ font:bold;
            </rect>
           </property>
           <property name="styleSheet">
+<<<<<<< HEAD
            <string notr="true">QPushButton{
 font-family: Roboto;
 font: bold;
@@ -153,9 +158,36 @@ QPushButton:hover{
 	background: 	#02a83f;
 }
 </string>
+=======
+           <string notr="true">
+loginButton{ 
+      text-decoration: none; 
+      border: none; 
+      padding: 12px 40px; 
+      font-size: 16px; 
+      background-color: green; 
+      color: #fff; 
+      border-radius: 5px; 
+      box-shadow: 7px 6px 28px 1px rgba(0, 0, 0, 0.24); 
+      cursor: pointer; 
+      outline: none; 
+      transition: 0.2s all; 
+ } 
+        /* Adding transformation when the button is active */ 
+          
+.loginButton:active { 
+       transform: scale(0.98); 
+       /* Scaling button to 0.98 to its original size */ 
+       box-shadow: 3px 2px 22px 1px rgba(0, 0, 0, 0.24); 
+        /* Lowering the shadow */ 
+ } </string>
+>>>>>>> 68fb5c26e5a8b071bd8bf108d4d5058477875a4e
           </property>
           <property name="text">
            <string>Accedi</string>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
           </property>
          </widget>
         </widget>
@@ -266,6 +298,9 @@ font:bold;
           <property name="maxLength">
            <number>32767</number>
           </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Password</enum>
+          </property>
           <property name="placeholderText">
            <string>Password</string>
           </property>
@@ -311,6 +346,7 @@ font:bold;
            <enum>Qt::ClickFocus</enum>
           </property>
           <property name="styleSheet">
+<<<<<<< HEAD
            <string notr="true">QPushButton{
 font: bold;
 font-family: Roboto;
@@ -321,6 +357,29 @@ font-family: Roboto;
 QPushButton:hover{
 	background: 	#02a83f;
 }</string>
+=======
+           <string notr="true">loginButton{ 
+      text-decoration: none; 
+      border: none; 
+      padding: 12px 40px; 
+      font-size: 16px; 
+      background-color: green; 
+      color: #fff; 
+      border-radius: 5px; 
+      box-shadow: 7px 6px 28px 1px rgba(0, 0, 0, 0.24); 
+      cursor: pointer; 
+      outline: none; 
+      transition: 0.2s all; 
+ } 
+        /* Adding transformation when the button is active */ 
+          
+.loginButton:active { 
+       transform: scale(0.98); 
+       /* Scaling button to 0.98 to its original size */ 
+       box-shadow: 3px 2px 22px 1px rgba(0, 0, 0, 0.24); 
+        /* Lowering the shadow */ 
+ } </string>
+>>>>>>> 68fb5c26e5a8b071bd8bf108d4d5058477875a4e
           </property>
           <property name="text">
            <string>Registrati</string>
@@ -353,6 +412,9 @@ QPushButton:hover{
           <property name="maxLength">
            <number>32767</number>
           </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Password</enum>
+          </property>
           <property name="placeholderText">
            <string>Ripeti password</string>
           </property>
@@ -370,7 +432,7 @@ QPushButton:hover{
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
