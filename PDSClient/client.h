@@ -12,7 +12,7 @@ public:
     ~Client();
     void login(QString username, QString password);
 private slots:
-    void onConnect();
+    void onConnected();
     void onReadyRead();
 private:
     QTcpSocket* socket;

@@ -24,6 +24,9 @@ background:#73c259;
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QWidget" name="loginWidget_2" native="true">
+        <property name="focusPolicy">
+         <enum>Qt::ClickFocus</enum>
+        </property>
         <widget class="QFrame" name="loginFrame">
          <property name="geometry">
           <rect>
@@ -135,9 +138,21 @@ font:bold;
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
-	border-radius: 30px;
+font-family: Roboto;
+font: bold;
+border-radius: 30px;
 	background: 	#00b242;
-}</string>
+}
+
+
+QPushButton:pressed{
+background: 	#029939;
+}
+
+QPushButton:hover{
+	background: 	#02a83f;
+}
+</string>
           </property>
           <property name="text">
            <string>Accedi</string>
@@ -292,10 +307,19 @@ font:bold;
             <height>51</height>
            </rect>
           </property>
+          <property name="focusPolicy">
+           <enum>Qt::ClickFocus</enum>
+          </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
+font: bold;
+font-family: Roboto;
 	border-radius: 30px;
 	background: 	#00b242;
+}
+
+QPushButton:hover{
+	background: 	#02a83f;
 }</string>
           </property>
           <property name="text">

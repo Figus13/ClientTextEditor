@@ -63,6 +63,7 @@ public:
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         loginWidget_2 = new QWidget(centralwidget);
         loginWidget_2->setObjectName(QString::fromUtf8("loginWidget_2"));
+        loginWidget_2->setFocusPolicy(Qt::ClickFocus);
         loginFrame = new QFrame(loginWidget_2);
         loginFrame->setObjectName(QString::fromUtf8("loginFrame"));
         loginFrame->setGeometry(QRect(50, 70, 281, 371));
@@ -105,9 +106,21 @@ public:
         loginButton->setObjectName(QString::fromUtf8("loginButton"));
         loginButton->setGeometry(QRect(80, 300, 121, 51));
         loginButton->setStyleSheet(QString::fromUtf8("QPushButton{\n"
-"	border-radius: 30px;\n"
+"font-family: Roboto;\n"
+"font: bold;\n"
+"border-radius: 30px;\n"
 "	background: 	#00b242;\n"
-"}"));
+"}\n"
+"\n"
+"\n"
+"QPushButton:pressed{\n"
+"background: 	#029939;\n"
+"}\n"
+"\n"
+"QPushButton:hover{\n"
+"	background: 	#02a83f;\n"
+"}\n"
+""));
 
         horizontalLayout->addWidget(loginWidget_2);
 
@@ -171,9 +184,16 @@ public:
         registrationButton = new QPushButton(registrationFrame);
         registrationButton->setObjectName(QString::fromUtf8("registrationButton"));
         registrationButton->setGeometry(QRect(90, 380, 121, 51));
+        registrationButton->setFocusPolicy(Qt::ClickFocus);
         registrationButton->setStyleSheet(QString::fromUtf8("QPushButton{\n"
+"font: bold;\n"
+"font-family: Roboto;\n"
 "	border-radius: 30px;\n"
 "	background: 	#00b242;\n"
+"}\n"
+"\n"
+"QPushButton:hover{\n"
+"	background: 	#02a83f;\n"
 "}"));
         registrationSecondPassword = new QLineEdit(registrationFrame);
         registrationSecondPassword->setObjectName(QString::fromUtf8("registrationSecondPassword"));

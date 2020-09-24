@@ -38,7 +38,7 @@ Client::Client(QObject* parent) : QObject(parent), counter(0)
         qDebug() << "Error: " << socket->errorString();
 }
 
-void Client::onConnect(){
+void Client::onConnected(){
     if (socket->state() != QAbstractSocket::ConnectedState)	return;
 
     std::cout << "Connesso al server" << std::endl;
@@ -47,8 +47,12 @@ void Client::onConnect(){
 }
 
 void Client::onReadyRead(){
+
+
+    if (socket->state() != QAbstractSocket::ConnectedState)	return;
+
     QDataStream in;
-    in.setDevice(socket);
+    in.setDevice(socket);//setto lo stream per la ricezione
     int operation;
     in >> operation;
     switch(operation){
