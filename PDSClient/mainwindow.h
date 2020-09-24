@@ -19,6 +19,7 @@ public:
 
 private slots:
     void on_loginButton_clicked();
+    void on_registrationButton_clicked();
 
 private:
     Ui::MainWindow *ui;
