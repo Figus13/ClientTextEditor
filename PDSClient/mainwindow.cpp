@@ -32,9 +32,9 @@ void MainWindow::on_registrationButton_clicked()
     QString password2 = ui->registrationSecondPassword->text();
 
     if(password != password2){
-        QMessageBox::information(this,"Registation","le password non coincidono");
+       QMessageBox::information(this,"Registation","le password non coincidono");
+    }else{
+       client->registration(username,password,nick);
     }
-
-    client->registration(username,password,nick);
 
 }
