@@ -141,7 +141,6 @@ font:bold;
            </rect>
           </property>
           <property name="styleSheet">
-<<<<<<< HEAD
            <string notr="true">QPushButton{
 font-family: Roboto;
 font: bold;
@@ -346,7 +345,6 @@ font:bold;
            <enum>Qt::ClickFocus</enum>
           </property>
           <property name="styleSheet">
-<<<<<<< HEAD
            <string notr="true">QPushButton{
 font: bold;
 font-family: Roboto;
