@@ -13,6 +13,7 @@ SOURCES += \
     StyleSymbol.cpp \
     TextSymbol.cpp \
     client.cpp \
+    filesselection.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -21,9 +22,11 @@ HEADERS += \
     StyleSymbol.h \
     TextSymbol.h \
     client.h \
+    filesselection.h \
     mainwindow.h
 
 FORMS += \
+    filesselection.ui \
     mainwindow.ui
 
 TRANSLATIONS += \
