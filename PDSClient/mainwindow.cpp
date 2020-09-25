@@ -32,9 +32,9 @@ void MainWindow::on_loginButton_clicked()
 }
 
 void MainWindow::onLoginSuccess(){
-    FilesSelection fs;
-    this->hide();
-    fs.show();
+    hide();
+    FilesSelection *fs = new FilesSelection(nullptr, client);
+    fs->show();
 }
 
 void MainWindow::on_registrationButton_clicked()
