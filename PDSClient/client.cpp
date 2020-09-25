@@ -61,7 +61,7 @@ void Client::onReadyRead(){
         int status;
         in >> status;
         if(status == 0){
-            //fallito TODO
+            login_refused();
         }else if(status == 1){
             int numFiles;
             in >> siteId >> numFiles;
@@ -71,8 +71,10 @@ void Client::onReadyRead(){
                 files.append(filename);
             }
         }
+        break;
      case 1:
         std::cout<< "registration\n";
+        break;
     default: break;
     }
 }

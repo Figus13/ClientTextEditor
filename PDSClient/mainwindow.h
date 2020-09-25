@@ -17,6 +17,11 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public slots:
+    void successful_login();
+    void login_refused();
+
+
 private slots:
     void on_loginButton_clicked();
     void on_registrationButton_clicked();

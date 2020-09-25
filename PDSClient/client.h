@@ -12,9 +12,15 @@ public:
     ~Client();
     void login(QString username, QString password);
     void registration(QString username, QString password, QString nick);
+
+signals:
+    void successful_login();
+    void login_refused();
+
 private slots:
     void onConnected();
     void onReadyRead();
+
 private:
     QTcpSocket* socket;
     QString username;

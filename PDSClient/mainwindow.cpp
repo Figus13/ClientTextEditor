@@ -2,12 +2,14 @@
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent/*, std::shared_ptr<Client> client*/)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow)/*, client(client)*/
 {
-    client = new Client();
     ui->setupUi(this);
+    client = new Client{};
+    QObject::connect(client,  SIGNAL(successful_login()), this, SLOT(successful_login()));
+    QObject::connect(client,  SIGNAL(login_refused()), this, SLOT(login_refused()));
 }
 
 MainWindow::~MainWindow()
@@ -20,6 +22,10 @@ void MainWindow::on_loginButton_clicked()
 
     QString username = ui->loginUsername->text();
     QString password = ui->loginPassword->text();
+    if(username.isEmpty() || password.isEmpty()){
+        QMessageBox::information(this,"Login","tutti i campi del form devono essere compilati");
+        return;
+    }
     client->login(username, password);
 
 }
@@ -33,8 +39,22 @@ void MainWindow::on_registrationButton_clicked()
 
     if(password != password2){
        QMessageBox::information(this,"Registation","le password non coincidono");
-    }else{
-       client->registration(username,password,nick);
+       return;
+    }
+    if(password.isEmpty() || password2.isEmpty() || username.isEmpty() || nick.isEmpty()){
+       QMessageBox::information(this,"Registation","tutti i campi del form devono essere compilati");
+       return;
     }
 
+    client->registration(username,password,nick);
+}
+
+void MainWindow::successful_login(){
+    QMessageBox::information(this,"Login","Operazione di login riuscita");
+    return;
+}
+
+void MainWindow::login_refused(){
+    QMessageBox::information(this,"Login","Operazione di login non è riuscita");
+    return;
 }
