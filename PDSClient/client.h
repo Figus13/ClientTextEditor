@@ -3,6 +3,8 @@
 #include <QtNetwork>
 #include <GenericSymbol.h>
 #include <iostream>
+#include <filesselection.h>
+#include <mainwindow.h>
 
 class Client : public QObject
 {

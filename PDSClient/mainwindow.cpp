@@ -28,11 +28,13 @@ void MainWindow::on_loginButton_clicked()
         return;
     }
     client->login(username, password);
+
 }
 
 void MainWindow::onLoginSuccess(){
     FilesSelection fs;
-    fs.show();//dove va sta roba??? boooh
+    this->hide();
+    fs.show();
 }
 
 void MainWindow::on_registrationButton_clicked()
