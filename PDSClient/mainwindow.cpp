@@ -2,10 +2,11 @@
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 
-MainWindow::MainWindow(QWidget *parent/*, std::shared_ptr<Client> client*/)
+MainWindow::MainWindow(QWidget *parent, Client *client)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)/*, client(client)*/
+    , ui(new Ui::MainWindow), client(client)
 {
+
     ui->setupUi(this);
     client = new Client{};
     QObject::connect(client,  SIGNAL(successful_login()), this, SLOT(successful_login()));
@@ -27,7 +28,11 @@ void MainWindow::on_loginButton_clicked()
         return;
     }
     client->login(username, password);
+}
 
+void MainWindow::onLoginSuccess(){
+    FilesSelection fs;
+    fs.show();//dove va sta roba??? boooh
 }
 
 void MainWindow::on_registrationButton_clicked()

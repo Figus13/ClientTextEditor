@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QtNetwork>
 #include <client.h>
+#include <filesselection.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -14,7 +15,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr, Client *client = nullptr);
     ~MainWindow();
 
 public slots:
@@ -25,7 +26,7 @@ public slots:
 private slots:
     void on_loginButton_clicked();
     void on_registrationButton_clicked();
-
+    void onLoginSuccess();
 private:
     Ui::MainWindow *ui;
     Client *client;
