@@ -8,8 +8,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
 
     ui->setupUi(this);
-    client = new Client{};
-    QObject::connect(client,  SIGNAL(successful_login()), this, SLOT(successful_login()));
+    client = new Client();
+    QObject::connect(client,  SIGNAL(successful_login()), this, SLOT(onLoginSuccess()));
     QObject::connect(client,  SIGNAL(login_refused()), this, SLOT(login_refused()));
 }
 
@@ -54,11 +54,6 @@ void MainWindow::on_registrationButton_clicked()
     }
 
     client->registration(username,password,nick);
-}
-
-void MainWindow::successful_login(){
-    QMessageBox::information(this,"Login","Operazione di login riuscita");
-    return;
 }
 
 void MainWindow::login_refused(){

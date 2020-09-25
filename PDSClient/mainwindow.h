@@ -19,9 +19,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void successful_login();
     void login_refused();
-
 
 private slots:
     void on_loginButton_clicked();
