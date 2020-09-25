@@ -52,6 +52,8 @@ public:
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(800, 600);
+        MainWindow->setMinimumSize(QSize(800, 600));
+        MainWindow->setMaximumSize(QSize(800, 600));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         centralwidget->setStyleSheet(QString::fromUtf8("QWidget{\n"
@@ -63,6 +65,7 @@ public:
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         loginWidget_2 = new QWidget(centralwidget);
         loginWidget_2->setObjectName(QString::fromUtf8("loginWidget_2"));
+        loginWidget_2->setFocusPolicy(Qt::ClickFocus);
         loginFrame = new QFrame(loginWidget_2);
         loginFrame->setObjectName(QString::fromUtf8("loginFrame"));
         loginFrame->setGeometry(QRect(50, 70, 281, 371));
@@ -193,6 +196,7 @@ public:
         registrationButton = new QPushButton(registrationFrame);
         registrationButton->setObjectName(QString::fromUtf8("registrationButton"));
         registrationButton->setGeometry(QRect(90, 380, 121, 51));
+        registrationButton->setFocusPolicy(Qt::ClickFocus);
         registrationButton->setStyleSheet(QString::fromUtf8("loginButton{ \n"
 "      text-decoration: none; \n"
 "      border: none; \n"
@@ -235,7 +239,7 @@ public:
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 800, 21));
+        menubar->setGeometry(QRect(0, 0, 800, 26));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));

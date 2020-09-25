@@ -62,7 +62,7 @@ void Client::onReadyRead(){
         in >> status;
         if(status == 0){
             login_refused();
-        }else if(status == 1){
+        }else if(status == 1){  
             int numFiles;
             in >> siteId >> numFiles;
             for(int i=0; i<numFiles; i++){
@@ -70,6 +70,7 @@ void Client::onReadyRead(){
                 in >> filename;
                 files.append(filename);
             }
+            successful_login();
         }
         break;
      case 1:

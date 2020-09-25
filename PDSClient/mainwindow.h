@@ -15,7 +15,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr, Client *client = nullptr);
+    MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 public slots:
