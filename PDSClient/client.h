@@ -12,7 +12,8 @@ public:
     ~Client();
     void login(QString username, QString password);
     void registration(QString username, QString password, QString nick);
-
+    QVector<QString> getFiles();
+    void addFile(QString filename);
 signals:
     void successful_login();
     void login_refused();

@@ -101,8 +101,12 @@ void Client::registration(QString username, QString password, QString nickName){
     out << 1 << username << password << nickName;
 
     socket->write(buf);
-
-
 }
 
+QVector<QString> Client::getFiles(){
+    return files;
+}
 
+void Client::addFile(QString filename){
+    files.append(filename);
+}

@@ -15,7 +15,8 @@ SOURCES += \
     client.cpp \
     filesselection.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    newfiledialog.cpp
 
 HEADERS += \
     GenericSymbol.h \
@@ -23,11 +24,13 @@ HEADERS += \
     TextSymbol.h \
     client.h \
     filesselection.h \
-    mainwindow.h
+    mainwindow.h \
+    newfiledialog.h
 
 FORMS += \
     filesselection.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    newfiledialog.ui
 
 TRANSLATIONS += \
     PDSClient_it_IT.ts
