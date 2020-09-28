@@ -131,6 +131,9 @@ public:
 
         retranslateUi(FilesSelection);
 
+        fileListWidget->setCurrentRow(-1);
+
+
         QMetaObject::connectSlotsByName(FilesSelection);
     } // setupUi
 
