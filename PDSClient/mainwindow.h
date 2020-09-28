@@ -27,6 +27,6 @@ private slots:
     void onLoginSuccess();
 private:
     Ui::MainWindow *ui;
-    Client *client;
+    std::shared_ptr<Client> client;
 };
 #endif // MAINWINDOW_H

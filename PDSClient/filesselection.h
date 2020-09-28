@@ -14,7 +14,7 @@ class FilesSelection : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit FilesSelection(QWidget *parent = nullptr, Client *client=nullptr);
+    explicit FilesSelection(QWidget *parent = nullptr, std::shared_ptr<Client> client=nullptr);
     ~FilesSelection();
 
 private slots:
@@ -22,7 +22,7 @@ private slots:
 
 private:
     Ui::FilesSelection *ui;
-    Client *client;
+    std::shared_ptr<Client> client;
 };
 
 #endif // FILESSELECTION_H

@@ -8,9 +8,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
 
     ui->setupUi(this);
-    client = new Client();
-    QObject::connect(client,  SIGNAL(successful_login()), this, SLOT(onLoginSuccess()));
-    QObject::connect(client,  SIGNAL(login_refused()), this, SLOT(login_refused()));
+    client = std::make_shared<Client>(Client());
+    QObject::connect(client.get(),  SIGNAL(successful_login()), this, SLOT(onLoginSuccess()));
+    QObject::connect(client.get(),  SIGNAL(login_refused()), this, SLOT(login_refused()));
 }
 
 MainWindow::~MainWindow()
@@ -33,7 +33,9 @@ void MainWindow::on_loginButton_clicked()
 
 void MainWindow::onLoginSuccess(){
     hide();
-    FilesSelection *fs = new FilesSelection(nullptr, client);
+    //FilesSelection *fs = new FilesSelection(nullptr, client);
+    std::unique_ptr<FilesSelection> fs = std::make_unique<FilesSelection>(nullptr, client);
+
     fs->show();
 }
 

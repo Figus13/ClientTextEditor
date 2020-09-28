@@ -1,7 +1,7 @@
 #include "filesselection.h"
 #include "ui_filesselection.h"
 
-FilesSelection::FilesSelection(QWidget *parent, Client *client) :
+FilesSelection::FilesSelection(QWidget *parent, std::shared_ptr<Client> client) :
     QMainWindow(parent),
     ui(new Ui::FilesSelection), client(client)
 {
