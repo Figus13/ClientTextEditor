@@ -62,9 +62,9 @@ void Client::onReadyRead(){
         in >> status;
         if(status == 0){
             login_failed();
-        }else if(status == 1){  
+        }else if(status == 1){
             int numFiles;
-            in >> this->siteId >> numFiles;
+            in >> siteId >> numFiles;
             for(int i=0; i<numFiles; i++){
                  QString filename;
                 in >> filename;
@@ -83,6 +83,11 @@ void Client::onReadyRead(){
             in >> this->siteId;
             registration_successful();
         }
+    case 4:
+         std::cout<< "file\n";
+         int prova;
+         in >> prova;
+
     default: break;
     }
 }
