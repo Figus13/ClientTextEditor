@@ -19,11 +19,9 @@ QString NewFileDialog::getFilename(){
 
 void NewFileDialog::on_buttonBox_accepted()
 {
-    filename = ui->filenameEdit->Plain;
+    filename = ui->filenameEdit->toPlainText();
     this->close();
 }
-
-
 
 void NewFileDialog::on_buttonBox_rejected()
 {
