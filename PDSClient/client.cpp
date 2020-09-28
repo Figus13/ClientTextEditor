@@ -64,7 +64,7 @@ void Client::onReadyRead(){
             login_failed();
         }else if(status == 1){  
             int numFiles;
-            in >> siteId >> numFiles;
+            in >> this->siteId >> numFiles;
             for(int i=0; i<numFiles; i++){
                  QString filename;
                 in >> filename;

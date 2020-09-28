@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     client = new Client();
-    QObject::connect(client,  SIGNAL(successful_login()), this, SLOT(onLoginSuccess()));
+    QObject::connect(client,  SIGNAL(login_successful()), this, SLOT(onLoginSuccess()));
     QObject::connect(client,  SIGNAL(login_failed()), this, SLOT(onLoginFailed()));
     QObject::connect(client,  SIGNAL(registration_successful()), this, SLOT(onRegistrationSuccess()));
     QObject::connect(client,  SIGNAL(registration_failed()), this, SLOT(onRegistrationFailed()));
@@ -53,11 +53,11 @@ void MainWindow::on_registrationButton_clicked()
     QString password2 = ui->registrationSecondPassword->text();
 
     if(password != password2){
-       QMessageBox::information(this,"Registation","le password non coincidono");
+       QMessageBox::information(this,"Registrazione","le password non coincidono");
        return;
     }
     if(password.isEmpty() || password2.isEmpty() || username.isEmpty() || nick.isEmpty()){
-       QMessageBox::information(this,"Registation","tutti i campi del form devono essere compilati");
+       QMessageBox::information(this,"Registrazione","tutti i campi del form devono essere compilati");
        return;
     }
 
