@@ -32,7 +32,7 @@ void FilesSelection::on_fileListWidget_clicked()
     QString item;
     item =  ui->fileListWidget->currentItem()->text();
 
-    client->getFile(item + ".txt");
+    client->getFile(item);
 
 
 
