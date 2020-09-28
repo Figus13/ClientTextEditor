@@ -61,7 +61,7 @@ void Client::onReadyRead(){
         int status;
         in >> status;
         if(status == 0){
-            login_refused();
+            login_failed();
         }else if(status == 1){  
             int numFiles;
             in >> siteId >> numFiles;
@@ -70,12 +70,19 @@ void Client::onReadyRead(){
                 in >> filename;
                 files.append(filename);
             }
-            successful_login();
+            login_successful();
         }
         break;
      case 1:
         std::cout<< "registration\n";
-        break;
+        int statusReg;
+        in >> statusReg;
+        if(statusReg==0){
+            registration_failed();
+        }else if(statusReg == 1){
+            in >> this->siteId;
+            registration_successful();
+        }
     default: break;
     }
 }

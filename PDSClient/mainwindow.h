@@ -19,12 +19,15 @@ public:
     ~MainWindow();
 
 public slots:
-    void login_refused();
+    void login_failed();
 
 private slots:
     void on_loginButton_clicked();
     void on_registrationButton_clicked();
     void onLoginSuccess();
+    void onLoginFailed();
+    void onRegistrationSuccess();
+    void onRegistrationFailed();
 private:
     Ui::MainWindow *ui;
     Client *client;
