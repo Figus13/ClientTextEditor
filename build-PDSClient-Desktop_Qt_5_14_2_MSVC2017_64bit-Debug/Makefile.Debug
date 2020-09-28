@@ -57,10 +57,14 @@ SOURCES       = ..\PDSClient\GenericSymbol.cpp \
 		..\PDSClient\filesselection.cpp \
 		..\PDSClient\main.cpp \
 		..\PDSClient\mainwindow.cpp \
-		..\PDSClient\newfiledialog.cpp debug\moc_client.cpp \
+		..\PDSClient\newfiledialog.cpp \
+		..\PDSClient\texteditor\main.cpp \
+		..\PDSClient\texteditor\textedit.cpp debug\qrc_textedit.cpp \
+		debug\moc_client.cpp \
 		debug\moc_filesselection.cpp \
 		debug\moc_mainwindow.cpp \
-		debug\moc_newfiledialog.cpp
+		debug\moc_newfiledialog.cpp \
+		debug\moc_textedit.cpp
 OBJECTS       = debug\GenericSymbol.obj \
 		debug\StyleSymbol.obj \
 		debug\TextSymbol.obj \
@@ -69,25 +73,89 @@ OBJECTS       = debug\GenericSymbol.obj \
 		debug\main.obj \
 		debug\mainwindow.obj \
 		debug\newfiledialog.obj \
+		debug\main.obj \
+		debug\textedit.obj \
+		debug\qrc_textedit.obj \
 		debug\moc_client.obj \
 		debug\moc_filesselection.obj \
 		debug\moc_mainwindow.obj \
-		debug\moc_newfiledialog.obj
+		debug\moc_newfiledialog.obj \
+		debug\moc_textedit.obj
 
-DIST          =  ..\PDSClient\GenericSymbol.h \
+DIST          = texteditor/.idea/QText \
+		Edit.iml \
+		texteditor/.idea/misc.xml \
+		texteditor/.idea/modules.xml \
+		texteditor/.idea/workspace.xml \
+		texteditor/debug.log \
+		texteditor/example.html \
+		texteditor/example.md \
+		texteditor/images/logo32.png \
+		texteditor/images/mac/checkbox-checked.png \
+		texteditor/images/mac/checkbox.png \
+		texteditor/images/mac/editcopy.png \
+		texteditor/images/mac/editcut.png \
+		texteditor/images/mac/editpaste.png \
+		texteditor/images/mac/editredo.png \
+		texteditor/images/mac/editundo.png \
+		texteditor/images/mac/exportpdf.png \
+		texteditor/images/mac/filenew.png \
+		texteditor/images/mac/fileopen.png \
+		texteditor/images/mac/fileprint.png \
+		texteditor/images/mac/filesave.png \
+		texteditor/images/mac/format-indent-less.png \
+		texteditor/images/mac/format-indent-more.png \
+		texteditor/images/mac/textbold.png \
+		texteditor/images/mac/textcenter.png \
+		texteditor/images/mac/textitalic.png \
+		texteditor/images/mac/textjustify.png \
+		texteditor/images/mac/textleft.png \
+		texteditor/images/mac/textright.png \
+		texteditor/images/mac/textunder.png \
+		texteditor/images/mac/zoomin.png \
+		texteditor/images/mac/zoomout.png \
+		texteditor/images/win/checkbox-checked.png \
+		texteditor/images/win/checkbox.png \
+		texteditor/images/win/editcopy.png \
+		texteditor/images/win/editcut.png \
+		texteditor/images/win/editpaste.png \
+		texteditor/images/win/editredo.png \
+		texteditor/images/win/editundo.png \
+		texteditor/images/win/exportpdf.png \
+		texteditor/images/win/filenew.png \
+		texteditor/images/win/fileopen.png \
+		texteditor/images/win/fileprint.png \
+		texteditor/images/win/filesave.png \
+		texteditor/images/win/format-indent-less.png \
+		texteditor/images/win/format-indent-more.png \
+		texteditor/images/win/textbold.png \
+		texteditor/images/win/textcenter.png \
+		texteditor/images/win/textitalic.png \
+		texteditor/images/win/textjustify.png \
+		texteditor/images/win/textleft.png \
+		texteditor/images/win/textright.png \
+		texteditor/images/win/textunder.png \
+		texteditor/images/win/zoomin.png \
+		texteditor/images/win/zoomout.png \
+		texteditor/textedit.pro.user \
+		texteditor/textedit.pro.user.519c975 \
+		texteditor/textedit.qdoc ..\PDSClient\GenericSymbol.h \
 		..\PDSClient\StyleSymbol.h \
 		..\PDSClient\TextSymbol.h \
 		..\PDSClient\client.h \
 		..\PDSClient\filesselection.h \
 		..\PDSClient\mainwindow.h \
-		..\PDSClient\newfiledialog.h ..\PDSClient\GenericSymbol.cpp \
+		..\PDSClient\newfiledialog.h \
+		..\PDSClient\texteditor\textedit.h ..\PDSClient\GenericSymbol.cpp \
 		..\PDSClient\StyleSymbol.cpp \
 		..\PDSClient\TextSymbol.cpp \
 		..\PDSClient\client.cpp \
 		..\PDSClient\filesselection.cpp \
 		..\PDSClient\main.cpp \
 		..\PDSClient\mainwindow.cpp \
-		..\PDSClient\newfiledialog.cpp
+		..\PDSClient\newfiledialog.cpp \
+		..\PDSClient\texteditor\main.cpp \
+		..\PDSClient\texteditor\textedit.cpp
 QMAKE_TARGET  = PDSClient
 DESTDIR        = debug\ #avoid trailing-slash linebreak
 TARGET         = PDSClient.exe
@@ -97,65 +165,17 @@ DESTDIR_TARGET = debug\PDSClient.exe
 
 .SUFFIXES: .c .cpp .cc .cxx
 
-{..\PDSClient}.cpp{debug\}.obj::
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
+.cpp.obj:
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fo$@ $<
 
-{..\PDSClient}.cc{debug\}.obj::
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
+.cc.obj:
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fo$@ $<
 
-{..\PDSClient}.cxx{debug\}.obj::
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
+.cxx.obj:
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fo$@ $<
 
-{..\PDSClient}.c{debug\}.obj::
-	$(CC) -c $(CFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
-
-{debug}.cpp{debug\}.obj::
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
-
-{debug}.cc{debug\}.obj::
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
-
-{debug}.cxx{debug\}.obj::
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
-
-{debug}.c{debug\}.obj::
-	$(CC) -c $(CFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
-
-{.}.cpp{debug\}.obj::
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
-
-{.}.cc{debug\}.obj::
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
-
-{.}.cxx{debug\}.obj::
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
-
-{.}.c{debug\}.obj::
-	$(CC) -c $(CFLAGS) $(INCPATH) -Fodebug\ @<<
-	$<
-<<
+.c.obj:
+	$(CC) -c $(CFLAGS) $(INCPATH) -Fo$@ $<
 
 ####### Build rules
 
@@ -164,7 +184,7 @@ all: Makefile.Debug  debug\PDSClient.exe
 
 debug\PDSClient.exe: C:\Qt\5.14.2\msvc2017_64\lib\Qt5Widgetsd.lib C:\Qt\5.14.2\msvc2017_64\lib\Qt5Guid.lib C:\Qt\5.14.2\msvc2017_64\lib\Qt5Networkd.lib C:\Qt\5.14.2\msvc2017_64\lib\Qt5Cored.lib C:\Qt\5.14.2\msvc2017_64\lib\qtmaind.lib ui_filesselection.h ui_mainwindow.h ui_newfiledialog.h $(OBJECTS) 
 	$(LINKER) $(LFLAGS) /MANIFEST:embed /OUT:$(DESTDIR_TARGET) @<<
-debug\GenericSymbol.obj debug\StyleSymbol.obj debug\TextSymbol.obj debug\client.obj debug\filesselection.obj debug\main.obj debug\mainwindow.obj debug\newfiledialog.obj debug\moc_client.obj debug\moc_filesselection.obj debug\moc_mainwindow.obj debug\moc_newfiledialog.obj
+debug\GenericSymbol.obj debug\StyleSymbol.obj debug\TextSymbol.obj debug\client.obj debug\filesselection.obj debug\main.obj debug\mainwindow.obj debug\newfiledialog.obj debug\main.obj debug\textedit.obj debug\qrc_textedit.obj debug\moc_client.obj debug\moc_filesselection.obj debug\moc_mainwindow.obj debug\moc_newfiledialog.obj debug\moc_textedit.obj
 $(LIBS)
 <<
 
@@ -174,10 +194,10 @@ qmake: FORCE
 qmake_all: FORCE
 
 dist:
-	$(ZIP) PDSClient.zip $(SOURCES) $(DIST) ..\PDSClient\PDSClient.pro C:\Qt\5.14.2\msvc2017_64\mkspecs\features\spec_pre.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\angle.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\windows-desktop.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\win32\windows_vulkan_sdk.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\windows-vulkan.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\msvc-desktop.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\qconfig.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3danimation.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3danimation_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dcore.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dcore_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dextras.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dextras_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dinput.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dinput_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dlogic.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dlogic_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquick.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquick_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickanimation.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickanimation_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickextras.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickextras_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickinput.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickinput_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickrender.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickrender_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickscene2d.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickscene2d_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3drender.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3drender_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_accessibility_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axbase.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axbase_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axcontainer.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axcontainer_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axserver.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axserver_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bluetooth.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bluetooth_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bootstrap_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_concurrent.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_concurrent_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_core.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_core_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_dbus.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_dbus_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_designer.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_designer_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_designercomponents_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_devicediscovery_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_edid_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_egl_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_eventdispatcher_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_fb_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_fontdatabase_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_gamepad.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_gamepad_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_gui.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_gui_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_help.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_help_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_location.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_location_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimedia.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimedia_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_network.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_network_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_nfc.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_nfc_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_opengl.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_opengl_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_openglextensions.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_openglextensions_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_packetprotocol_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_platformcompositor_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_positioning.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_positioning_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_positioningquick.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_positioningquick_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_printsupport.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_printsupport_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qml.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qml_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmldebug_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmldevtools_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmlmodels.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmlmodels_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmltest.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmltest_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmlworkerscript.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmlworkerscript_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qtmultimediaquicktools_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quick.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quick_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickcontrols2.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickcontrols2_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickparticles_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickshapes_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quicktemplates2.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quicktemplates2_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickwidgets.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickwidgets_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_remoteobjects.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_remoteobjects_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_repparser.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_repparser_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_scxml.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_scxml_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_sensors.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_sensors_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_serialbus.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_serialbus_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_serialport.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_serialport_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_sql.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_sql_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_svg.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_svg_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_testlib.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_testlib_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_texttospeech.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_texttospeech_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_theme_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_uiplugin.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_uitools.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_uitools_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_vulkan_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_webchannel.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_webchannel_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_websockets.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_websockets_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_webview.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_webview_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_widgets.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_widgets_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_windowsuiautomation_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_winextras.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_winextras_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_xml.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_xml_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_xmlpatterns.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_xmlpatterns_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_zlib_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qt_functions.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qt_config.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\win32-msvc\qmake.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\spec_post.prf .qmake.stash C:\Qt\5.14.2\msvc2017_64\mkspecs\features\exclusive_builds.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\msvc-version.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\toolchain.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\default_pre.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\win32\default_pre.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\resolve_config.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\exclusive_builds_post.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\default_post.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\build_pass.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qml_debug.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\precompile_header.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\warn_on.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qt.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\resources_functions.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\resources.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\moc.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\win32\opengl.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\uic.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qmake_use.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\file_copies.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\win32\windows.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\testcase_targets.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\exceptions.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\yacc.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\lex.prf ..\PDSClient\PDSClient.pro C:\Qt\5.14.2\msvc2017_64\lib\Qt5Widgetsd.prl C:\Qt\5.14.2\msvc2017_64\lib\Qt5Guid.prl C:\Qt\5.14.2\msvc2017_64\lib\Qt5Networkd.prl C:\Qt\5.14.2\msvc2017_64\lib\Qt5Cored.prl C:\Qt\5.14.2\msvc2017_64\lib\qtmaind.prl PDSClient_it_IT.ts PDSClient_it_IT.ts   C:\Qt\5.14.2\msvc2017_64\mkspecs\features\data\dummy.cpp ..\PDSClient\GenericSymbol.h ..\PDSClient\StyleSymbol.h ..\PDSClient\TextSymbol.h ..\PDSClient\client.h ..\PDSClient\filesselection.h ..\PDSClient\mainwindow.h ..\PDSClient\newfiledialog.h  ..\PDSClient\GenericSymbol.cpp ..\PDSClient\StyleSymbol.cpp ..\PDSClient\TextSymbol.cpp ..\PDSClient\client.cpp ..\PDSClient\filesselection.cpp ..\PDSClient\main.cpp ..\PDSClient\mainwindow.cpp ..\PDSClient\newfiledialog.cpp ..\PDSClient\filesselection.ui ..\PDSClient\mainwindow.ui ..\PDSClient\newfiledialog.ui    
+	$(ZIP) PDSClient.zip $(SOURCES) $(DIST) ..\PDSClient\PDSClient.pro C:\Qt\5.14.2\msvc2017_64\mkspecs\features\spec_pre.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\angle.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\windows-desktop.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\win32\windows_vulkan_sdk.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\windows-vulkan.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\msvc-desktop.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\qconfig.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3danimation.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3danimation_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dcore.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dcore_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dextras.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dextras_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dinput.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dinput_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dlogic.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dlogic_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquick.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquick_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickanimation.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickanimation_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickextras.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickextras_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickinput.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickinput_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickrender.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickrender_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickscene2d.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3dquickscene2d_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3drender.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_3drender_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_accessibility_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axbase.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axbase_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axcontainer.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axcontainer_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axserver.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axserver_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bluetooth.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bluetooth_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bootstrap_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_charts.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_charts_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_concurrent.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_concurrent_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_core.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_core_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_dbus.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_dbus_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_designer.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_designer_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_designercomponents_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_devicediscovery_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_edid_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_egl_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_eventdispatcher_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_fb_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_fontdatabase_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_gamepad.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_gamepad_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_gui.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_gui_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_help.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_help_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_location.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_location_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimedia.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimedia_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_network.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_network_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_networkauth.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_networkauth_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_nfc.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_nfc_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_opengl.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_opengl_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_openglextensions.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_openglextensions_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_packetprotocol_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_platformcompositor_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_positioning.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_positioning_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_positioningquick.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_positioningquick_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_printsupport.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_printsupport_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qml.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qml_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmldebug_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmldevtools_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmlmodels.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmlmodels_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmltest.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmltest_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmlworkerscript.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qmlworkerscript_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_qtmultimediaquicktools_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quick.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quick_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickcontrols2.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickcontrols2_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickparticles_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickshapes_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quicktemplates2.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quicktemplates2_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickwidgets.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_quickwidgets_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_remoteobjects.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_remoteobjects_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_repparser.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_repparser_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_scxml.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_scxml_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_sensors.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_sensors_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_serialbus.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_serialbus_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_serialport.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_serialport_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_sql.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_sql_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_svg.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_svg_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_testlib.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_testlib_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_texttospeech.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_texttospeech_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_theme_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_uiplugin.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_uitools.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_uitools_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_vulkan_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_webchannel.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_webchannel_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_websockets.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_websockets_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_webview.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_webview_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_widgets.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_widgets_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_windowsuiautomation_support_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_winextras.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_winextras_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_xml.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_xml_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_xmlpatterns.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_xmlpatterns_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_zlib_private.pri C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qt_functions.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qt_config.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\win32-msvc\qmake.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\spec_post.prf .qmake.stash C:\Qt\5.14.2\msvc2017_64\mkspecs\features\exclusive_builds.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\common\msvc-version.conf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\toolchain.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\default_pre.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\win32\default_pre.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\resolve_config.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\exclusive_builds_post.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\default_post.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\build_pass.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qml_debug.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\precompile_header.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\warn_on.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qt.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\resources_functions.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\resources.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\moc.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\win32\opengl.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\uic.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\qmake_use.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\file_copies.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\win32\windows.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\testcase_targets.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\exceptions.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\yacc.prf C:\Qt\5.14.2\msvc2017_64\mkspecs\features\lex.prf ..\PDSClient\PDSClient.pro ..\PDSClient\texteditor\textedit.qrc C:\Qt\5.14.2\msvc2017_64\lib\Qt5Widgetsd.prl C:\Qt\5.14.2\msvc2017_64\lib\Qt5Guid.prl C:\Qt\5.14.2\msvc2017_64\lib\Qt5Networkd.prl C:\Qt\5.14.2\msvc2017_64\lib\Qt5Cored.prl C:\Qt\5.14.2\msvc2017_64\lib\qtmaind.prl PDSClient_it_IT.ts PDSClient_it_IT.ts  ..\PDSClient\texteditor\textedit.qrc C:\Qt\5.14.2\msvc2017_64\mkspecs\features\data\dummy.cpp ..\PDSClient\GenericSymbol.h ..\PDSClient\StyleSymbol.h ..\PDSClient\TextSymbol.h ..\PDSClient\client.h ..\PDSClient\filesselection.h ..\PDSClient\mainwindow.h ..\PDSClient\newfiledialog.h ..\PDSClient\texteditor\textedit.h  ..\PDSClient\GenericSymbol.cpp ..\PDSClient\StyleSymbol.cpp ..\PDSClient\TextSymbol.cpp ..\PDSClient\client.cpp ..\PDSClient\filesselection.cpp ..\PDSClient\main.cpp ..\PDSClient\mainwindow.cpp ..\PDSClient\newfiledialog.cpp ..\PDSClient\texteditor\main.cpp ..\PDSClient\texteditor\textedit.cpp ..\PDSClient\filesselection.ui ..\PDSClient\mainwindow.ui ..\PDSClient\newfiledialog.ui    
 
 clean: compiler_clean 
-	-$(DEL_FILE) debug\GenericSymbol.obj debug\StyleSymbol.obj debug\TextSymbol.obj debug\client.obj debug\filesselection.obj debug\main.obj debug\mainwindow.obj debug\newfiledialog.obj debug\moc_client.obj debug\moc_filesselection.obj debug\moc_mainwindow.obj debug\moc_newfiledialog.obj
+	-$(DEL_FILE) debug\GenericSymbol.obj debug\StyleSymbol.obj debug\TextSymbol.obj debug\client.obj debug\filesselection.obj debug\main.obj debug\mainwindow.obj debug\newfiledialog.obj debug\main.obj debug\textedit.obj debug\qrc_textedit.obj debug\moc_client.obj debug\moc_filesselection.obj debug\moc_mainwindow.obj debug\moc_newfiledialog.obj debug\moc_textedit.obj
 	-$(DEL_FILE) debug\PDSClient.vc.pdb debug\PDSClient.ilk debug\PDSClient.idb
 
 distclean: clean 
@@ -195,17 +215,70 @@ benchmark: first
 
 compiler_no_pch_compiler_make_all:
 compiler_no_pch_compiler_clean:
-compiler_rcc_make_all:
+compiler_rcc_make_all: debug\qrc_textedit.cpp
 compiler_rcc_clean:
+	-$(DEL_FILE) debug\qrc_textedit.cpp
+debug\qrc_textedit.cpp: ..\PDSClient\texteditor\textedit.qrc \
+		C:\Qt\5.14.2\msvc2017_64\bin\rcc.exe \
+		..\PDSClient\texteditor\example.html \
+		..\PDSClient\texteditor\images\logo32.png \
+		..\PDSClient\texteditor\images\win\textunder.png \
+		..\PDSClient\texteditor\images\win\editredo.png \
+		..\PDSClient\texteditor\images\win\textjustify.png \
+		..\PDSClient\texteditor\images\win\textleft.png \
+		..\PDSClient\texteditor\images\win\textright.png \
+		..\PDSClient\texteditor\images\win\editundo.png \
+		..\PDSClient\texteditor\images\win\editpaste.png \
+		..\PDSClient\texteditor\images\win\editcut.png \
+		..\PDSClient\texteditor\images\win\editcopy.png \
+		..\PDSClient\texteditor\images\win\filesave.png \
+		..\PDSClient\texteditor\images\win\textcenter.png \
+		..\PDSClient\texteditor\images\win\textbold.png \
+		..\PDSClient\texteditor\images\win\format-indent-more.png \
+		..\PDSClient\texteditor\images\win\zoomin.png \
+		..\PDSClient\texteditor\images\win\format-indent-less.png \
+		..\PDSClient\texteditor\images\win\textitalic.png \
+		..\PDSClient\texteditor\images\win\fileprint.png \
+		..\PDSClient\texteditor\images\win\exportpdf.png \
+		..\PDSClient\texteditor\images\win\filenew.png \
+		..\PDSClient\texteditor\images\win\zoomout.png \
+		..\PDSClient\texteditor\images\win\checkbox-checked.png \
+		..\PDSClient\texteditor\images\win\checkbox.png \
+		..\PDSClient\texteditor\images\win\fileopen.png \
+		..\PDSClient\texteditor\images\mac\textunder.png \
+		..\PDSClient\texteditor\images\mac\editredo.png \
+		..\PDSClient\texteditor\images\mac\textjustify.png \
+		..\PDSClient\texteditor\images\mac\textleft.png \
+		..\PDSClient\texteditor\images\mac\textright.png \
+		..\PDSClient\texteditor\images\mac\editundo.png \
+		..\PDSClient\texteditor\images\mac\editpaste.png \
+		..\PDSClient\texteditor\images\mac\editcut.png \
+		..\PDSClient\texteditor\images\mac\editcopy.png \
+		..\PDSClient\texteditor\images\mac\filesave.png \
+		..\PDSClient\texteditor\images\mac\textcenter.png \
+		..\PDSClient\texteditor\images\mac\textbold.png \
+		..\PDSClient\texteditor\images\mac\format-indent-more.png \
+		..\PDSClient\texteditor\images\mac\zoomin.png \
+		..\PDSClient\texteditor\images\mac\format-indent-less.png \
+		..\PDSClient\texteditor\images\mac\textitalic.png \
+		..\PDSClient\texteditor\images\mac\fileprint.png \
+		..\PDSClient\texteditor\images\mac\exportpdf.png \
+		..\PDSClient\texteditor\images\mac\filenew.png \
+		..\PDSClient\texteditor\images\mac\zoomout.png \
+		..\PDSClient\texteditor\images\mac\checkbox-checked.png \
+		..\PDSClient\texteditor\images\mac\checkbox.png \
+		..\PDSClient\texteditor\images\mac\fileopen.png
+	C:\Qt\5.14.2\msvc2017_64\bin\rcc.exe -name textedit ..\PDSClient\texteditor\textedit.qrc -o debug\qrc_textedit.cpp
+
 compiler_moc_predefs_make_all: debug\moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) debug\moc_predefs.h
 debug\moc_predefs.h: C:\Qt\5.14.2\msvc2017_64\mkspecs\features\data\dummy.cpp
 	cl -BxC:\Qt\5.14.2\msvc2017_64\bin\qmake.exe -nologo -Zc:wchar_t -FS -Zc:rvalueCast -Zc:inline -Zc:strictStrings -Zc:throwingNew -Zc:referenceBinding -Zc:__cplusplus -Zi -MDd -W3 -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 -wd4577 -wd4467 -E C:\Qt\5.14.2\msvc2017_64\mkspecs\features\data\dummy.cpp 2>NUL >debug\moc_predefs.h
 
-compiler_moc_header_make_all: debug\moc_client.cpp debug\moc_filesselection.cpp debug\moc_mainwindow.cpp debug\moc_newfiledialog.cpp
+compiler_moc_header_make_all: debug\moc_client.cpp debug\moc_filesselection.cpp debug\moc_mainwindow.cpp debug\moc_newfiledialog.cpp debug\moc_textedit.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) debug\moc_client.cpp debug\moc_filesselection.cpp debug\moc_mainwindow.cpp debug\moc_newfiledialog.cpp
+	-$(DEL_FILE) debug\moc_client.cpp debug\moc_filesselection.cpp debug\moc_mainwindow.cpp debug\moc_newfiledialog.cpp debug\moc_textedit.cpp
 debug\moc_client.cpp: ..\PDSClient\client.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtNetwork\QtNetwork \
 		C:\Qt\5.14.2\msvc2017_64\include\QtNetwork\QtNetworkDepends \
@@ -470,7 +543,7 @@ debug\moc_client.cpp: ..\PDSClient\client.h \
 		..\PDSClient\GenericSymbol.h \
 		debug\moc_predefs.h \
 		C:\Qt\5.14.2\msvc2017_64\bin\moc.exe
-	C:\Qt\5.14.2\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Michele/Desktop/ProgettoMalnati/PDSClient/build-PDSClient-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/debug/moc_predefs.h -IC:/Qt/5.14.2/msvc2017_64/mkspecs/win32-msvc -IC:/Users/Michele/Desktop/ProgettoMalnati/PDSClient/PDSClient -IC:/Qt/5.14.2/msvc2017_64/include -IC:/Qt/5.14.2/msvc2017_64/include/QtWidgets -IC:/Qt/5.14.2/msvc2017_64/include/QtGui -IC:/Qt/5.14.2/msvc2017_64/include/QtANGLE -IC:/Qt/5.14.2/msvc2017_64/include/QtNetwork -IC:/Qt/5.14.2/msvc2017_64/include/QtCore -I. -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\ATLMFC\include" -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" ..\PDSClient\client.h -o debug\moc_client.cpp
+	C:\Qt\5.14.2\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/build-PDSClient-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/debug/moc_predefs.h -IC:/Qt/5.14.2/msvc2017_64/mkspecs/win32-msvc -IC:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/PDSClient -IC:/Qt/5.14.2/msvc2017_64/include -IC:/Qt/5.14.2/msvc2017_64/include/QtWidgets -IC:/Qt/5.14.2/msvc2017_64/include/QtGui -IC:/Qt/5.14.2/msvc2017_64/include/QtANGLE -IC:/Qt/5.14.2/msvc2017_64/include/QtNetwork -IC:/Qt/5.14.2/msvc2017_64/include/QtCore -I. -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\ATLMFC\include" -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" ..\PDSClient\client.h -o debug\moc_client.cpp
 
 debug\moc_filesselection.cpp: ..\PDSClient\filesselection.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMainWindow \
@@ -774,7 +847,7 @@ debug\moc_filesselection.cpp: ..\PDSClient\filesselection.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qdialog.h \
 		debug\moc_predefs.h \
 		C:\Qt\5.14.2\msvc2017_64\bin\moc.exe
-	C:\Qt\5.14.2\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Michele/Desktop/ProgettoMalnati/PDSClient/build-PDSClient-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/debug/moc_predefs.h -IC:/Qt/5.14.2/msvc2017_64/mkspecs/win32-msvc -IC:/Users/Michele/Desktop/ProgettoMalnati/PDSClient/PDSClient -IC:/Qt/5.14.2/msvc2017_64/include -IC:/Qt/5.14.2/msvc2017_64/include/QtWidgets -IC:/Qt/5.14.2/msvc2017_64/include/QtGui -IC:/Qt/5.14.2/msvc2017_64/include/QtANGLE -IC:/Qt/5.14.2/msvc2017_64/include/QtNetwork -IC:/Qt/5.14.2/msvc2017_64/include/QtCore -I. -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\ATLMFC\include" -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" ..\PDSClient\filesselection.h -o debug\moc_filesselection.cpp
+	C:\Qt\5.14.2\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/build-PDSClient-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/debug/moc_predefs.h -IC:/Qt/5.14.2/msvc2017_64/mkspecs/win32-msvc -IC:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/PDSClient -IC:/Qt/5.14.2/msvc2017_64/include -IC:/Qt/5.14.2/msvc2017_64/include/QtWidgets -IC:/Qt/5.14.2/msvc2017_64/include/QtGui -IC:/Qt/5.14.2/msvc2017_64/include/QtANGLE -IC:/Qt/5.14.2/msvc2017_64/include/QtNetwork -IC:/Qt/5.14.2/msvc2017_64/include/QtCore -I. -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\ATLMFC\include" -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" ..\PDSClient\filesselection.h -o debug\moc_filesselection.cpp
 
 debug\moc_mainwindow.cpp: ..\PDSClient\mainwindow.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMainWindow \
@@ -1079,7 +1152,7 @@ debug\moc_mainwindow.cpp: ..\PDSClient\mainwindow.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qdialog.h \
 		debug\moc_predefs.h \
 		C:\Qt\5.14.2\msvc2017_64\bin\moc.exe
-	C:\Qt\5.14.2\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Michele/Desktop/ProgettoMalnati/PDSClient/build-PDSClient-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/debug/moc_predefs.h -IC:/Qt/5.14.2/msvc2017_64/mkspecs/win32-msvc -IC:/Users/Michele/Desktop/ProgettoMalnati/PDSClient/PDSClient -IC:/Qt/5.14.2/msvc2017_64/include -IC:/Qt/5.14.2/msvc2017_64/include/QtWidgets -IC:/Qt/5.14.2/msvc2017_64/include/QtGui -IC:/Qt/5.14.2/msvc2017_64/include/QtANGLE -IC:/Qt/5.14.2/msvc2017_64/include/QtNetwork -IC:/Qt/5.14.2/msvc2017_64/include/QtCore -I. -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\ATLMFC\include" -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" ..\PDSClient\mainwindow.h -o debug\moc_mainwindow.cpp
+	C:\Qt\5.14.2\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/build-PDSClient-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/debug/moc_predefs.h -IC:/Qt/5.14.2/msvc2017_64/mkspecs/win32-msvc -IC:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/PDSClient -IC:/Qt/5.14.2/msvc2017_64/include -IC:/Qt/5.14.2/msvc2017_64/include/QtWidgets -IC:/Qt/5.14.2/msvc2017_64/include/QtGui -IC:/Qt/5.14.2/msvc2017_64/include/QtANGLE -IC:/Qt/5.14.2/msvc2017_64/include/QtNetwork -IC:/Qt/5.14.2/msvc2017_64/include/QtCore -I. -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\ATLMFC\include" -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" ..\PDSClient\mainwindow.h -o debug\moc_mainwindow.cpp
 
 debug\moc_newfiledialog.cpp: ..\PDSClient\newfiledialog.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QDialog \
@@ -1189,7 +1262,122 @@ debug\moc_newfiledialog.cpp: ..\PDSClient\newfiledialog.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtouchdevice.h \
 		debug\moc_predefs.h \
 		C:\Qt\5.14.2\msvc2017_64\bin\moc.exe
-	C:\Qt\5.14.2\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Michele/Desktop/ProgettoMalnati/PDSClient/build-PDSClient-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/debug/moc_predefs.h -IC:/Qt/5.14.2/msvc2017_64/mkspecs/win32-msvc -IC:/Users/Michele/Desktop/ProgettoMalnati/PDSClient/PDSClient -IC:/Qt/5.14.2/msvc2017_64/include -IC:/Qt/5.14.2/msvc2017_64/include/QtWidgets -IC:/Qt/5.14.2/msvc2017_64/include/QtGui -IC:/Qt/5.14.2/msvc2017_64/include/QtANGLE -IC:/Qt/5.14.2/msvc2017_64/include/QtNetwork -IC:/Qt/5.14.2/msvc2017_64/include/QtCore -I. -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\ATLMFC\include" -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" ..\PDSClient\newfiledialog.h -o debug\moc_newfiledialog.cpp
+	C:\Qt\5.14.2\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/build-PDSClient-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/debug/moc_predefs.h -IC:/Qt/5.14.2/msvc2017_64/mkspecs/win32-msvc -IC:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/PDSClient -IC:/Qt/5.14.2/msvc2017_64/include -IC:/Qt/5.14.2/msvc2017_64/include/QtWidgets -IC:/Qt/5.14.2/msvc2017_64/include/QtGui -IC:/Qt/5.14.2/msvc2017_64/include/QtANGLE -IC:/Qt/5.14.2/msvc2017_64/include/QtNetwork -IC:/Qt/5.14.2/msvc2017_64/include/QtCore -I. -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\ATLMFC\include" -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" ..\PDSClient\newfiledialog.h -o debug\moc_newfiledialog.cpp
+
+debug\moc_textedit.cpp: ..\PDSClient\texteditor\textedit.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMainWindow \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qmainwindow.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtwidgetsglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtguiglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qconfig.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtcore-config.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsystemdetection.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qprocessordetection.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcompilerdetection.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtypeinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsysinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qlogging.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qflags.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qbasicatomic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic_bootstrap.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qgenericatomic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic_cxx11.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic_msvc.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qglobalstatic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmutex.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qnumeric.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qversiontagging.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtgui-config.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtwidgets-config.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qwidget.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qwindowdefs.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobjectdefs.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qnamespace.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobject.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstring.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qchar.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qbytearray.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qrefcount.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qarraydata.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringliteral.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringalgorithms.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringview.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringbuilder.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qlist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qalgorithms.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qiterator.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qhashfunctions.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpair.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qvector.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontainertools_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpoint.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qbytearraylist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringlist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qregexp.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringmatcher.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcoreevent.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qscopedpointer.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmetatype.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qvarlengtharray.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontainerfwd.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobject_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmargins.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpaintdevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qrect.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsize.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpalette.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qcolor.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qrgb.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qrgba64.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qbrush.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qmatrix.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpolygon.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qregion.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qdatastream.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qiodevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qline.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtransform.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpainterpath.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qimage.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpixelformat.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpixmap.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsharedpointer.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qshareddata.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qhash.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfont.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfontmetrics.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfontinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qsizepolicy.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qcursor.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qkeysequence.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qevent.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qvariant.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmap.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qdebug.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtextstream.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qlocale.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qset.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qurl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qurlquery.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qfile.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qfiledevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qvector2d.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtouchdevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtabwidget.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qicon.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QMap \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QPointer \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpointer.h \
+		debug\moc_predefs.h \
+		C:\Qt\5.14.2\msvc2017_64\bin\moc.exe
+	C:\Qt\5.14.2\msvc2017_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/build-PDSClient-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug/debug/moc_predefs.h -IC:/Qt/5.14.2/msvc2017_64/mkspecs/win32-msvc -IC:/Users/Marcello/Desktop/NuovoProgettoPDS/PDSClient/PDSClient -IC:/Qt/5.14.2/msvc2017_64/include -IC:/Qt/5.14.2/msvc2017_64/include/QtWidgets -IC:/Qt/5.14.2/msvc2017_64/include/QtGui -IC:/Qt/5.14.2/msvc2017_64/include/QtANGLE -IC:/Qt/5.14.2/msvc2017_64/include/QtNetwork -IC:/Qt/5.14.2/msvc2017_64/include/QtCore -I. -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\ATLMFC\include" -I"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.27.29110\include" -I"C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\shared" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\um" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\winrt" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.19041.0\cppwinrt" ..\PDSClient\texteditor\textedit.h -o debug\moc_textedit.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -1216,7 +1404,7 @@ compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean compiler_uic_clean 
+compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_header_clean compiler_uic_clean 
 
 
 
@@ -1261,6 +1449,7 @@ debug\GenericSymbol.obj: ..\PDSClient\GenericSymbol.cpp ..\PDSClient\GenericSymb
 		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpair.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontainertools_impl.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpoint.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\GenericSymbol.obj ..\PDSClient\GenericSymbol.cpp
 
 debug\StyleSymbol.obj: ..\PDSClient\StyleSymbol.cpp ..\PDSClient\StyleSymbol.h \
 		..\PDSClient\GenericSymbol.h \
@@ -1595,6 +1784,7 @@ debug\StyleSymbol.obj: ..\PDSClient\StyleSymbol.cpp ..\PDSClient\StyleSymbol.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtexttable.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qvalidator.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtguiversion.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\StyleSymbol.obj ..\PDSClient\StyleSymbol.cpp
 
 debug\TextSymbol.obj: ..\PDSClient\TextSymbol.cpp ..\PDSClient\TextSymbol.h \
 		..\PDSClient\GenericSymbol.h \
@@ -1636,6 +1826,7 @@ debug\TextSymbol.obj: ..\PDSClient\TextSymbol.cpp ..\PDSClient\TextSymbol.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpair.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontainertools_impl.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpoint.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\TextSymbol.obj ..\PDSClient\TextSymbol.cpp
 
 debug\client.obj: ..\PDSClient\client.cpp ..\PDSClient\client.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtNetwork\QtNetwork \
@@ -1899,6 +2090,7 @@ debug\client.obj: ..\PDSClient\client.cpp ..\PDSClient\client.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtNetwork\qudpsocket.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtNetwork\qtnetworkversion.h \
 		..\PDSClient\GenericSymbol.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\client.obj ..\PDSClient\client.cpp
 
 debug\filesselection.obj: ..\PDSClient\filesselection.cpp ..\PDSClient\filesselection.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMainWindow \
@@ -2201,6 +2393,7 @@ debug\filesselection.obj: ..\PDSClient\filesselection.cpp ..\PDSClient\filessele
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QDialog \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qdialog.h \
 		ui_filesselection.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\filesselection.obj ..\PDSClient\filesselection.cpp
 
 debug\main.obj: ..\PDSClient\main.cpp ..\PDSClient\mainwindow.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMainWindow \
@@ -2508,6 +2701,7 @@ debug\main.obj: ..\PDSClient\main.cpp ..\PDSClient\mainwindow.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qguiapplication.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qinputmethod.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\main.obj ..\PDSClient\main.cpp
 
 debug\mainwindow.obj: ..\PDSClient\mainwindow.cpp ..\PDSClient\mainwindow.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMainWindow \
@@ -2813,6 +3007,7 @@ debug\mainwindow.obj: ..\PDSClient\mainwindow.cpp ..\PDSClient\mainwindow.h \
 		ui_mainwindow.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMessageBox \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qmessagebox.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\mainwindow.obj ..\PDSClient\mainwindow.cpp
 
 debug\newfiledialog.obj: ..\PDSClient\newfiledialog.cpp ..\PDSClient\newfiledialog.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QDialog \
@@ -2921,14 +3116,347 @@ debug\newfiledialog.obj: ..\PDSClient\newfiledialog.cpp ..\PDSClient\newfiledial
 		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qvector2d.h \
 		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtouchdevice.h \
 		ui_newfiledialog.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\newfiledialog.obj ..\PDSClient\newfiledialog.cpp
+
+debug\main.obj: ..\PDSClient\texteditor\main.cpp ..\PDSClient\texteditor\textedit.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMainWindow \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qmainwindow.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtwidgetsglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtguiglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qconfig.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtcore-config.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsystemdetection.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qprocessordetection.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcompilerdetection.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtypeinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsysinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qlogging.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qflags.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qbasicatomic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic_bootstrap.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qgenericatomic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic_cxx11.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic_msvc.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qglobalstatic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmutex.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qnumeric.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qversiontagging.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtgui-config.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtwidgets-config.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qwidget.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qwindowdefs.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobjectdefs.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qnamespace.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobject.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstring.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qchar.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qbytearray.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qrefcount.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qarraydata.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringliteral.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringalgorithms.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringview.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringbuilder.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qlist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qalgorithms.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qiterator.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qhashfunctions.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpair.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qvector.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontainertools_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpoint.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qbytearraylist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringlist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qregexp.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringmatcher.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcoreevent.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qscopedpointer.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmetatype.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qvarlengtharray.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontainerfwd.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobject_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmargins.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpaintdevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qrect.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsize.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpalette.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qcolor.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qrgb.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qrgba64.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qbrush.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qmatrix.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpolygon.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qregion.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qdatastream.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qiodevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qline.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtransform.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpainterpath.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qimage.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpixelformat.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpixmap.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsharedpointer.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qshareddata.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qhash.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfont.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfontmetrics.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfontinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qsizepolicy.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qcursor.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qkeysequence.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qevent.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qvariant.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmap.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qdebug.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtextstream.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qlocale.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qset.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qurl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qurlquery.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qfile.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qfiledevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qvector2d.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtouchdevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtabwidget.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qicon.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QMap \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QPointer \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpointer.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QApplication \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qapplication.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcoreapplication.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qeventloop.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qguiapplication.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qinputmethod.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QCommandLineParser \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcommandlineparser.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcommandlineoption.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QCommandLineOption \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\QScreen \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qscreen.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QList \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QObject \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QRect \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QSize \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QSizeF \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\QTransform
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\main.obj ..\PDSClient\texteditor\main.cpp
+
+debug\textedit.obj: ..\PDSClient\texteditor\textedit.cpp C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QAction \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qaction.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtwidgetsglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtguiglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qconfig-bootstrapped.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qconfig.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtcore-config.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsystemdetection.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qprocessordetection.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcompilerdetection.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtypeinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsysinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qlogging.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qflags.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qbasicatomic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic_bootstrap.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qgenericatomic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic_cxx11.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qatomic_msvc.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qglobalstatic.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmutex.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qnumeric.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qversiontagging.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtgui-config.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtwidgets-config.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qkeysequence.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstring.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qchar.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qbytearray.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qrefcount.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qnamespace.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qarraydata.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringliteral.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringalgorithms.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringview.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringbuilder.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobjectdefs.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobjectdefs_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qwidget.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qwindowdefs.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qwindowdefs_win.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobject.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qlist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qalgorithms.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qiterator.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qhashfunctions.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpair.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qvector.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontainertools_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpoint.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qbytearraylist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringlist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qregexp.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qstringmatcher.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcoreevent.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qscopedpointer.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmetatype.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qvarlengtharray.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontainerfwd.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qobject_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmargins.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpaintdevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qrect.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsize.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpalette.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qcolor.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qrgb.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qrgba64.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qbrush.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qmatrix.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpolygon.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qregion.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qdatastream.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qiodevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qline.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtransform.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpainterpath.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qimage.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpixelformat.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpixmap.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsharedpointer.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qshareddata.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qhash.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qsharedpointer_impl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfont.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfontmetrics.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfontinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qsizepolicy.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qcursor.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qevent.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qvariant.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmap.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qdebug.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtextstream.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qlocale.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qset.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcontiguouscache.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qurl.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qurlquery.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qfile.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qfiledevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qvector2d.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtouchdevice.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qicon.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qactiongroup.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QApplication \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qapplication.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qcoreapplication.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qeventloop.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qdesktopwidget.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qguiapplication.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qinputmethod.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\QClipboard \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qclipboard.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QColorDialog \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qcolordialog.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qdialog.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QComboBox \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qcombobox.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qabstractitemdelegate.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qstyleoption.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qabstractspinbox.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qvalidator.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qregularexpression.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qslider.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qabstractslider.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qstyle.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtabbar.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtabwidget.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qrubberband.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qframe.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qabstractitemmodel.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QFontComboBox \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qfontcombobox.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qfontdatabase.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QFile \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QFileDialog \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qfiledialog.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qdir.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qfileinfo.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QFileInfo \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\QFontDatabase \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMenu \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qmenu.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMenuBar \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qmenubar.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QTextCodec \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qtextcodec.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QTextEdit \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtextedit.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qabstractscrollarea.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtextdocument.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtextoption.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtextcursor.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtextformat.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qpen.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QStatusBar \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qstatusbar.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QToolBar \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qtoolbar.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\QTextCursor \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\QTextDocumentWriter \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtextdocumentwriter.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\QTextList \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtextlist.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtextobject.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qtextlayout.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qglyphrun.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\qrawfont.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QtDebug \
+		C:\Qt\5.14.2\msvc2017_64\include\QtGui\QCloseEvent \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMessageBox \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qmessagebox.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QMimeData \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmimedata.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QMimeDatabase \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmimedatabase.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qmimetype.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtPrintSupport\qtprintsupportglobal.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtPrintSupport\qtprintsupport-config.h \
+		..\PDSClient\texteditor\textedit.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\QMainWindow \
+		C:\Qt\5.14.2\msvc2017_64\include\QtWidgets\qmainwindow.h \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QMap \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\QPointer \
+		C:\Qt\5.14.2\msvc2017_64\include\QtCore\qpointer.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\textedit.obj ..\PDSClient\texteditor\textedit.cpp
+
+debug\qrc_textedit.obj: debug\qrc_textedit.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\qrc_textedit.obj debug\qrc_textedit.cpp
 
 debug\moc_client.obj: debug\moc_client.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\moc_client.obj debug\moc_client.cpp
 
 debug\moc_filesselection.obj: debug\moc_filesselection.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\moc_filesselection.obj debug\moc_filesselection.cpp
 
 debug\moc_mainwindow.obj: debug\moc_mainwindow.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\moc_mainwindow.obj debug\moc_mainwindow.cpp
 
 debug\moc_newfiledialog.obj: debug\moc_newfiledialog.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\moc_newfiledialog.obj debug\moc_newfiledialog.cpp
+
+debug\moc_textedit.obj: debug\moc_textedit.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\moc_textedit.obj debug\moc_textedit.cpp
 
 ####### Install
 

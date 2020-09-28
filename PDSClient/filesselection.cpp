@@ -1,7 +1,7 @@
 #include "filesselection.h"
 #include "ui_filesselection.h"
 
-FilesSelection::FilesSelection(QWidget *parent, std::shared_ptr<Client> client) :
+FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     QMainWindow(parent),
     ui(new Ui::FilesSelection), client(client)
 {
@@ -22,6 +22,14 @@ void FilesSelection::on_newDocumentButton_clicked()
     NewFileDialog dialog;
     dialog.setModal(true);
     if(dialog.exec()){
+        TextEdit* mw = new TextEdit{};
+
+        const QRect availableGeometry = mw->screen()->availableGeometry();
+        mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+        mw->move((availableGeometry.width() - mw->width()) / 2,
+                   (availableGeometry.height() - mw->height()) / 2);
+        mw->show();
+
         QString filename = dialog.getFilename();
         ui->fileListWidget->addItem(filename);
     }
@@ -35,5 +43,17 @@ void FilesSelection::on_fileListWidget_clicked()
     client->getFile(item);
 
 
+
+}
+
+void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
+{
+    TextEdit* mw = new TextEdit{};
+
+    const QRect availableGeometry = mw->screen()->availableGeometry();
+    mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+    mw->move((availableGeometry.width() - mw->width()) / 2,
+               (availableGeometry.height() - mw->height()) / 2);
+    mw->show();
 
 }

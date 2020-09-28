@@ -111,9 +111,6 @@ public:
         verticalLayout_3->addWidget(fileListLabel);
 
         fileListWidget = new QListWidget(mainWidget);
-        new QListWidgetItem(fileListWidget);
-        new QListWidgetItem(fileListWidget);
-        new QListWidgetItem(fileListWidget);
         fileListWidget->setObjectName(QString::fromUtf8("fileListWidget"));
 
         verticalLayout_3->addWidget(fileListWidget);
@@ -134,7 +131,7 @@ public:
 
         retranslateUi(FilesSelection);
 
-        fileListWidget->setCurrentRow(2);
+        fileListWidget->setCurrentRow(-1);
 
 
         QMetaObject::connectSlotsByName(FilesSelection);
@@ -146,17 +143,6 @@ public:
         labelWidget->setText(QCoreApplication::translate("FilesSelection", "PDS Pro", nullptr));
         newDocumentButton->setText(QCoreApplication::translate("FilesSelection", "Nuovo Documento", nullptr));
         fileListLabel->setText(QCoreApplication::translate("FilesSelection", "Lista dei tuoi file", nullptr));
-
-        const bool __sortingEnabled = fileListWidget->isSortingEnabled();
-        fileListWidget->setSortingEnabled(false);
-        QListWidgetItem *___qlistwidgetitem = fileListWidget->item(0);
-        ___qlistwidgetitem->setText(QCoreApplication::translate("FilesSelection", "miao", nullptr));
-        QListWidgetItem *___qlistwidgetitem1 = fileListWidget->item(1);
-        ___qlistwidgetitem1->setText(QCoreApplication::translate("FilesSelection", "ciao", nullptr));
-        QListWidgetItem *___qlistwidgetitem2 = fileListWidget->item(2);
-        ___qlistwidgetitem2->setText(QCoreApplication::translate("FilesSelection", "bau", nullptr));
-        fileListWidget->setSortingEnabled(__sortingEnabled);
-
     } // retranslateUi
 
 };

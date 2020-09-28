@@ -125,6 +125,8 @@ Makefile: ..\PDSClient\PDSClient.pro C:\Qt\5.14.2\msvc2017_64\mkspecs\win32-msvc
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bluetooth.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bluetooth_private.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bootstrap_private.pri \
+		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_charts.pri \
+		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_charts_private.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_concurrent.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_concurrent_private.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_core.pri \
@@ -154,6 +156,8 @@ Makefile: ..\PDSClient\PDSClient.pro C:\Qt\5.14.2\msvc2017_64\mkspecs\win32-msvc
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets_private.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_network.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_network_private.pri \
+		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_networkauth.pri \
+		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_networkauth_private.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_nfc.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_nfc_private.pri \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_opengl.pri \
@@ -266,6 +270,7 @@ Makefile: ..\PDSClient\PDSClient.pro C:\Qt\5.14.2\msvc2017_64\mkspecs\win32-msvc
 		C:\Qt\5.14.2\msvc2017_64\lib\Qt5Core.prl \
 		C:\Qt\5.14.2\msvc2017_64\lib\qtmain.prl \
 		C:\Qt\5.14.2\msvc2017_64\mkspecs\features\build_pass.prf \
+		..\PDSClient\texteditor\textedit.qrc \
 		C:\Qt\5.14.2\msvc2017_64\lib\Qt5Widgetsd.prl \
 		C:\Qt\5.14.2\msvc2017_64\lib\Qt5Guid.prl \
 		C:\Qt\5.14.2\msvc2017_64\lib\Qt5Networkd.prl \
@@ -313,6 +318,8 @@ C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_axserver_private.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bluetooth.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bluetooth_private.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_bootstrap_private.pri:
+C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_charts.pri:
+C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_charts_private.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_concurrent.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_concurrent_private.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_core.pri:
@@ -342,6 +349,8 @@ C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_multimediawidgets_private.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_network.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_network_private.pri:
+C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_networkauth.pri:
+C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_networkauth_private.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_nfc.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_nfc_private.pri:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\modules\qt_lib_opengl.pri:
@@ -454,6 +463,7 @@ C:\Qt\5.14.2\msvc2017_64\lib\Qt5Network.prl:
 C:\Qt\5.14.2\msvc2017_64\lib\Qt5Core.prl:
 C:\Qt\5.14.2\msvc2017_64\lib\qtmain.prl:
 C:\Qt\5.14.2\msvc2017_64\mkspecs\features\build_pass.prf:
+..\PDSClient\texteditor\textedit.qrc:
 C:\Qt\5.14.2\msvc2017_64\lib\Qt5Widgetsd.prl:
 C:\Qt\5.14.2\msvc2017_64\lib\Qt5Guid.prl:
 C:\Qt\5.14.2\msvc2017_64\lib\Qt5Networkd.prl:

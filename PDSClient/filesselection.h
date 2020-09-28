@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <client.h>
 #include <newfiledialog.h>
+#include "texteditor/textedit.h"
+#include <QListWidgetItem>
 
 namespace Ui {
 class FilesSelection;
@@ -14,16 +16,18 @@ class FilesSelection : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit FilesSelection(QWidget *parent = nullptr, std::shared_ptr<Client> client=nullptr);
+    explicit FilesSelection(QWidget *parent = nullptr, Client* client=nullptr);
     ~FilesSelection();
 
 private slots:
     void on_newDocumentButton_clicked();
     void on_fileListWidget_clicked();
 
+    void on_fileListWidget_itemDoubleClicked(QListWidgetItem *item);
+
 private:
     Ui::FilesSelection *ui;
-    std::shared_ptr<Client> client;
+    Client* client;
 };
 
 #endif // FILESSELECTION_H

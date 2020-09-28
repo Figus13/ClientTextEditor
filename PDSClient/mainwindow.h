@@ -27,6 +27,6 @@ private slots:
     void onRegistrationFailed();
 private:
     Ui::MainWindow *ui;
-    std::shared_ptr<Client> client;
+    Client* client;
 };
 #endif // MAINWINDOW_H

@@ -35,9 +35,7 @@ void MainWindow::on_loginButton_clicked()
 
 void MainWindow::onLoginSuccess(){
     hide();
-    //FilesSelection *fs = new FilesSelection(nullptr, client);
-    std::unique_ptr<FilesSelection> fs = std::make_unique<FilesSelection>(nullptr, client);
-
+    FilesSelection *fs = new FilesSelection(nullptr, client);
     fs->show();
 }
 
