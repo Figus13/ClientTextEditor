@@ -110,3 +110,14 @@ QVector<QString> Client::getFiles(){
 void Client::addFile(QString filename){
     files.append(filename);
 }
+
+void Client::getFile(QString filename){
+
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    out << 4 << filename;
+
+    socket->write(buf);
+
+
+}
