@@ -17,8 +17,10 @@ public:
     void getFile(QString filename);
 
 signals:
-    void successful_login();
-    void login_refused();
+    void login_successful();
+    void login_failed();
+    void registration_successful();
+    void registration_failed();
 
 private slots:
     void onConnected();

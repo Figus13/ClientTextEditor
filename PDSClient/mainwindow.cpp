@@ -10,7 +10,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     client = new Client();
     QObject::connect(client,  SIGNAL(successful_login()), this, SLOT(onLoginSuccess()));
-    QObject::connect(client,  SIGNAL(login_refused()), this, SLOT(login_refused()));
+    QObject::connect(client,  SIGNAL(login_failed()), this, SLOT(onLoginFailed()));
+    QObject::connect(client,  SIGNAL(registration_successful()), this, SLOT(onRegistrationSuccess()));
+    QObject::connect(client,  SIGNAL(registration_failed()), this, SLOT(onRegistrationFailed()));
 }
 
 MainWindow::~MainWindow()
@@ -37,6 +39,12 @@ void MainWindow::onLoginSuccess(){
     fs->show();
 }
 
+void MainWindow::onRegistrationSuccess(){
+    hide();
+    FilesSelection *fs = new FilesSelection(nullptr, client);
+    fs->show();
+}
+
 void MainWindow::on_registrationButton_clicked()
 {
     QString username = ui->registrationUsername->text();
@@ -56,7 +64,17 @@ void MainWindow::on_registrationButton_clicked()
     client->registration(username,password,nick);
 }
 
-void MainWindow::login_refused(){
-    QMessageBox::information(this,"Login","Operazione di login non è riuscita");
+void MainWindow::onLoginFailed(){
+    QMessageBox::information(this,"Login","Operazione di login non riuscita");
+    ui->loginPassword->clear();
+    return;
+}
+
+void MainWindow::onRegistrationFailed(){
+    QMessageBox::information(this,"Registrazione","Operazione di registrazione non riuscita");
+    ui->registrationFirstPassword->clear();
+    ui->registrationSecondPassword->clear();
+    ui->registrationNickname->clear();
+    ui->registrationUsername->clear();
     return;
 }
