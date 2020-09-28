@@ -18,13 +18,13 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-public slots:
-    void login_refused();
-
 private slots:
     void on_loginButton_clicked();
     void on_registrationButton_clicked();
     void onLoginSuccess();
+    void onLoginFailed();
+    void onRegistrationSuccess();
+    void onRegistrationFailed();
 private:
     Ui::MainWindow *ui;
     std::shared_ptr<Client> client;

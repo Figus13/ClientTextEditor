@@ -61,8 +61,8 @@ void Client::onReadyRead(){
         int status;
         in >> status;
         if(status == 0){
-            login_refused();
-        }else if(status == 1){  
+            login_failed();
+        }else if(status == 1){
             int numFiles;
             in >> siteId >> numFiles;
             for(int i=0; i<numFiles; i++){
@@ -70,12 +70,24 @@ void Client::onReadyRead(){
                 in >> filename;
                 files.append(filename);
             }
-            successful_login();
+            login_successful();
         }
         break;
      case 1:
         std::cout<< "registration\n";
-        break;
+        int statusReg;
+        in >> statusReg;
+        if(statusReg==0){
+            registration_failed();
+        }else if(statusReg == 1){
+            in >> this->siteId;
+            registration_successful();
+        }
+    case 4:
+         std::cout<< "file\n";
+         int prova;
+         in >> prova;
+
     default: break;
     }
 }
@@ -109,4 +121,15 @@ QVector<QString> Client::getFiles(){
 
 void Client::addFile(QString filename){
     files.append(filename);
+}
+
+void Client::getFile(QString filename){
+
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    out << 4 << filename;
+
+    socket->write(buf);
+
+
 }

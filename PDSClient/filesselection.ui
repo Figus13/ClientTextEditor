@@ -144,7 +144,11 @@ font:bold;
             </widget>
            </item>
            <item>
-            <widget class="QListWidget" name="fileListWidget"/>
+            <widget class="QListWidget" name="fileListWidget">
+             <property name="currentRow">
+              <number>-1</number>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>

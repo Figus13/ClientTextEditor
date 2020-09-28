@@ -38,7 +38,7 @@ bool GenericSymbol::equals(GenericSymbol* gs)
     bool tmp = ((gs->siteId == siteId) && (gs->counter == counter));
     bool equal = true;
     for (int i = 0; i < gs->getPosition().size(); i++) {
-        if (!gs->getPosition()[i] == position[i]) {
+        if ((!gs->getPosition()[i]) == position[i]) {
             equal = false;
         }
     }
