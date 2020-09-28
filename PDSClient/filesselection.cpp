@@ -26,3 +26,14 @@ void FilesSelection::on_newDocumentButton_clicked()
         ui->fileListWidget->addItem(filename);
     }
 }
+
+void FilesSelection::on_fileListWidget_clicked()
+{
+    QString item;
+    item =  ui->fileListWidget->currentItem()->text();
+
+    client->getFile(item);
+
+
+
+}

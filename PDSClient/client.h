@@ -14,6 +14,8 @@ public:
     void registration(QString username, QString password, QString nick);
     QVector<QString> getFiles();
     void addFile(QString filename);
+    void getFile(QString filename);
+
 signals:
     void login_successful();
     void login_failed();
