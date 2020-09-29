@@ -19,6 +19,9 @@ public:
     explicit FilesSelection(QWidget *parent = nullptr, Client* client=nullptr);
     ~FilesSelection();
 
+signals:
+    void closing();
+
 private slots:
     void on_newDocumentButton_clicked();
     void on_fileListWidget_clicked();

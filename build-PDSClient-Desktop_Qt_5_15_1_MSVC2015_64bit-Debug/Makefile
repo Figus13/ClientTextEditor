@@ -289,6 +289,7 @@ Makefile: ..\PDSClient\PDSClient.pro ..\..\..\Qt\5.15.1\msvc2015_64\mkspecs\win3
 		..\..\..\Qt\5.15.1\msvc2015_64\lib\Qt5Core.prl \
 		..\..\..\Qt\5.15.1\msvc2015_64\lib\qtmain.prl \
 		..\..\..\Qt\5.15.1\msvc2015_64\mkspecs\features\build_pass.prf \
+		..\PDSClient\texteditor\textedit.qrc \
 		..\..\..\Qt\5.15.1\msvc2015_64\lib\Qt5Widgetsd.prl \
 		..\..\..\Qt\5.15.1\msvc2015_64\lib\Qt5Guid.prl \
 		..\..\..\Qt\5.15.1\msvc2015_64\lib\Qt5Networkd.prl \
@@ -500,6 +501,7 @@ Makefile: ..\PDSClient\PDSClient.pro ..\..\..\Qt\5.15.1\msvc2015_64\mkspecs\win3
 ..\..\..\Qt\5.15.1\msvc2015_64\lib\Qt5Core.prl:
 ..\..\..\Qt\5.15.1\msvc2015_64\lib\qtmain.prl:
 ..\..\..\Qt\5.15.1\msvc2015_64\mkspecs\features\build_pass.prf:
+..\PDSClient\texteditor\textedit.qrc:
 ..\..\..\Qt\5.15.1\msvc2015_64\lib\Qt5Widgetsd.prl:
 ..\..\..\Qt\5.15.1\msvc2015_64\lib\Qt5Guid.prl:
 ..\..\..\Qt\5.15.1\msvc2015_64\lib\Qt5Networkd.prl:

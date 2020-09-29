@@ -125,6 +125,9 @@ void Client::getFile(QString filename){
     out << 4 << filename;
 
     socket->write(buf);
-
-
 }
+
+void Client::disconnectFromServer(){
+    socket->close();
+}
+

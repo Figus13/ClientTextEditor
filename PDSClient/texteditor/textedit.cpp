@@ -163,6 +163,7 @@ TextEdit::TextEdit(QWidget *parent)
 
 void TextEdit::closeEvent(QCloseEvent *e)
 {
+    /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
     if (maybeSave())
         e->accept();
     else

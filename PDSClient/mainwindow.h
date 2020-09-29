@@ -5,6 +5,7 @@
 #include <QtNetwork>
 #include <client.h>
 #include <filesselection.h>
+#include <QCloseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,6 +19,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+signals:
+    void closing();
+
 private slots:
     void on_loginButton_clicked();
     void on_registrationButton_clicked();
@@ -25,8 +29,11 @@ private slots:
     void onLoginFailed();
     void onRegistrationSuccess();
     void onRegistrationFailed();
+
 private:
     Ui::MainWindow *ui;
     Client* client;
+
+    void closeEvent(QCloseEvent *event);
 };
 #endif // MAINWINDOW_H

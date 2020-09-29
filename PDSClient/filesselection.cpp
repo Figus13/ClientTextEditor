@@ -10,6 +10,8 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
     }
+    QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
+
 }
 
 FilesSelection::~FilesSelection()

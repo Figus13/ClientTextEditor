@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(client,  SIGNAL(login_failed()), this, SLOT(onLoginFailed()));
     QObject::connect(client,  SIGNAL(registration_successful()), this, SLOT(onRegistrationSuccess()));
     QObject::connect(client,  SIGNAL(registration_failed()), this, SLOT(onRegistrationFailed()));
+    QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
+
 }
 
 MainWindow::~MainWindow()
@@ -77,4 +79,10 @@ void MainWindow::onRegistrationFailed(){
     ui->registrationNickname->clear();
     ui->registrationUsername->clear();
     return;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+   emit closing();
+   event->accept();
 }

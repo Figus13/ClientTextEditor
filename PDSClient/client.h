@@ -25,6 +25,7 @@ signals:
 private slots:
     void onConnected();
     void onReadyRead();
+    void disconnectFromServer();
 
 private:
     QTcpSocket* socket;
