@@ -93,8 +93,8 @@ const QString rsrcPath = ":/images/mac";
 const QString rsrcPath = ":/images/win";
 #endif
 
-TextEdit::TextEdit(QWidget *parent)
-    : QMainWindow(parent)
+TextEdit::TextEdit(QWidget *parent, Client *client)
+    : QMainWindow(parent), client(client)
 {
 #ifdef Q_OS_OSX
     setUnifiedTitleAndToolBarOnMac(true);
@@ -164,6 +164,12 @@ TextEdit::TextEdit(QWidget *parent)
 void TextEdit::closeEvent(QCloseEvent *e)
 {
     /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
+
+    /*aggiunta*/
+    client->closeFile(fileName);
+
+    /*fine aggiunta*/
+
     if (maybeSave())
         e->accept();
     else

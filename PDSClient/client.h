@@ -15,6 +15,7 @@ public:
     QVector<QString> getFiles();
     void addFile(QString filename);
     void getFile(QString filename);
+    void closeFile(QString filename);
 
 signals:
     void login_successful();

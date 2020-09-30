@@ -83,8 +83,18 @@ void Client::onReadyRead(){
             in >> this->siteId;
             registration_successful();
         }
+        break;
     default: break;
     }
+}
+
+void Client::closeFile(QString filename){
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+
+    out << 5 /*# operazione*/ << filename;
+
+    socket->write(buf);
 }
 
 Client::~Client(){

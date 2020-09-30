@@ -55,6 +55,7 @@
 #include <QMap>
 #include <QPointer>
 #include <QScreen>
+#include <client.h>
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -72,6 +73,7 @@ class TextEdit : public QMainWindow
 
 public:
     TextEdit(QWidget *parent = 0);
+    TextEdit(QWidget *parent =0, Client *client = nullptr);
 
     bool load(const QString &f);
 
@@ -148,6 +150,7 @@ private:
     QToolBar *tb;
     QString fileName;
     QTextEdit *textEdit;
+    Client *client;
 };
 
 #endif // TEXTEDIT_H
