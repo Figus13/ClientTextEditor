@@ -106,6 +106,13 @@ void Client::onReadyRead(){
         qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
         int fileSize; //1 se inserimento, 0 se cancellazione
         in >> fileSize;
+
+        /**
+         *  gestire i simboli ricevuti
+         *
+         *
+         **/
+
         break;
     default: break;
     }
