@@ -51,7 +51,11 @@ int Client::getSiteId(){
 }
 
 void Client::onReadyRead(){
-
+    QVector<int> position;
+    int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
+    QString color, font;
+    QChar value;
+    bool isBold, isItalic, isUnderlined, isStyle;
 
     if (socket->state() != QAbstractSocket::ConnectedState)	return;
 
@@ -88,8 +92,21 @@ void Client::onReadyRead(){
             registration_successful();
         }
         break;
+    case 3:
+        qDebug() << "3)Mandato dopo l'inserimento di un simbolo";
+        in >> insert >> isStyle >> position >> counter >> recSiteId;
+        if (isStyle) {
+            in >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+        }
+        else {
+            in >> value;
+         }
+        break;
     case 4:
-        std::cout<< "Dobbiamo gestire la ricezione di un file già scritto.";
+        qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
+        int fileSize; //1 se inserimento, 0 se cancellazione
+        in >> fileSize;
+        break;
     default: break;
     }
 }
@@ -135,7 +152,7 @@ void Client::getFile(QString filename){
 }
 void Client::onMessageReady(Message mess, QString filename){
     TextSymbol* ts = static_cast<TextSymbol*>(mess.getSymbol());
-    qDebug() << "Action " << mess.getAction() << "; Position " << ts->getPosition() << "; Value " << ts->getValue();
+    //qDebug() << "Action " << mess.getAction() << "; Position " << ts->getPosition() << "; Value " << ts->getValue();
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
     out << 3 << 1 << filename << ts->getSiteId() << ts->getCounter() << ts->getPosition() << 0 << ts->getValue();
