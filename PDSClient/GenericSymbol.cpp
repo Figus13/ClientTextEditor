@@ -3,6 +3,7 @@
 GenericSymbol::GenericSymbol(bool style, QVector<int>& position, int counter, int siteId): style(style), position(position), counter(counter), siteId(siteId)
 {
 }
+GenericSymbol::GenericSymbol(){}
 
 GenericSymbol::~GenericSymbol()
 {

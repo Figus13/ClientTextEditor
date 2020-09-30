@@ -55,6 +55,12 @@
 #include <QMap>
 #include <QPointer>
 #include <QScreen>
+#include <iostream>
+#include "client.h"
+#include "GenericSymbol.h"
+#include "TextSymbol.h"
+#include "StyleSymbol.h"
+#include "message.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -71,12 +77,16 @@ class TextEdit : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent = 0);
+    TextEdit(QWidget *parent = 0, Client *client=nullptr, QString filename="");
 
     bool load(const QString &f);
 
 public slots:
     void fileNew();
+
+signals:
+    /*-----AGGIUNTE DA NOI------*/
+    void message_ready(Message m, QString filename);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -107,8 +117,20 @@ private slots:
     void clipboardDataChanged();
     void about();
     void printPreview(QPrinter *);
+    /*---SLOTS AGGIUNTE DA NOI----*/
+    void onTextChanged(int pos, int del, int add);
+
 
 private:
+    /*----AGGIUNTE DA NOI -----*/
+    Client *client;
+    QVector<GenericSymbol*> _symbols;
+    int counter; //Inizializzato sempre a zero nel costruttore
+    int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
+    QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
+    QVector<int> generatePos(int index);
+    std::string localInsert(int index, QChar value, Message& m);
+    /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();
     void setupTextActions();

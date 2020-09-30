@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_FilesSelection_t {
-    QByteArrayData data[7];
-    char stringdata0[129];
+    QByteArrayData data[6];
+    char stringdata0[103];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,15 +35,13 @@ static const qt_meta_stringdata_FilesSelection_t qt_meta_stringdata_FilesSelecti
 QT_MOC_LITERAL(0, 0, 14), // "FilesSelection"
 QT_MOC_LITERAL(1, 15, 28), // "on_newDocumentButton_clicked"
 QT_MOC_LITERAL(2, 44, 0), // ""
-QT_MOC_LITERAL(3, 45, 25), // "on_fileListWidget_clicked"
-QT_MOC_LITERAL(4, 71, 35), // "on_fileListWidget_itemDoubleC..."
-QT_MOC_LITERAL(5, 107, 16), // "QListWidgetItem*"
-QT_MOC_LITERAL(6, 124, 4) // "item"
+QT_MOC_LITERAL(3, 45, 35), // "on_fileListWidget_itemDoubleC..."
+QT_MOC_LITERAL(4, 81, 16), // "QListWidgetItem*"
+QT_MOC_LITERAL(5, 98, 4) // "item"
 
     },
     "FilesSelection\0on_newDocumentButton_clicked\0"
-    "\0on_fileListWidget_clicked\0"
-    "on_fileListWidget_itemDoubleClicked\0"
+    "\0on_fileListWidget_itemDoubleClicked\0"
     "QListWidgetItem*\0item"
 };
 #undef QT_MOC_LITERAL
@@ -54,7 +52,7 @@ static const uint qt_meta_data_FilesSelection[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       3,   14, // methods
+       2,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -62,14 +60,12 @@ static const uint qt_meta_data_FilesSelection[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   29,    2, 0x08 /* Private */,
-       3,    0,   30,    2, 0x08 /* Private */,
-       4,    1,   31,    2, 0x08 /* Private */,
+       1,    0,   24,    2, 0x08 /* Private */,
+       3,    1,   25,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 5,    6,
+    QMetaType::Void, 0x80000000 | 4,    5,
 
        0        // eod
 };
@@ -81,8 +77,7 @@ void FilesSelection::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         Q_UNUSED(_t)
         switch (_id) {
         case 0: _t->on_newDocumentButton_clicked(); break;
-        case 1: _t->on_fileListWidget_clicked(); break;
-        case 2: _t->on_fileListWidget_itemDoubleClicked((*reinterpret_cast< QListWidgetItem*(*)>(_a[1]))); break;
+        case 1: _t->on_fileListWidget_itemDoubleClicked((*reinterpret_cast< QListWidgetItem*(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -117,13 +112,13 @@ int FilesSelection::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 3)
+        if (_id < 2)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 3;
+        _id -= 2;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 3)
+        if (_id < 2)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 3;
+        _id -= 2;
     }
     return _id;
 }

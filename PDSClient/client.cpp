@@ -46,6 +46,10 @@ void Client::onConnected(){
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }
 
+int Client::getSiteId(){
+    return this->siteId;
+}
+
 void Client::onReadyRead(){
 
 
@@ -83,6 +87,9 @@ void Client::onReadyRead(){
             in >> this->siteId;
             registration_successful();
         }
+        break;
+    case 4:
+        std::cout<< "Dobbiamo gestire la ricezione di un file già scritto.";
     default: break;
     }
 }
@@ -125,6 +132,12 @@ void Client::getFile(QString filename){
     out << 4 << filename;
 
     socket->write(buf);
-
-
+}
+void Client::onMessageReady(Message mess, QString filename){
+    TextSymbol* ts = static_cast<TextSymbol*>(mess.getSymbol());
+    qDebug() << "Action " << mess.getAction() << "; Position " << ts->getPosition() << "; Value " << ts->getValue();
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    out << 3 << 1 << filename << ts->getSiteId() << ts->getCounter() << ts->getPosition() << 0 << ts->getValue();
+    socket->write(buf);
 }

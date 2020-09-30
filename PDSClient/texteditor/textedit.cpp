@@ -93,19 +93,28 @@ const QString rsrcPath = ":/images/mac";
 const QString rsrcPath = ":/images/win";
 #endif
 
-TextEdit::TextEdit(QWidget *parent)
-    : QMainWindow(parent)
+TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
+    : QMainWindow(parent), client(client), fileName(filename)
 {
+    counter=0;
+    siteId=client->getSiteId();
 #ifdef Q_OS_OSX
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
     setWindowTitle(QCoreApplication::applicationName());
-
     textEdit = new QTextEdit(this);
     connect(textEdit, &QTextEdit::currentCharFormatChanged,
             this, &TextEdit::currentCharFormatChanged);
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &TextEdit::cursorPositionChanged);
+    /*------------Aggiunta da noi------*/
+    //connect(this, SIGNAL(message_ready(Message m)),
+    //        client, SLOT(onMessageReady(Message m)));
+    connect(this, &TextEdit::message_ready,
+            client, &Client::onMessageReady);
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
+    /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
@@ -150,7 +159,9 @@ TextEdit::TextEdit(QWidget *parent)
 #endif
 
     textEdit->setFocus();
-    setCurrentFileName(QString());
+    //setCurrentFileName(QString());  ****MODIFICATA DA NOI*****
+    setCurrentFileName(fileName);
+
 
 #ifdef Q_OS_MACOS
     // Use dark text on light background on macOS, also in dark mode.
@@ -160,6 +171,7 @@ TextEdit::TextEdit(QWidget *parent)
     textEdit->setPalette(pal);
 #endif
 }
+
 
 void TextEdit::closeEvent(QCloseEvent *e)
 {
@@ -891,4 +903,148 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
         actionAlignRight->setChecked(true);
     else if (a & Qt::AlignJustify)
         actionAlignJustify->setChecked(true);
+}
+
+/*-----FATTE DA NOI-----*/
+void TextEdit::onTextChanged(int pos, int del, int add){
+    QString added = textEdit->toPlainText().mid(pos, add);
+    qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
+    if(add==1){ //PER ORA GESTISCO SOLO L'INSERIMENTO (NO COPIA E INCOLLA)
+        Message mess{};
+        localInsert(pos, added.back(), mess);
+        //TextSymbol ts = static_cast<TextSymbol>(mess.getSymbol());
+         //qDebug() << "Action " << mess.getAction() << "; Position " << mess.getSymbol().getPosition();
+         message_ready(mess, fileName);
+    }
+}
+
+
+std::string TextEdit::localInsert(int index, QChar value, Message& m)
+{
+    QVector<int> pos;
+    if ((index > (this->_symbols.size())) || index < 0) {
+        return "Errore";//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
+    }
+    this->counter++;
+    pos = generatePos(index);
+    if (pos.size() == 0) {
+        return "Errore";
+    }
+    TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
+    this->_symbols.insert(this->_symbols.begin() + index, symbol);
+
+    m.setAction('i');
+    m.setSymbol(symbol);
+
+    return "OK";
+}
+// index: indice in cui inserire. Restituisco un vettore della posizione adatto.
+QVector<int> TextEdit::generatePos(int index) {
+    QVector<int> pos;
+    int i;
+
+    if ((index > (this->_symbols.size())) || index < 0) {
+        return pos;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
+    }
+    if (this->_symbols.empty()) {
+        pos.push_back(index + 1);
+    }
+    else {
+        if (index == 0) { //indice uguale a 0, inserisco con compresa tra 0 e 1. Inserimento in TESTA
+            QVector<int> pos_successivo = _symbols[index]->getPosition();   //OTTENGO IL POS DELLA PRECEDENTE TESTA, ORA DEVO GENERARE IL NUOVO.
+            QVector<int> vuoto;
+            vuoto.push_back(0);
+            pos = calcIntermediatePos(pos_successivo, vuoto);
+        }
+        else {
+            QVector<int> pos_precedente = _symbols[index - 1]->getPosition();
+
+            if (_symbols.size() == index) {         //Inserimento in CODA
+                for (i = 0; i < _symbols[index - 1]->getPosition().size(); i++) {
+                    if (pos_precedente[i] == INT_MAX) {
+                        pos.push_back(INT_MAX);
+                    }
+                    else break;
+                }
+                pos.push_back(pos_precedente[i] + 1);
+
+            }
+            else {     //Inserimento in un indice diverso dalla coda o dalla testa.
+                QVector<int> pos_successivo = _symbols[index]->getPosition();
+                pos = calcIntermediatePos(pos_successivo, pos_precedente);
+            }
+        }
+    }
+    pos.push_back(this->siteId);
+    /*Il siteId viene messo per garantire che se due client scrivono nello stesso istante un carattere in una certa posizione,
+     l'unicit� della posizione e garantito da questa ultima cifra.*/
+    return pos;
+}
+QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf) {
+    QVector<int> pos;
+    int inf, sup, k = 20, i = 0, nuovo_valore, flag = 0, MAX = INT_MAX - 100;
+    //todo con un comparatore posso verificare che successivo sia davvero un num frazionario maggiore di prec
+
+    /***
+     In questa funzione si cerca di creare un vettore di posizioni che abbia un valore compreso tra quello indicato
+     come pos_sup e quello indicato come pos_inf. Si � deciso di non limitarci alle cifre che vanno da 0 fino
+     a 9 ma di arrivare fino a MAX. Per ogni posizione del vettore si cerca di inserire nel nuovo vettore un valore
+     che sia maggiore di pos_inf[i] (se non esiste questa posizione del vettore si usa il valore 0) e minore di
+     pos_sup[i] (se non esiste questa posizione del vettore si usa il valore MAX), e nel caso questo valore intermedio
+     non esista si copia il valore pos_inf[i] per continuare la ricerca incrementando i. Quando troviamo un valore
+     intermedio si inserisce nel nuovo vettore e finisce qui la nostra ricerca di un vettore intermedio.
+     Il calcolo del valore intermedio viene fatto nella seguente maniera: se la differenza tra i due numeri � superiore
+     a un valore constante (k) si inserisce il valore inf + k, altrimenti si cerca di inserire un valore che stia a
+     met� tra pos_inf[i] e pos_sup[i]. Questo viene fatto per provare a mantenere dei valori intermedi liberi tra i vari
+     campi del vettore e allo stesso tempo in caso di normale scrittura sequenziale, non arrivare velocemente al valore
+     MAX ma con incrementi costanti di k. La variabile flag assume il valore 1 quando abbiamo trovato un valore di
+     pos_sup[i] superiore a pos_inf[i]. Infatti dal prossimo valore di i non abbiamo pi� bisogno di trovare un valore
+     tra pos_sup[i] e pos_inf[i], ma ci basta solo che sia superiore a pos_inf[i] e inferiore a MAX (guardare esempio).
+
+
+                                                    Dopo questo 6 il valore di flag sar� 1
+     Esempio:   vettore con indice maggiore     0 |6| 1
+                vettore con indice minore       0 |5| 1
+                                                -------
+                                 Risultato      0 |5|(k+1)  <--- Qui non ho pi� bisogno di cercare un valore intermedio
+                                                                 perch� il flag vale 1.
+    ***/
+
+    int lung_vett_max = (int)std::max(pos_sup.size(), pos_inf.size());
+
+    for (i = 0; i < lung_vett_max; i++) {
+        if (pos_inf.size() <= i)
+            inf = 0;
+        else
+            inf = pos_inf[i];
+        if (pos_sup.size() <= i)
+            sup = MAX;
+        else
+            sup = pos_sup[i];
+
+        if (flag == 1 && (inf + k) < MAX) {
+            pos.push_back(inf + k);
+            return pos;
+        }
+        if ((inf + 1) < sup) {              //cerco un valore intermedio
+            nuovo_valore = k + inf;
+            if (nuovo_valore >= sup || nuovo_valore > MAX) {
+                nuovo_valore = ((sup - inf) / 2) + inf;
+                if (nuovo_valore >= sup || nuovo_valore > MAX) {
+                    pos.push_back(inf);     //non esiste un valore intermedio
+                    continue;               //continua a ciclare il for
+                }
+            }
+            pos.push_back(nuovo_valore);    //valore intermedio trovato, finisco la ricerca.
+            return pos;
+        }
+        else {                            // se non esiste un valore intermedio
+            if (inf < sup) {
+                flag = 1;                   //da ora in poi qualsiasi cifra superiore a inf andr� bene
+            }
+            pos.push_back(inf);
+        }
+    }
+    pos.push_back(k);
+    return pos;
 }

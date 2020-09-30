@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_Client_t {
-    QByteArrayData data[8];
-    char stringdata0[106];
+    QByteArrayData data[12];
+    char stringdata0[140];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -38,12 +38,17 @@ QT_MOC_LITERAL(2, 24, 0), // ""
 QT_MOC_LITERAL(3, 25, 12), // "login_failed"
 QT_MOC_LITERAL(4, 38, 23), // "registration_successful"
 QT_MOC_LITERAL(5, 62, 19), // "registration_failed"
-QT_MOC_LITERAL(6, 82, 11), // "onConnected"
-QT_MOC_LITERAL(7, 94, 11) // "onReadyRead"
+QT_MOC_LITERAL(6, 82, 14), // "onMessageReady"
+QT_MOC_LITERAL(7, 97, 7), // "Message"
+QT_MOC_LITERAL(8, 105, 1), // "m"
+QT_MOC_LITERAL(9, 107, 8), // "filename"
+QT_MOC_LITERAL(10, 116, 11), // "onConnected"
+QT_MOC_LITERAL(11, 128, 11) // "onReadyRead"
 
     },
     "Client\0login_successful\0\0login_failed\0"
     "registration_successful\0registration_failed\0"
+    "onMessageReady\0Message\0m\0filename\0"
     "onConnected\0onReadyRead"
 };
 #undef QT_MOC_LITERAL
@@ -54,7 +59,7 @@ static const uint qt_meta_data_Client[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   14, // methods
+       7,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -62,14 +67,15 @@ static const uint qt_meta_data_Client[] = {
        4,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   44,    2, 0x06 /* Public */,
-       3,    0,   45,    2, 0x06 /* Public */,
-       4,    0,   46,    2, 0x06 /* Public */,
-       5,    0,   47,    2, 0x06 /* Public */,
+       1,    0,   49,    2, 0x06 /* Public */,
+       3,    0,   50,    2, 0x06 /* Public */,
+       4,    0,   51,    2, 0x06 /* Public */,
+       5,    0,   52,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       6,    0,   48,    2, 0x08 /* Private */,
-       7,    0,   49,    2, 0x08 /* Private */,
+       6,    2,   53,    2, 0x0a /* Public */,
+      10,    0,   58,    2, 0x08 /* Private */,
+      11,    0,   59,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void,
@@ -78,6 +84,7 @@ static const uint qt_meta_data_Client[] = {
     QMetaType::Void,
 
  // slots: parameters
+    QMetaType::Void, 0x80000000 | 7, QMetaType::QString,    8,    9,
     QMetaType::Void,
     QMetaType::Void,
 
@@ -94,8 +101,9 @@ void Client::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         case 1: _t->login_failed(); break;
         case 2: _t->registration_successful(); break;
         case 3: _t->registration_failed(); break;
-        case 4: _t->onConnected(); break;
-        case 5: _t->onReadyRead(); break;
+        case 4: _t->onMessageReady((*reinterpret_cast< Message(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 5: _t->onConnected(); break;
+        case 6: _t->onReadyRead(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -129,7 +137,6 @@ void Client::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
             }
         }
     }
-    Q_UNUSED(_a);
 }
 
 QT_INIT_METAOBJECT const QMetaObject Client::staticMetaObject = { {
@@ -161,13 +168,13 @@ int Client::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 7)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 7;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 7)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 6;
+        _id -= 7;
     }
     return _id;
 }

@@ -21,7 +21,6 @@ public:
 
 private slots:
     void on_newDocumentButton_clicked();
-    void on_fileListWidget_clicked();
 
     void on_fileListWidget_itemDoubleClicked(QListWidgetItem *item);
 
