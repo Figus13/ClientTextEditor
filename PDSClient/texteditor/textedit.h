@@ -174,7 +174,6 @@ private:
     QToolBar *tb;
     QString fileName;
     QTextEdit *textEdit;
-    Client *client;
 };
 
 #endif // TEXTEDIT_H
