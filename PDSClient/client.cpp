@@ -186,11 +186,23 @@ void Client::disconnectFromServer(){
 }
 
 void Client::onMessageReady(Message mess, QString filename){
-    TextSymbol* ts = static_cast<TextSymbol*>(mess.getSymbol());
+
+     StyleSymbol* ss;
+     TextSymbol* ts;
+
+    if(mess.getSymbol()->isStyle()){
+        ss = static_cast<StyleSymbol*>(mess.getSymbol());
+    }else{
+       ts = static_cast<TextSymbol*>(mess.getSymbol());
+    }
     //qDebug() << "Action " << mess.getAction() << "; Position " << ts->getPosition() << "; Value " << ts->getValue();
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    out << 3 << 1 << filename << ts->getSiteId() << ts->getCounter() << ts->getPosition() << 0 << ts->getValue();
+    if(mess.getSymbol()->isStyle()){
+       out << 3 << 1 << filename << ss->getSiteId() << ss->getCounter() << ss->getPosition() << ss->isStyle() << ss->isItalic() << ss->isUnderlined() << ss->getAlignment() << ss->getTextSize() << ss->getColor() << ss->getFont();
+    }else{
+     out << 3 << 1 << filename << ts->getSiteId() << ts->getCounter() << ts->getPosition() << 0 << ts->getValue();
+   }
     socket->write(buf);
 }
 
