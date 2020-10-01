@@ -124,6 +124,7 @@ private slots:
     void printPreview(QPrinter *);
     /*---SLOTS AGGIUNTE DA NOI----*/
     void onTextChanged(int pos, int del, int add);
+    void onMessageFromServer(Message m);
     void onFileReady(QVector<GenericSymbol *> gs,QString text);
 
 
