@@ -32,7 +32,7 @@ void FilesSelection::on_newDocumentButton_clicked()
                    (availableGeometry.height() - mw->height()) / 2);
         hide();
         mw->show();
-
+        QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
         QString filename = dialog.getFilename();
         ui->fileListWidget->addItem(filename);
         client->getFile(filename);
@@ -58,6 +58,7 @@ void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
     mw->move((availableGeometry.width() - mw->width()) / 2,
                (availableGeometry.height() - mw->height()) / 2);
     mw->show();
+    QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
 }
 
 void FilesSelection::showWindow(){

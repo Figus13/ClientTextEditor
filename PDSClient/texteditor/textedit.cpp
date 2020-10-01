@@ -161,19 +161,20 @@ TextEdit::TextEdit(QWidget *parent, Client *client)
 #endif
 }
 
+
 void TextEdit::closeEvent(QCloseEvent *e)
 {
     /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
 
     /*aggiunta*/
     client->closeFile(fileName);
-
+    emit closeWindow();
     /*fine aggiunta*/
-
-    if (maybeSave())
+    hide();
+    /*if (maybeSave())
         e->accept();
     else
-        e->ignore();
+        e->ignore();*/
 }
 
 void TextEdit::setupFileActions()

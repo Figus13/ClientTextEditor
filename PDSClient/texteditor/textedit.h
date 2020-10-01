@@ -77,6 +77,9 @@ public:
 
     bool load(const QString &f);
 
+signals:
+    void closeWindow();
+
 public slots:
     void fileNew();
 
