@@ -36,8 +36,6 @@ void FilesSelection::on_newDocumentButton_clicked()
         hide();
         mw->show();
         QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
-        QString filename = dialog.getFilename();
-        ui->fileListWidget->addItem(filename);
         client->getFile(filename);
     }
 }

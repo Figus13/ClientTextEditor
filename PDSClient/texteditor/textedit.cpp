@@ -112,6 +112,8 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     //        client, SLOT(onMessageReady(Message m)));
     connect(this, &TextEdit::message_ready,
             client, &Client::onMessageReady);
+    connect(client, &Client::message_from_server,
+            this, &TextEdit::onMessageFromServer);
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
     /*------------Fine aggiunta--------*/
@@ -921,9 +923,21 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         localInsert(pos, added.back(), mess);
         //TextSymbol ts = static_cast<TextSymbol>(mess.getSymbol());
          //qDebug() << "Action " << mess.getAction() << "; Position " << mess.getSymbol().getPosition();
-         message_ready(mess, fileName);
+        message_ready(mess, fileName);
+    }else{
+        if(del==1){ // per ora non gestisco la funzione taglia
+            Message mess{'d', this->_symbols[pos]};
+            this->_symbols.erase(this->_symbols.begin() + pos);
+            message_ready(mess, fileName);
+        }
     }
+
 }
+
+void TextEdit::onMessageFromServer(Message m){
+
+}
+
 
 
 std::string TextEdit::localInsert(int index, QChar value, Message& m)

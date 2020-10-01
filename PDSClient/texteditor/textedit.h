@@ -123,6 +123,7 @@ private slots:
     void printPreview(QPrinter *);
     /*---SLOTS AGGIUNTE DA NOI----*/
     void onTextChanged(int pos, int del, int add);
+    void onMessageFromServer(Message m);
 
 
 private:
@@ -174,7 +175,6 @@ private:
     QToolBar *tb;
     QString fileName;
     QTextEdit *textEdit;
-    Client *client;
 };
 
 #endif // TEXTEDIT_H

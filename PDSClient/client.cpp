@@ -56,6 +56,7 @@ void Client::onReadyRead(){
     QString color, font;
     QChar value;
     bool isBold, isItalic, isUnderlined, isStyle;
+    GenericSymbol *s;
 
     if (socket->state() != QAbstractSocket::ConnectedState)	return;
 
@@ -93,14 +94,26 @@ void Client::onReadyRead(){
         }
         break;
     case 3:
-        qDebug() << "3)Mandato dopo l'inserimento di un simbolo";
+        qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
         in >> insert >> isStyle >> position >> counter >> recSiteId;
-        if (isStyle) {
-            in >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+        if(insert==1){ //nel caso sia un inserimento
+            if (isStyle) {
+                in >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+                s = new StyleSymbol(isStyle, position, counter, recSiteId, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
+            }
+            else {
+                in >> value;
+                s = new TextSymbol(isStyle, position, counter, recSiteId, value);
+            }
+            if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
+                Message m{'i', s};
+                message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+            }
+        }else{ //nel caso sia una cancellazione
+            if( recSiteId != this->siteId){ //il simbolo non l'ho rimosso io.
+                //fare cancellazione in locale del simbolo ricevuto dal server
+            }
         }
-        else {
-            in >> value;
-         }
         break;
     case 4:
         qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
@@ -170,12 +183,20 @@ void Client::getFile(QString filename){
 void Client::disconnectFromServer(){
     socket->close();
 }
+
 void Client::onMessageReady(Message mess, QString filename){
-    TextSymbol* ts = static_cast<TextSymbol*>(mess.getSymbol());
-    //qDebug() << "Action " << mess.getAction() << "; Position " << ts->getPosition() << "; Value " << ts->getValue();
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    out << 3 << 1 << filename << ts->getSiteId() << ts->getCounter() << ts->getPosition() << 0 << ts->getValue();
+    if(mess.getAction()=='i'){
+        TextSymbol* ts = static_cast<TextSymbol*>(mess.getSymbol());
+        //qDebug() << "Action " << mess.getAction() << "; Position " << ts->getPosition() << "; Value " << ts->getValue();
+        out << 3 << 1 << filename << ts->getSiteId() << ts->getCounter() << ts->getPosition() << 0 << ts->getValue();
+    }else{
+        if(mess.getAction()=='d'){
+            out << 3 << 0 << filename << mess.getSymbol()->getSiteId() << mess.getSymbol()->getCounter()
+                << mess.getSymbol()->getPosition();
+        }
+    }
     socket->write(buf);
 }
 
