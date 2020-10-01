@@ -92,6 +92,7 @@ signals:
     /*-----AGGIUNTE DA NOI------*/
     void message_ready(Message m, QString filename);
 
+
 protected:
     void closeEvent(QCloseEvent *e) override;
 
@@ -124,6 +125,7 @@ private slots:
     /*---SLOTS AGGIUNTE DA NOI----*/
     void onTextChanged(int pos, int del, int add);
     void onMessageFromServer(Message m);
+    void onFileReady(QVector<GenericSymbol *> gs,QString text);
 
 
 private:
@@ -135,6 +137,7 @@ private:
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, Message& m);
+
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();

@@ -27,6 +27,7 @@ signals:
     void registration_successful();
     void registration_failed();
     void message_from_server(Message m);
+    void file_Ready(QVector<GenericSymbol *> gs, QString text);
 
 public slots:
     void onMessageReady(Message m, QString filename);

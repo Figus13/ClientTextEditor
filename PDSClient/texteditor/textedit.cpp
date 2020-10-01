@@ -116,6 +116,8 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
             this, &TextEdit::onMessageFromServer);
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
+    connect(client, &Client::file_Ready,this,&TextEdit::onFileReady);
+
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
 
@@ -936,6 +938,13 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 
 void TextEdit::onMessageFromServer(Message m){
 
+}
+
+void TextEdit::onFileReady(QVector<GenericSymbol*> gs, QString text){
+
+    this->_symbols = gs;
+    textEdit->setPlainText(text);
+    textEdit->textCursor();
 }
 
 

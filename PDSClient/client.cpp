@@ -1,5 +1,6 @@
 #include "client.h"
 
+
 Client::Client(QObject* parent) : QObject(parent), counter(0)
 {
     socket = new QTcpSocket(this);
@@ -53,8 +54,10 @@ int Client::getSiteId(){
 void Client::onReadyRead(){
     QVector<int> position;
     int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
-    QString color, font;
+    QString color, font, text;
     QChar value;
+    GenericSymbol * gs;
+    QVector<GenericSymbol*> gsVector;
     bool isBold, isItalic, isUnderlined, isStyle;
     GenericSymbol *s;
 
@@ -118,13 +121,24 @@ void Client::onReadyRead(){
     case 4:
         qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
         int fileSize; //1 se inserimento, 0 se cancellazione
+        int dabuttare;
         in >> fileSize;
+        for(int i = 0 ; i<fileSize ; i++){
+            in >> dabuttare >>insert >> isStyle >> position >> counter >> recSiteId;
+            if (isStyle) {
+                in >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+                gs = new StyleSymbol(isStyle, position, counter, recSiteId, isBold, isItalic, isUnderlined, alignment, textSize,color, font);
+            }
+            else {
+                in >> value;
+                gs = new TextSymbol(isStyle, position, counter, recSiteId,value);
+                text.append(value);
+             }
+            gsVector.push_back(gs);
+        }
 
-        /**
-         *  gestire i simboli ricevuti
-         *
-         *
-         **/
+         file_Ready(gsVector, text);
+
 
         break;
     default: break;
