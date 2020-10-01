@@ -24,7 +24,10 @@ void FilesSelection::on_newDocumentButton_clicked()
     NewFileDialog dialog;
     dialog.setModal(true);
     if(dialog.exec()){
-        TextEdit* mw = new TextEdit(nullptr, client);
+        QString filename = dialog.getFilename();
+        ui->fileListWidget->addItem(filename);
+
+        TextEdit* mw = new TextEdit{0, client, filename};
 
         const QRect availableGeometry = mw->screen()->availableGeometry();
         mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
@@ -39,19 +42,11 @@ void FilesSelection::on_newDocumentButton_clicked()
     }
 }
 
-void FilesSelection::on_fileListWidget_clicked()
-{
-    QString item;
-    item =  ui->fileListWidget->currentItem()->text();
-
-    client->getFile(item);
-
-}
-
 void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
 {
-    client->getFile(item->text());
-    TextEdit* mw = new TextEdit(nullptr, client);
+    QString filename = item->text();
+    client->getFile(filename);
+    TextEdit* mw = new TextEdit{0, client, filename};
     hide();
     const QRect availableGeometry = mw->screen()->availableGeometry();
     mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);

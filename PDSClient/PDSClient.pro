@@ -16,8 +16,8 @@ SOURCES += \
     filesselection.cpp \
     main.cpp \
     mainwindow.cpp \
+    message.cpp \
     newfiledialog.cpp \
-    texteditor/main.cpp \
     texteditor/textedit.cpp
 
 HEADERS += \
@@ -27,6 +27,7 @@ HEADERS += \
     client.h \
     filesselection.h \
     mainwindow.h \
+    message.h \
     newfiledialog.h \
     texteditor/textedit.h
 

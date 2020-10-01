@@ -3,6 +3,8 @@
 #include <QtNetwork>
 #include <GenericSymbol.h>
 #include <iostream>
+#include <message.h>
+#include "TextSymbol.h"
 
 class Client : public QObject
 {
@@ -16,12 +18,16 @@ public:
     void addFile(QString filename);
     void getFile(QString filename);
     void closeFile(QString filename);
+    int getSiteId();
 
 signals:
     void login_successful();
     void login_failed();
     void registration_successful();
     void registration_failed();
+
+public slots:
+    void onMessageReady(Message m, QString filename);
 
 private slots:
     void onConnected();

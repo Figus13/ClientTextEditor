@@ -46,8 +46,16 @@ void Client::onConnected(){
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }
 
-void Client::onReadyRead(){
+int Client::getSiteId(){
+    return this->siteId;
+}
 
+void Client::onReadyRead(){
+    QVector<int> position;
+    int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
+    QString color, font;
+    QChar value;
+    bool isBold, isItalic, isUnderlined, isStyle;
 
     if (socket->state() != QAbstractSocket::ConnectedState)	return;
 
@@ -83,6 +91,28 @@ void Client::onReadyRead(){
             in >> this->siteId;
             registration_successful();
         }
+        break;
+    case 3:
+        qDebug() << "3)Mandato dopo l'inserimento di un simbolo";
+        in >> insert >> isStyle >> position >> counter >> recSiteId;
+        if (isStyle) {
+            in >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+        }
+        else {
+            in >> value;
+         }
+        break;
+    case 4:
+        qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
+        int fileSize; //1 se inserimento, 0 se cancellazione
+        in >> fileSize;
+
+        /**
+         *  gestire i simboli ricevuti
+         *
+         *
+         **/
+
         break;
     default: break;
     }
@@ -139,5 +169,13 @@ void Client::getFile(QString filename){
 
 void Client::disconnectFromServer(){
     socket->close();
+}
+void Client::onMessageReady(Message mess, QString filename){
+    TextSymbol* ts = static_cast<TextSymbol*>(mess.getSymbol());
+    //qDebug() << "Action " << mess.getAction() << "; Position " << ts->getPosition() << "; Value " << ts->getValue();
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    out << 3 << 1 << filename << ts->getSiteId() << ts->getCounter() << ts->getPosition() << 0 << ts->getValue();
+    socket->write(buf);
 }
 
