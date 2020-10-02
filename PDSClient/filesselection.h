@@ -22,6 +22,9 @@ public:
 signals:
     void closing();
 
+protected:
+    void closeEvent(QCloseEvent *e) override;
+
 private slots:
     void on_newDocumentButton_clicked();
     void showWindow();

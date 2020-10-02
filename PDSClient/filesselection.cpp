@@ -63,3 +63,11 @@ void FilesSelection::showWindow(){
     }
     show();
 }
+
+
+void FilesSelection::closeEvent(QCloseEvent *e)
+{
+    client->getSocket()->disconnect();
+    e->accept();
+}
+

@@ -19,6 +19,7 @@ public:
     void getFile(QString filename);
     void closeFile(QString filename);
     int getSiteId();
+    QTcpSocket* getSocket();
 
 signals:
     void login_successful();
@@ -32,6 +33,8 @@ public slots:
 private slots:
     void onConnected();
     void onReadyRead();
+
+public slots:
     void disconnectFromServer();
 
 private:

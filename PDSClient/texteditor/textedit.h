@@ -82,16 +82,13 @@ public:
 
     bool load(const QString &f);
 
-signals:
-    void closeWindow();
-
 public slots:
     void fileNew();
 
 signals:
     /*-----AGGIUNTE DA NOI------*/
     void message_ready(Message m, QString filename);
-
+    void closeWindow();
 protected:
     void closeEvent(QCloseEvent *e) override;
 

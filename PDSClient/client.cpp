@@ -73,6 +73,7 @@ void Client::onReadyRead(){
         }else if(status == 1){  
             int numFiles;
             in >> this->siteId >> numFiles;
+            files.clear();
             for(int i=0; i<numFiles; i++){
                  QString filename;
                 in >> filename;
@@ -168,7 +169,8 @@ void Client::getFile(QString filename){
 }
 
 void Client::disconnectFromServer(){
-    socket->close();
+    //socket->close();
+    socket->disconnectFromHost();
 }
 void Client::onMessageReady(Message mess, QString filename){
     TextSymbol* ts = static_cast<TextSymbol*>(mess.getSymbol());
@@ -177,5 +179,9 @@ void Client::onMessageReady(Message mess, QString filename){
     QDataStream out(&buf, QIODevice::WriteOnly);
     out << 3 << 1 << filename << ts->getSiteId() << ts->getCounter() << ts->getPosition() << 0 << ts->getValue();
     socket->write(buf);
+}
+
+QTcpSocket* Client::getSocket(){
+    return socket;
 }
 
