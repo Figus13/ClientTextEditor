@@ -1,4 +1,4 @@
-#include "Message.h"
+#include "message.h"
 
 Message::Message(const char action, GenericSymbol *s)
 {

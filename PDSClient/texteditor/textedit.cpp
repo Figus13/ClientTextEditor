@@ -112,8 +112,12 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     //        client, SLOT(onMessageReady(Message m)));
     connect(this, &TextEdit::message_ready,
             client, &Client::onMessageReady);
+    connect(client, &Client::message_from_server,
+            this, &TextEdit::onMessageFromServer);
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
+    connect(client, &Client::file_Ready,this,&TextEdit::onFileReady);
+
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
 
@@ -621,7 +625,24 @@ void TextEdit::textBold()
 {
     QTextCharFormat fmt;
     fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
-    mergeFormatOnWordOrSelection(fmt);
+
+
+    QTextCursor cursor = textEdit->textCursor();
+    Message mess{};
+    if(cursor.hasSelection()){
+        int inizio = cursor.selectionStart();
+        localInsert(inizio, textEdit->fontPointSize(), textEdit->alignment(), actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->textColor().name(), this->font().toString(),mess);
+        message_ready(mess, fileName);
+        int fine = cursor.selectionEnd();
+        localInsert(fine, textEdit->fontPointSize(), textEdit->alignment(), !actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->textColor(), this->font().toString(),mess);
+        message_ready(mess, fileName);
+    }else{
+        int index = cursor.position();
+        localInsert(index, textEdit->fontPointSize(), textEdit->alignment(), actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->textColor(), this->font().toString(),mess);
+        message_ready(mess, fileName);
+    }
+
+      mergeFormatOnWordOrSelection(fmt);
 }
 
 void TextEdit::textUnderline()
@@ -921,9 +942,31 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         localInsert(pos, added.back(), mess);
         //TextSymbol ts = static_cast<TextSymbol>(mess.getSymbol());
          //qDebug() << "Action " << mess.getAction() << "; Position " << mess.getSymbol().getPosition();
-         message_ready(mess, fileName);
+        message_ready(mess, fileName);
+    }else{
+        if(del==1){ // per ora non gestisco la funzione taglia
+            Message mess{'d', this->_symbols[pos]};
+            this->_symbols.erase(this->_symbols.begin() + pos);
+            message_ready(mess, fileName);
+        }
     }
+
 }
+
+void TextEdit::onMessageFromServer(Message m){
+
+}
+
+void TextEdit::onFileReady(QVector<GenericSymbol*> gs, QString text){
+
+    this->_symbols = gs;
+    textEdit->textCursor().beginEditBlock();
+    textEdit->textCursor().insertText(text);
+    textEdit->textCursor().endEditBlock();
+
+
+}
+
 
 
 std::string TextEdit::localInsert(int index, QChar value, Message& m)
@@ -945,6 +988,29 @@ std::string TextEdit::localInsert(int index, QChar value, Message& m)
 
     return "OK";
 }
+
+std::string TextEdit::localInsert(int index, int textSize, int alignment,  bool isBold, bool isItalic, bool isUnderlined, QColor color, QString font, Message& m)
+{
+    QVector<int> pos;
+    if ((index > (this->_symbols.size())) || index < 0) {
+        return "Errore";//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
+    }
+    this->counter++;
+    pos = generatePos(index);
+    if (pos.size() == 0) {
+        return "Errore";
+    }
+    StyleSymbol* symbol = new StyleSymbol(true, pos , this->counter, this->siteId, isBold, isItalic, isUnderlined, alignment, textSize , color, font);
+
+
+    this->_symbols.insert(this->_symbols.begin() + index, symbol);
+
+    m.setAction('i');
+    m.setSymbol(symbol);
+
+    return "OK";
+}
+
 // index: indice in cui inserire. Restituisco un vettore della posizione adatto.
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;

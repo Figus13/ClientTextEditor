@@ -120,6 +120,8 @@ private slots:
     void printPreview(QPrinter *);
     /*---SLOTS AGGIUNTE DA NOI----*/
     void onTextChanged(int pos, int del, int add);
+    void onMessageFromServer(Message m);
+    void onFileReady(QVector<GenericSymbol *> gs,QString text);
 
 
 private:
@@ -131,6 +133,8 @@ private:
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, Message& m);
+    std::string localInsert(int index, int textSize, int alignment,  bool isBold, bool isItalic, bool isUnderlined, QColor color, QString font, Message& m);
+
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();
