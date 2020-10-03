@@ -643,6 +643,7 @@ void TextEdit::textBold()
     }
 
       mergeFormatOnWordOrSelection(fmt);
+    mergeFormatOnWordOrSelection(fmt);
 }
 
 void TextEdit::textUnderline()
@@ -955,6 +956,22 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 
 void TextEdit::onMessageFromServer(Message m){
 
+    if(m.getAction()=='i'){
+        if(m.getSymbol()->isStyle()){
+            StyleSymbol* sym = static_cast<StyleSymbol*>(m.getSymbol());
+            remoteInsert(sym);
+        }else{
+            TextSymbol* sym = static_cast<TextSymbol*>(m.getSymbol());
+        }
+    }else{
+        if(m.getAction()=='d'){
+            if(m.getSymbol()->isStyle()){
+                StyleSymbol* sym = static_cast<StyleSymbol*>(m.getSymbol());
+            }else{
+                TextSymbol* sym = static_cast<TextSymbol*>(m.getSymbol());
+            }
+        }
+    }
 }
 
 void TextEdit::onFileReady(QVector<GenericSymbol*> gs, QString text){
@@ -965,6 +982,8 @@ void TextEdit::onFileReady(QVector<GenericSymbol*> gs, QString text){
     textEdit->textCursor().endEditBlock();
 
 
+    textEdit->setPlainText(text);
+    textEdit->textCursor();
 }
 
 
@@ -1120,4 +1139,38 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
     }
     pos.push_back(k);
     return pos;
+}
+
+void TextEdit::remoteInsert(GenericSymbol* sym){
+    int index = findIndexFromPosition(sym->getPosition());
+    if(!sym->isStyle()){
+
+    }
+}
+
+int TextEdit::findIndexFromPosition(QVector<int> position){
+    int index = _symbols.size();
+        if (_symbols.size() == 0) {
+            index = 0;
+        }
+        if (_symbols.size() == 1) {
+            if (_symbols[0]->getPosition() > position) {
+                index = 0;
+            }
+            else {
+                index = 1;
+            }
+        }
+        if (_symbols.size() > 1) {
+            if (position < _symbols[0]->getPosition()) {
+                index = 0;
+            }
+            for (int i = 1; i < _symbols.size(); i++) {
+                if (_symbols[i - 1]->getPosition() < position && position < _symbols[i]->getPosition()) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+       return index;
 }
