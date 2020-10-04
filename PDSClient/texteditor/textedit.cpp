@@ -959,9 +959,9 @@ void TextEdit::onMessageFromServer(Message m){
     if(m.getAction()=='i'){
         if(m.getSymbol()->isStyle()){
             StyleSymbol* sym = static_cast<StyleSymbol*>(m.getSymbol());
-            remoteInsert(sym);
         }else{
             TextSymbol* sym = static_cast<TextSymbol*>(m.getSymbol());
+            remoteInsert(sym);
         }
     }else{
         if(m.getAction()=='d'){
@@ -969,6 +969,7 @@ void TextEdit::onMessageFromServer(Message m){
                 StyleSymbol* sym = static_cast<StyleSymbol*>(m.getSymbol());
             }else{
                 TextSymbol* sym = static_cast<TextSymbol*>(m.getSymbol());
+                remoteDelete(sym);
             }
         }
     }
@@ -1026,6 +1027,7 @@ std::string TextEdit::localInsert(int index, int textSize, int alignment,  bool 
 
     m.setAction('i');
     m.setSymbol(symbol);
+
 
     return "OK";
 }
@@ -1102,6 +1104,8 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
                                                                  perch� il flag vale 1.
     ***/
 
+
+
     int lung_vett_max = (int)std::max(pos_sup.size(), pos_inf.size());
 
     for (i = 0; i < lung_vett_max; i++) {
@@ -1141,14 +1145,28 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
     return pos;
 }
 
-void TextEdit::remoteInsert(GenericSymbol* sym){
-    int index = findIndexFromPosition(sym->getPosition());
+void TextEdit::remoteInsert(GenericSymbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+    int index = findIndexFromNewPosition(sym->getPosition());
+    QTextCursor cursor = textEdit->textCursor();
+    cursor.setPosition(index, QTextCursor::MoveAnchor);
     if(!sym->isStyle()){
-
+        TextSymbol* ts= static_cast<TextSymbol*>(sym);
+        this->_symbols.insert(this->_symbols.begin() + index, ts);
+        cursor.insertText(ts->getValue());
+    }\
+}
+void TextEdit::remoteDelete(GenericSymbol* sym){
+    int index = findIndexFromExistingPosition(sym->getPosition());
+    if(index!=-1){
+        QTextCursor cursor = textEdit->textCursor();
+        cursor.setPosition(index, QTextCursor::MoveAnchor);
+        cursor.deleteChar();
+        this->_symbols.erase(this->_symbols.begin() + index);
     }
 }
 
-int TextEdit::findIndexFromPosition(QVector<int> position){
+
+int TextEdit::findIndexFromNewPosition(QVector<int> position){
     int index = _symbols.size();
         if (_symbols.size() == 0) {
             index = 0;
@@ -1173,4 +1191,15 @@ int TextEdit::findIndexFromPosition(QVector<int> position){
             }
         }
        return index;
+}
+
+int TextEdit::findIndexFromExistingPosition(QVector<int> position){
+    int index=-1;
+    for(int i=0; i<this->_symbols.size(); i++){
+        if(this->_symbols[i]->getPosition() == position){
+            index=i;
+            break;
+        }
+    }
+    return index;
 }

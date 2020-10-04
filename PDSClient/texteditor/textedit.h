@@ -134,7 +134,10 @@ private:
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, Message& m);
     std::string localInsert(int index, int textSize, int alignment,  bool isBold, bool isItalic, bool isUnderlined, QColor color, QString font, Message& m);
-
+    void remoteInsert(GenericSymbol* sym);
+    void remoteDelete(GenericSymbol* sym);
+    int findIndexFromNewPosition(QVector<int> position);
+    int findIndexFromExistingPosition(QVector<int> position);
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();
