@@ -108,8 +108,6 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &TextEdit::cursorPositionChanged);
     /*------------Aggiunta da noi------*/
-    //connect(this, SIGNAL(message_ready(Message m)),
-    //        client, SLOT(onMessageReady(Message m)));
     connect(this, &TextEdit::message_ready,
             client, &Client::onMessageReady);
     connect(client, &Client::message_from_server,

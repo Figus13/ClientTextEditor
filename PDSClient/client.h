@@ -15,7 +15,7 @@ public:
     ~Client();
     void login(QString username, QString password);
     void registration(QString username, QString password, QString nick);
-    QVector<QString> getFiles();
+    void getFiles();
     void addFile(QString filename);
     void getFile(QString filename);
     void closeFile(QString filename);
@@ -28,6 +28,7 @@ signals:
     void registration_successful();
     void registration_failed();
     void message_from_server(Message m);
+    void files_list_refreshed(QVector<QString> files);
     void file_Ready(QVector<GenericSymbol *> gs, QString text);
 
 public slots:

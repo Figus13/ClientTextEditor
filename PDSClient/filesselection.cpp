@@ -6,10 +6,13 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     ui(new Ui::FilesSelection), client(client)
 {
     ui->setupUi(this);
-    QVector<QString> files = client->getFiles();
+    client->getFiles(); //i file vengono gestiti nella slot onfilesListRefreshed
+    connect(client, &Client::files_list_refreshed,
+            this, &FilesSelection::onFilesListRefreshed);
+    /*QVector<QString> files = client->getFiles();
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
-    }
+    }*/
     QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
 
 }
@@ -17,6 +20,13 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
 FilesSelection::~FilesSelection()
 {
     delete ui;
+}
+
+void FilesSelection::onFilesListRefreshed(QVector<QString> files)
+{
+    for(int i=0; i<files.size(); i++){
+        ui->fileListWidget->addItem(files[i]);
+    }
 }
 
 void FilesSelection::on_newDocumentButton_clicked()
@@ -57,10 +67,11 @@ void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
 void FilesSelection::showWindow(){
 
     ui->fileListWidget->clear();
-    QVector<QString> files = client->getFiles();
+    client->getFiles();  //i file vengono gestiti nella slot onfilesListRefreshed
+    /*QVector<QString> files = client->getFiles();
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
-    }
+    }*/
     show();
 }
 

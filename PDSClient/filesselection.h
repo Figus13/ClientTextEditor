@@ -29,6 +29,7 @@ private slots:
     void on_newDocumentButton_clicked();
     void showWindow();
     void on_fileListWidget_itemDoubleClicked(QListWidgetItem *item);
+    void onFilesListRefreshed(QVector<QString> files);
 
 private:
     Ui::FilesSelection *ui;

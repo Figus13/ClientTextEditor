@@ -75,15 +75,22 @@ void Client::onReadyRead(){
         if(status == 0){
             login_failed();
         }else if(status == 1){  
-            int numFiles;
-            in >> this->siteId >> numFiles;
-            files.clear();
-            for(int i=0; i<numFiles; i++){
-                 QString filename;
-                in >> filename;
-                files.append(filename);
-            }
-            login_successful();
+            /*int numFiles;
+            in >> operation >> status;
+            if(operation == 6 && status ==1){  //riceviamo i file.
+                in >>this->siteId >> numFiles;
+                files.clear();
+                for(int i=0; i<numFiles; i++){
+                     QString filename;
+                    in >> filename;
+                    files.append(filename);
+                }
+                files_list_refreshed(files);
+                login_successful();
+            }else{
+                qDebug() <<  "errore nella funzione per lettura file";*/
+                login_successful();
+
         }
         break;
      case 1:
@@ -137,10 +144,25 @@ void Client::onReadyRead(){
              }
             gsVector.push_back(gs);
         }
-
-         file_Ready(gsVector, text);
-
-
+        if(fileSize!=0){
+            file_Ready(gsVector, text);
+        }
+        break;
+    case 6:
+        int numFiles;
+        in >> status;
+        if(status == 1){  //riceviamo i file.
+            in >>this->siteId >> numFiles;
+            files.clear();
+            for(int i=0; i<numFiles; i++){
+                 QString filename;
+                in >> filename;
+                files.append(filename);
+            }
+            files_list_refreshed(files);
+        }else{
+            qDebug() <<  "errore nella funzione per lettura file";
+        }
         break;
     default: break;
     }
@@ -153,6 +175,7 @@ void Client::closeFile(QString filename){
     out << 5 /*# operazione*/ << filename;
 
     socket->write(buf);
+    socket->flush();
 }
 
 Client::~Client(){
@@ -178,8 +201,13 @@ void Client::registration(QString username, QString password, QString nickName){
     socket->write(buf);
 }
 
-QVector<QString> Client::getFiles(){
-    return files;
+void Client::getFiles(){
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    out << 6;
+    socket->write(buf);
+    socket->flush();
+    return; // i file vengono inviati dalla signal list_files_refreshed
 }
 
 void Client::addFile(QString filename){
