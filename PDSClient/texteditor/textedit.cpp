@@ -957,6 +957,7 @@ void TextEdit::onMessageFromServer(Message m){
     if(m.getAction()=='i'){
         if(m.getSymbol()->isStyle()){
             StyleSymbol* sym = static_cast<StyleSymbol*>(m.getSymbol());
+            remoteInsert(sym);
         }else{
             TextSymbol* sym = static_cast<TextSymbol*>(m.getSymbol());
             remoteInsert(sym);
