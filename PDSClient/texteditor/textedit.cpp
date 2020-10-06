@@ -627,7 +627,7 @@ void TextEdit::textBold()
 
     QTextCursor cursor = textEdit->textCursor();
     Message mess{};
-    if(cursor.hasSelection()){
+    /*if(cursor.hasSelection()){
         int inizio = cursor.selectionStart();
         localInsert(inizio, textEdit->fontPointSize(), textEdit->alignment(), actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->textColor().name(), this->font().toString(),mess);
         message_ready(mess, fileName);
@@ -638,7 +638,7 @@ void TextEdit::textBold()
         int index = cursor.position();
         localInsert(index, textEdit->fontPointSize(), textEdit->alignment(), actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->textColor(), this->font().toString(),mess);
         message_ready(mess, fileName);
-    }
+    }*/
 
       mergeFormatOnWordOrSelection(fmt);
     mergeFormatOnWordOrSelection(fmt);
@@ -980,6 +980,8 @@ void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
 
 std::string TextEdit::localInsert(int index, QChar value, Message& m)
 {
+    QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
+    QFont qf = plainFormat.font();
     QVector<int> pos;
     if ((index > (this->_symbols.size())) || index < 0) {
         return "Errore";//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
@@ -990,7 +992,7 @@ std::string TextEdit::localInsert(int index, QChar value, Message& m)
         return "Errore";
     }
     //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
-    Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->alignment(), textEdit->fontPointSize(),  textEdit->textColor().name(), this->font().toString())
+    Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->alignment(), qf.pointSize(),  textEdit->textColor().name(), textEdit->font().toString());
     this->_symbols.insert(this->_symbols.begin() + index, symbol);
 
     m.setAction('i');

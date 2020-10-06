@@ -4,8 +4,6 @@
 #include <Symbol.h>
 #include <iostream>
 #include <message.h>
-#include "TextSymbol.h"
-#include "StyleSymbol.h"
 
 class Client : public QObject
 {
