@@ -139,7 +139,6 @@ private:
     int findIndexFromNewPosition(QVector<int> position);
     int findIndexFromExistingPosition(QVector<int> position);
     int findIndexFromPosition(QVector<int> position);
-    void remoteInsert(GenericSymbol* sym);
 
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
