@@ -53,8 +53,8 @@ int Client::getSiteId(){
 
 void Client::onReadyRead(){
     QVector<int> position;
-    int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
-    QString color, font, text;
+    int counter, recSiteId, alignment, textSize, daButtare, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
+    QString color, font, text, nickname;
     QChar value;
     QVector<Symbol*> sVector;
     bool isBold, isItalic, isUnderlined, isStyle;
@@ -121,7 +121,7 @@ void Client::onReadyRead(){
     case 4:
         qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
         int fileSize; //1 se inserimento, 0 se cancellazione
-        int daButtare;
+
         in >> fileSize;
         for(int i = 0 ; i<fileSize ; i++){
             in >> daButtare >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
@@ -148,6 +148,9 @@ void Client::onReadyRead(){
         }else{
             qDebug() <<  "errore nella funzione per lettura file";
         }
+        break;
+    case 8:
+        in >> nickname >> daButtare;
         break;
     default: break;
     }
