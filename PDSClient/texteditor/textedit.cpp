@@ -939,6 +939,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     if(add==1){ //PER ORA GESTISCO SOLO L'INSERIMENTO (NO COPIA E INCOLLA)
         Message mess{};
         localInsert(pos, added.back(), mess);
+
         //TextSymbol ts = static_cast<TextSymbol>(mess.getSymbol());
          //qDebug() << "Action " << mess.getAction() << "; Position " << mess.getSymbol().getPosition();
         message_ready(mess, fileName);
@@ -955,28 +956,17 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 void TextEdit::onMessageFromServer(Message m){
 
     if(m.getAction()=='i'){
-        if(m.getSymbol()->isStyle()){
-            StyleSymbol* sym = static_cast<StyleSymbol*>(m.getSymbol());
-            remoteInsert(sym);
-        }else{
-            TextSymbol* sym = static_cast<TextSymbol*>(m.getSymbol());
-            remoteInsert(sym);
-        }
+        remoteInsert(m.getSymbol());
     }else{
         if(m.getAction()=='d'){
-            if(m.getSymbol()->isStyle()){
-                StyleSymbol* sym = static_cast<StyleSymbol*>(m.getSymbol());
-            }else{
-                TextSymbol* sym = static_cast<TextSymbol*>(m.getSymbol());
-                remoteDelete(sym);
-            }
+            remoteDelete(m.getSymbol());
         }
     }
 }
 
-void TextEdit::onFileReady(QVector<GenericSymbol*> gs, QString text){
+void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
 
-    this->_symbols = gs;
+    this->_symbols = s;
     textEdit->textCursor().beginEditBlock();
     textEdit->textCursor().insertText(text);
     textEdit->textCursor().endEditBlock();
@@ -999,7 +989,8 @@ std::string TextEdit::localInsert(int index, QChar value, Message& m)
     if (pos.size() == 0) {
         return "Errore";
     }
-    TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
+    //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
+    Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->alignment(), textEdit->fontPointSize(),  textEdit->textColor().name(), this->font().toString())
     this->_symbols.insert(this->_symbols.begin() + index, symbol);
 
     m.setAction('i');
@@ -1007,7 +998,7 @@ std::string TextEdit::localInsert(int index, QChar value, Message& m)
 
     return "OK";
 }
-
+/*
 std::string TextEdit::localInsert(int index, int textSize, int alignment,  bool isBold, bool isItalic, bool isUnderlined, QColor color, QString font, Message& m)
 {
     QVector<int> pos;
@@ -1029,7 +1020,7 @@ std::string TextEdit::localInsert(int index, int textSize, int alignment,  bool 
 
 
     return "OK";
-}
+}*/
 
 // index: indice in cui inserire. Restituisco un vettore della posizione adatto.
 QVector<int> TextEdit::generatePos(int index) {
@@ -1144,17 +1135,16 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
     return pos;
 }
 
-void TextEdit::remoteInsert(GenericSymbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     int index = findIndexFromNewPosition(sym->getPosition());
     QTextCursor cursor = textEdit->textCursor();
     cursor.setPosition(index, QTextCursor::MoveAnchor);
-    if(!sym->isStyle()){
-        TextSymbol* ts= static_cast<TextSymbol*>(sym);
-        this->_symbols.insert(this->_symbols.begin() + index, ts);
-        cursor.insertText(ts->getValue());
-    }\
+
+    this->_symbols.insert(this->_symbols.begin() + index, sym);
+    cursor.insertText(sym->getValue());
+
 }
-void TextEdit::remoteDelete(GenericSymbol* sym){
+void TextEdit::remoteDelete(Symbol* sym){
     int index = findIndexFromExistingPosition(sym->getPosition());
     if(index!=-1){
         QTextCursor cursor = textEdit->textCursor();

@@ -58,9 +58,7 @@
 #include <client.h>
 #include <iostream>
 #include "client.h"
-#include "GenericSymbol.h"
-#include "TextSymbol.h"
-#include "StyleSymbol.h"
+#include "Symbol.h"
 #include "message.h"
 
 QT_BEGIN_NAMESPACE
@@ -121,21 +119,22 @@ private slots:
     /*---SLOTS AGGIUNTE DA NOI----*/
     void onTextChanged(int pos, int del, int add);
     void onMessageFromServer(Message m);
-    void onFileReady(QVector<GenericSymbol *> gs,QString text);
+    void onFileReady(QVector<Symbol *> s,QString text);
 
 
 private:
     /*----AGGIUNTE DA NOI -----*/
     Client *client;
-    QVector<GenericSymbol*> _symbols;
+
+    QVector<Symbol*> _symbols;
     int counter; //Inizializzato sempre a zero nel costruttore
     int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, Message& m);
     std::string localInsert(int index, int textSize, int alignment,  bool isBold, bool isItalic, bool isUnderlined, QColor color, QString font, Message& m);
-    void remoteInsert(GenericSymbol* sym);
-    void remoteDelete(GenericSymbol* sym);
+    void remoteInsert(Symbol* sym);
+    void remoteDelete(Symbol* sym);
     int findIndexFromNewPosition(QVector<int> position);
     int findIndexFromExistingPosition(QVector<int> position);
     int findIndexFromPosition(QVector<int> position);

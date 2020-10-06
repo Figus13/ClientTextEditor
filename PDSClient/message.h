@@ -1,16 +1,16 @@
 #pragma once
-#include "GenericSymbol.h"
+#include "Symbol.h"
 
 class Message
 {
 private:
 
     char action;
-    GenericSymbol* s;
+    Symbol* s;
 
 public:
 
-    Message(const char action, GenericSymbol* s);
+    Message(const char action, Symbol* s);
 
     Message();
 
@@ -20,7 +20,7 @@ public:
 
     void setAction(const char action);
 
-    GenericSymbol* getSymbol();
+    Symbol* getSymbol();
 
-    void setSymbol(GenericSymbol* s);
+    void setSymbol(Symbol* s);
 };

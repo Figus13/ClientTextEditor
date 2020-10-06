@@ -9,9 +9,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    GenericSymbol.cpp \
-    StyleSymbol.cpp \
-    TextSymbol.cpp \
+    Symbol.cpp \
     client.cpp \
     filesselection.cpp \
     main.cpp \
@@ -21,9 +19,7 @@ SOURCES += \
     texteditor/textedit.cpp
 
 HEADERS += \
-    GenericSymbol.h \
-    StyleSymbol.h \
-    TextSymbol.h \
+    Symbol.h \
     client.h \
     filesselection.h \
     mainwindow.h \

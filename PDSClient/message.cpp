@@ -1,6 +1,6 @@
 #include "message.h"
 
-Message::Message(const char action, GenericSymbol *s)
+Message::Message(const char action, Symbol *s)
 {
     this->action = action;
     this->s = s;
@@ -19,7 +19,7 @@ char Message::getAction()
     return this->action;
 }
 
-GenericSymbol* Message::getSymbol()
+Symbol* Message::getSymbol()
 {
     return this->s;
 }
@@ -29,7 +29,7 @@ void Message::setAction(const char action)
     this->action=action;
 }
 
-void Message::setSymbol(GenericSymbol* s)
+void Message::setSymbol(Symbol* s)
 {
     this->s = s;
 }

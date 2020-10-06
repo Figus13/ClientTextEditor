@@ -56,10 +56,9 @@ void Client::onReadyRead(){
     int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
     QString color, font, text;
     QChar value;
-    GenericSymbol * gs;
-    QVector<GenericSymbol*> gsVector;
+    QVector<Symbol*> sVector;
     bool isBold, isItalic, isUnderlined, isStyle;
-    GenericSymbol *s;
+    Symbol *s;
 
     if (socket->state() != QAbstractSocket::ConnectedState)	return;
 
@@ -106,19 +105,12 @@ void Client::onReadyRead(){
         break;
     case 3:
         qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
-        in >> insert >> isStyle >> position >> counter >> recSiteId;
+        in >> insert >> position >> counter >> recSiteId >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
         if(insert==1){ //nel caso sia un inserimento
-            if (isStyle) {
-                in >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-                s = new StyleSymbol(isStyle, position, counter, recSiteId, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
-            }
-            else {
-                in >> value;
-                s = new TextSymbol(isStyle, position, counter, recSiteId, value);
-            }
+            s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
             if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
-                Message m{'i', s};
-                message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                  Message m{'i', s};
+                  message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
             }
         }else{ //nel caso sia una cancellazione
             if( recSiteId != this->siteId){ //il simbolo non l'ho rimosso io.
@@ -129,23 +121,16 @@ void Client::onReadyRead(){
     case 4:
         qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
         int fileSize; //1 se inserimento, 0 se cancellazione
-        int dabuttare;
+        int daButtare;
         in >> fileSize;
         for(int i = 0 ; i<fileSize ; i++){
-            in >> dabuttare >>insert >> isStyle >> position >> counter >> recSiteId;
-            if (isStyle) {
-                in >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-                gs = new StyleSymbol(isStyle, position, counter, recSiteId, isBold, isItalic, isUnderlined, alignment, textSize,color, font);
-            }
-            else {
-                in >> value;
-                gs = new TextSymbol(isStyle, position, counter, recSiteId,value);
-                text.append(value);
-             }
-            gsVector.push_back(gs);
+            in >> daButtare >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+            s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font);
+            text.append(value);
+            sVector.push_back(s);
         }
         if(fileSize!=0){
-            file_Ready(gsVector, text);
+            file_Ready(sVector, text);
         }
         break;
     case 6:
@@ -232,14 +217,11 @@ void Client::onMessageReady(Message mess, QString filename){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
     if(mess.getAction()=='i'){
-        if(mess.getSymbol()->isStyle()){
-            StyleSymbol* ss = static_cast<StyleSymbol*>(mess.getSymbol());
-            out << 3 << 1 << filename << ss->getSiteId() << ss->getCounter() << ss->getPosition() << ss->isStyle() 
-            << ss->isItalic() << ss->isUnderlined() << ss->getAlignment() << ss->getTextSize() << ss->getColor() << ss->getFont();  
-        }else{
-        TextSymbol* ts = static_cast<TextSymbol*>(mess.getSymbol());
-        out << 3 << 1 << filename << ts->getSiteId() << ts->getCounter() << ts->getPosition() << ts->isStyle() << ts->getValue();
-        }
+
+        Symbol* s = mess.getSymbol();
+        out << 3 << 1 << filename << s->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
+        << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
+
     }else{
         if(mess.getAction()=='d'){
             out << 3 << 0 << filename << mess.getSymbol()->getSiteId() << mess.getSymbol()->getCounter()

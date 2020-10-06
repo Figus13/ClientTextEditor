@@ -1,7 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 #include <QtNetwork>
-#include <GenericSymbol.h>
+#include <Symbol.h>
 #include <iostream>
 #include <message.h>
 #include "TextSymbol.h"
@@ -29,7 +29,7 @@ signals:
     void registration_failed();
     void message_from_server(Message m);
     void files_list_refreshed(QVector<QString> files);
-    void file_Ready(QVector<GenericSymbol *> gs, QString text);
+    void file_Ready(QVector<Symbol *> s, QString text);
 
 public slots:
     void onMessageReady(Message m, QString filename);
@@ -48,7 +48,7 @@ private:
     int siteId;
     int counter;
     QVector<QString> files;
-    QVector<GenericSymbol*> symbols;
+    QVector<Symbol*> symbols;
     QMap<int, QString> clients;
 
 };
