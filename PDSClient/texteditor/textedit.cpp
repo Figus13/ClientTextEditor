@@ -71,6 +71,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QLabel>
 #include <QMimeDatabase>
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
@@ -215,6 +216,13 @@ void TextEdit::setupFileActions()
     tb->addAction(actionSave);
 
     a = menu->addAction(tr("Save &As..."), this, &TextEdit::fileSaveAs);
+    a->setPriority(QAction::LowPriority);
+    menu->addSeparator();
+
+    /*
+     *
+     */
+    a = menu->addAction( tr("&URI"), this, &TextEdit::getURI);
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
@@ -562,6 +570,21 @@ bool TextEdit::fileSaveAs()
     const QString fn = fileDialog.selectedFiles().first();
     setCurrentFileName(fn);
     return fileSave();
+}
+
+void TextEdit::getURI(){
+    /*
+
+      PROVA GET URI
+
+    QLabel *label = new QLabel(this);
+    label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    label->setText("first line\nsecond line");
+    label->setAlignment(Qt::AlignBottom | Qt::AlignRight);
+    label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    label->show();
+
+    */
 }
 
 void TextEdit::filePrint()

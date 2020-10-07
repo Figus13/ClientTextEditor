@@ -137,6 +137,7 @@ private:
     int findIndexFromNewPosition(QVector<int> position);
     int findIndexFromExistingPosition(QVector<int> position);
     int findIndexFromPosition(QVector<int> position);
+    void getURI();
 
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
@@ -145,6 +146,8 @@ private:
     bool maybeSave();
     void setCurrentFileName(const QString &fileName);
     void modifyIndentation(int amount);
+
+
 
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
@@ -165,6 +168,7 @@ private:
     QAction *actionToggleCheckState;
     QAction *actionUndo;
     QAction *actionRedo;
+    QAction *actionURI;
 #ifndef QT_NO_CLIPBOARD
     QAction *actionCut;
     QAction *actionCopy;

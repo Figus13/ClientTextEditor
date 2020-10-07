@@ -16,6 +16,7 @@ SOURCES += \
     mainwindow.cpp \
     message.cpp \
     newfiledialog.cpp \
+    newfilefromuridialog.cpp \
     texteditor/textedit.cpp
 
 HEADERS += \
@@ -25,12 +26,14 @@ HEADERS += \
     mainwindow.h \
     message.h \
     newfiledialog.h \
+    newfilefromuridialog.h \
     texteditor/textedit.h
 
 FORMS += \
     filesselection.ui \
     mainwindow.ui \
-    newfiledialog.ui
+    newfiledialog.ui \
+    newfilefromuridialog.ui
 
 TRANSLATIONS += \
     PDSClient_it_IT.ts
