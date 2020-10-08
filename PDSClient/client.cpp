@@ -57,7 +57,7 @@ void Client::onReadyRead(){
     QString color, font, text, nickname;
     QChar value;
     QVector<Symbol*> sVector;
-    bool isBold, isItalic, isUnderlined, isStyle;
+    bool isBold, isItalic, isUnderlined;
     Symbol *s;
 
     if (socket->state() != QAbstractSocket::ConnectedState)	return;
@@ -177,7 +177,7 @@ void Client::login(QString username, QString password){
     out << 0 << username << password;
 
     socket->write(buf);
-
+    socket->flush();
 }
 
 void Client::registration(QString username, QString password, QString nickName){
@@ -187,6 +187,7 @@ void Client::registration(QString username, QString password, QString nickName){
     out << 1 << username << password << nickName;
 
     socket->write(buf);
+    socket->flush();
 }
 
 void Client::getFiles(){
@@ -232,6 +233,7 @@ void Client::onMessageReady(Message mess, QString filename){
         }
     }
     socket->write(buf);
+    socket->flush();
 }
 
 QTcpSocket* Client::getSocket(){

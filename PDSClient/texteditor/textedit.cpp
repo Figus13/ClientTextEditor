@@ -130,7 +130,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
         helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
     }
 
-    QFont textFont("Helvetica");
+    QFont textFont("Arial");
     textFont.setStyleHint(QFont::SansSerif);
     textEdit->setFont(textFont);
     fontChanged(textEdit->font());
@@ -823,6 +823,8 @@ void TextEdit::modifyIndentation(int amount)
 
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
 {
+    QString f = format.font().toString(); //DEBUG
+    QString x = textEdit->font().toString(); //DEBUG
     fontChanged(format.font());
     colorChanged(format.foreground().color());
 }
@@ -897,10 +899,14 @@ void TextEdit::about()
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
-    QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
-        cursor.select(QTextCursor::WordUnderCursor);
-    cursor.mergeCharFormat(format);
+    int pos, x, x2;
+    QTextCursor cursor;
+    cursor= textEdit->textCursor();
+    /*if (!cursor.hasSelection())
+        cursor.select(QTextCursor::WordUnderCursor);*/ // non mi piace
+    if (!cursor.hasSelection()){
+        cursor.mergeCharFormat(format);
+    }
     textEdit->mergeCurrentCharFormat(format);
 }
 
@@ -934,21 +940,51 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 
 /*-----FATTE DA NOI-----*/
 void TextEdit::onTextChanged(int pos, int del, int add){
-    QString added = textEdit->toPlainText().mid(pos, add);
-    qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
-    if(add==1){ //PER ORA GESTISCO SOLO L'INSERIMENTO (NO COPIA E INCOLLA)
-        Message mess{};
-        localInsert(pos, added.back(), mess);
+    if(!FLAG_OPEN_FILE){
+        QString added = textEdit->toPlainText().mid(pos, add);
+        QTextCursor cursor(textEdit->textCursor());
+        QTextCharFormat plainFormat(cursor.charFormat());
+        QString x = plainFormat.font().toString();
+        qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
 
-        //TextSymbol ts = static_cast<TextSymbol>(mess.getSymbol());
-         //qDebug() << "Action " << mess.getAction() << "; Position " << mess.getSymbol().getPosition();
-        message_ready(mess, fileName);
-    }else{
-        if(del==1){ // per ora non gestisco la funzione taglia
+        /*if(del == 0 && add>0){//sto solo aggiungendo
+            for(int i=0; i<add; i++){
+                Message mess{};
+                localInsert(pos+i, added[i] , mess);
+                message_ready(mess, fileName);
+
+            }
+        }else if(del > 0 && add == 0){ //solo cancellazione/taglia
+
+            for(int i=0; i<del; i++){
+                Message mess{'d', this->_symbols[pos]};
+                this->_symbols.erase(this->_symbols.begin() + pos);
+                message_ready(mess, fileName);
+            }
+        }else if(del == add){
+            for(int i=0; i<del; i++){
+                Message mess{'d', this->_symbols[pos]};
+                this->_symbols.erase(this->_symbols.begin() + pos);
+                message_ready(mess, fileName);
+            }
+            for(int i=0; i<add; i++){
+                Message mess{};
+                localInsert(pos+i, added[i] , mess);
+                message_ready(mess, fileName);
+
+            }
+        }*/
+        for(int i=0; i<del; i++){
             Message mess{'d', this->_symbols[pos]};
             this->_symbols.erase(this->_symbols.begin() + pos);
             message_ready(mess, fileName);
         }
+        for(int i=0; i<add; i++){
+            Message mess{};
+            localInsert(pos+i, added[i] , mess);
+            message_ready(mess, fileName);
+        }
+
     }
 
 }
@@ -968,11 +1004,30 @@ void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
 
     this->_symbols = s;
     textEdit->textCursor().beginEditBlock();
-    textEdit->textCursor().insertText(text);
+    FLAG_OPEN_FILE = true;
+    for(Symbol* sym: s){
+        QTextCursor cursor(textEdit->textCursor());
+        QTextCharFormat plainFormat(cursor.charFormat());
+        QTextCharFormat headingFormat;
+        headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
+        headingFormat.setFontItalic(sym->isItalic());
+        headingFormat.setFontUnderline(sym->isUnderlined());
+        headingFormat.setForeground(sym->getColor());
+        headingFormat.setFontPointSize(sym->getTextSize());
+        headingFormat.setFontFamily(sym->getFont());
+        cursor.insertText((const QString)sym->getValue(), headingFormat);
+        this->_symbols.push_back(sym);
+        if(sym->getSiteId() == this->siteId){
+            if(this->counter < sym->getCounter()){
+                this->counter = sym->getCounter();
+            }
+        }
+        qDebug() << "VALUE: " << sym->getValue();
+    }
+
     textEdit->textCursor().endEditBlock();
-
-
-    textEdit->setPlainText(text);
+    FLAG_OPEN_FILE = false;
+    //textEdit->setPlainText(text);
     textEdit->textCursor();
 }
 
@@ -992,7 +1047,8 @@ std::string TextEdit::localInsert(int index, QChar value, Message& m)
         return "Errore";
     }
     //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
-    Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->alignment(), qf.pointSize(),  textEdit->textColor().name(), textEdit->font().toString());
+    Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->alignment(), qf.pointSize(),  textEdit->textColor().name(), qf.family());
+    qDebug() << qf.family() << qf.pointSize();
     this->_symbols.insert(this->_symbols.begin() + index, symbol);
 
     m.setAction('i');
@@ -1141,7 +1197,7 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
     int index = findIndexFromNewPosition(sym->getPosition());
     QTextCursor cursor = textEdit->textCursor();
     cursor.setPosition(index, QTextCursor::MoveAnchor);
-
+    QFont x = comboFont->currentFont();
     this->_symbols.insert(this->_symbols.begin() + index, sym);
     cursor.insertText(sym->getValue());
 

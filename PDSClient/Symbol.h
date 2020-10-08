@@ -10,7 +10,6 @@ public:
            int textSize, QColor color, QString font);
     Symbol();
     virtual ~Symbol();
-	bool isStyle();
 	QVector<int>& getPosition();
 	void setPosition(QVector<int> position);
 	int getCounter();

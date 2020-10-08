@@ -178,6 +178,9 @@ private:
     QToolBar *tb;
     QString fileName;
     QTextEdit *textEdit;
+
+    //FLAGS
+    bool FLAG_OPEN_FILE = false;
 };
 
 #endif // TEXTEDIT_H
