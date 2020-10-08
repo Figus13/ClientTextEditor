@@ -243,7 +243,7 @@ void Client::requestURI(QString filename){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
 
-    out << 7 << 2;
+    out << 7 << 2 << filename;
 
     socket->write(buf);
 

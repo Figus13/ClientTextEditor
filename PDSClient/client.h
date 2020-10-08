@@ -33,6 +33,7 @@ signals:
 public slots:
     void onMessageReady(Message m, QString filename);
 
+
 private slots:
     void onConnected();
     void onReadyRead();

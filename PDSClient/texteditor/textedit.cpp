@@ -116,7 +116,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
     connect(client, &Client::file_Ready,this,&TextEdit::onFileReady);
-    connect(textEdit, &TextEdit::URIrequest, this , &TextEdit::onShareURIButtonPressed );
+
 
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -223,7 +223,7 @@ void TextEdit::setupFileActions()
     /*
      *
      */
-    a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::URIrequest);
+    a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::onShareURIButtonPressed);
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
@@ -1220,10 +1220,13 @@ int TextEdit::findIndexFromExistingPosition(QVector<int> position){
     return index;
 }
 
-void TextEdit::onShareURIButtonPressed(QString filename){
 
-    client->requestURI(filename);
+void TextEdit::onShareURIButtonPressed(){
+
+
+    client->requestURI(this->fileName);
 
 
 
 }
+
