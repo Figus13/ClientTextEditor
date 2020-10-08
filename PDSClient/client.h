@@ -19,6 +19,7 @@ public:
     void closeFile(QString filename);
     int getSiteId();
     QTcpSocket* getSocket();
+    void requestURI(QString filename);
 
 signals:
     void login_successful();

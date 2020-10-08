@@ -116,6 +116,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
     connect(client, &Client::file_Ready,this,&TextEdit::onFileReady);
+    connect(textEdit, &TextEdit::URIrequest, this , &TextEdit::onShareURIButtonPressed );
 
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -1047,6 +1048,7 @@ std::string TextEdit::localInsert(int index, int textSize, int alignment,  bool 
     return "OK";
 }*/
 
+
 // index: indice in cui inserire. Restituisco un vettore della posizione adatto.
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;
@@ -1216,4 +1218,12 @@ int TextEdit::findIndexFromExistingPosition(QVector<int> position){
         }
     }
     return index;
+}
+
+void TextEdit::onShareURIButtonPressed(QString filename){
+
+    client->requestURI(filename);
+
+
+
 }

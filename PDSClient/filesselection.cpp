@@ -13,11 +13,7 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
     }*/
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-
-    QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
+     QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
 
 }
 
@@ -30,11 +26,6 @@ void FilesSelection::onFilesListRefreshed(QVector<QString> files)
 {
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
-        ui->tableWidget->insertRow(ui->tableWidget->rowCount());
-        //ui->tableWidget->item(ui->tableWidget->rowCount()-1,0)->setFlags( ui->tableWidget->item(ui->tableWidget->rowCount()-1,0)->flags() & ~Qt::ItemIsEditable);
-        //ui->tableWidget->item(ui->tableWidget->rowCount()-1,1)->setFlags( ui->tableWidget->item(ui->tableWidget->rowCount()-1,1)->flags() & ~Qt::ItemIsEditable);
-        //ui->tableWidget->item(ui->tableWidget->rowCount()-1,2)->setFlags( ui->tableWidget->item(ui->tableWidget->rowCount()-1,2)->flags() & ~Qt::ItemIsEditable);
-        ui->tableWidget->setItem(ui->tableWidget->rowCount()-1,0,new QTableWidgetItem(files[i]));
     }
 
 }
