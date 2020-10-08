@@ -223,7 +223,7 @@ void TextEdit::setupFileActions()
     /*
      *
      */
-    a = menu->addAction( tr("&URI"), this, &TextEdit::getURI);
+    a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::URIrequest);
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 

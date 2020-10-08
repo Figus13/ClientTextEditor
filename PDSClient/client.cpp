@@ -238,3 +238,15 @@ QTcpSocket* Client::getSocket(){
     return socket;
 }
 
+void Client::requestURI(QString filename){
+
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+
+    out << 7 << 2;
+
+    socket->write(buf);
+
+
+}
+

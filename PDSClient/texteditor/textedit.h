@@ -87,6 +87,8 @@ signals:
     /*-----AGGIUNTE DA NOI------*/
     void message_ready(Message m, QString filename);
     void closeWindow();
+    void URIrequest(QString filename);
+
 protected:
     void closeEvent(QCloseEvent *e) override;
 
@@ -120,6 +122,7 @@ private slots:
     void onTextChanged(int pos, int del, int add);
     void onMessageFromServer(Message m);
     void onFileReady(QVector<Symbol *> s,QString text);
+    void onShareURIButtonPressed(QString filename);
 
 
 private:

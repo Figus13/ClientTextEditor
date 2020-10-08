@@ -13,7 +13,7 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
     }*/
-     QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
+    QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
 
 }
 
@@ -27,7 +27,6 @@ void FilesSelection::onFilesListRefreshed(QVector<QString> files)
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
     }
-
 }
 
 void FilesSelection::on_newDocumentButton_clicked()
