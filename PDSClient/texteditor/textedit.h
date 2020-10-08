@@ -57,6 +57,8 @@
 #include <QScreen>
 #include <client.h>
 #include <iostream>
+#include <chrono>
+#include <thread>
 #include "client.h"
 #include "Symbol.h"
 #include "message.h"
@@ -131,7 +133,7 @@ private:
     int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
-    std::string localInsert(int index, QChar value, Message& m);
+    std::string localInsert(int index, QChar value, QFont* font, Message& m);
     void remoteInsert(Symbol* sym);
     void remoteDelete(Symbol* sym);
     int findIndexFromNewPosition(QVector<int> position);

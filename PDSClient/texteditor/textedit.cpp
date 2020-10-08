@@ -899,7 +899,6 @@ void TextEdit::about()
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
-    int pos, x, x2;
     QTextCursor cursor;
     cursor= textEdit->textCursor();
     /*if (!cursor.hasSelection())
@@ -941,10 +940,23 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 /*-----FATTE DA NOI-----*/
 void TextEdit::onTextChanged(int pos, int del, int add){
     if(!FLAG_OPEN_FILE){
+
         QString added = textEdit->toPlainText().mid(pos, add);
         QTextCursor cursor(textEdit->textCursor());
-        QTextCharFormat plainFormat(cursor.charFormat());
-        QString x = plainFormat.font().toString();
+        QVector<QFont> fonts;
+        if(cursor.position() == pos){
+            for(int i=0; i<del; i++){
+                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
+                QTextCharFormat plainFormat(cursor.charFormat());
+                fonts.push_back(plainFormat.font());
+            }
+        }else if (cursor.position() == pos + del){
+            for(int i=0; i<del; i++){
+                QTextCharFormat plainFormat(cursor.charFormat());
+                fonts.push_front(plainFormat.font());
+                cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
+            }
+        }
         qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
 
         /*if(del == 0 && add>0){//sto solo aggiungendo
@@ -977,11 +989,17 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         for(int i=0; i<del; i++){
             Message mess{'d', this->_symbols[pos]};
             this->_symbols.erase(this->_symbols.begin() + pos);
+            //ALTRIMENTI NON FUNZIONA
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             message_ready(mess, fileName);
         }
         for(int i=0; i<add; i++){
             Message mess{};
-            localInsert(pos+i, added[i] , mess);
+            if(del > 0){ //controlla se con selezione e incolla funziona
+                localInsert(pos+i, added[i], &(fonts[i]), mess);
+            }else{
+                localInsert(pos+i, added[i], nullptr, mess);
+            }
             message_ready(mess, fileName);
         }
 
@@ -1016,7 +1034,6 @@ void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
         headingFormat.setFontPointSize(sym->getTextSize());
         headingFormat.setFontFamily(sym->getFont());
         cursor.insertText((const QString)sym->getValue(), headingFormat);
-        this->_symbols.push_back(sym);
         if(sym->getSiteId() == this->siteId){
             if(this->counter < sym->getCounter()){
                 this->counter = sym->getCounter();
@@ -1033,10 +1050,15 @@ void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
 
 
 
-std::string TextEdit::localInsert(int index, QChar value, Message& m)
+std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& m)
 {
-    QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
-    QFont qf = plainFormat.font();
+    QFont qf;
+    if(font != nullptr){
+        qf = *font;
+    }else{
+        QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
+        qf = plainFormat.font();
+    }
     QVector<int> pos;
     if ((index > (this->_symbols.size())) || index < 0) {
         return "Errore";//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
