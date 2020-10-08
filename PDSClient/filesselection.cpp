@@ -1,5 +1,7 @@
 #include "filesselection.h"
 #include "ui_filesselection.h"
+#include <QMenu>
+#include "showuridialog.h"
 
 FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     QMainWindow(parent),
@@ -14,12 +16,20 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
         ui->fileListWidget->addItem(files[i]);
     }*/
     QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
+    ui->fileListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->fileListWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
+    connect(client, &Client::URI_Ready,
+            this, &FilesSelection::onURIReady);
 
 }
 
 FilesSelection::~FilesSelection()
 {
     delete ui;
+}
+
+void FilesSelection::setUriRequest(bool status) {
+    this->uriRequest = status;
 }
 
 void FilesSelection::onFilesListRefreshed(QVector<QString> files)
@@ -87,18 +97,38 @@ void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
     QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
 }
 
-void FilesSelection::on_tableWidget_itemDoubleClicked(QTableWidgetItem *item)
+void FilesSelection::showContextMenu(const QPoint &pos)
 {
-    QString filename = item->text();
-    client->getFile(filename);
-    TextEdit* mw = new TextEdit{0, client, filename};
-    hide();
-    const QRect availableGeometry = mw->screen()->availableGeometry();
-    mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-    mw->move((availableGeometry.width() - mw->width()) / 2,
-               (availableGeometry.height() - mw->height()) / 2);
-    mw->show();
-    QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
+    // Handle global position
+    QPoint globalPos = ui->fileListWidget->mapToGlobal(pos);
+
+    // Create menu and insert some actions
+    QMenu menu;
+
+    /*
+     * menu.addAction(tr("&Elimina file"), this, &FilesSelection::EraseFile); // DA IMPLEMENTARE
+     */
+
+    menu.addAction(tr("&Condividi Documento"), this, &FilesSelection::onShareURIButtonPressed);
+
+    // Show context menu at handling position
+    menu.exec(globalPos);
+}
+
+void FilesSelection::onShareURIButtonPressed(){
+    setUriRequest(true);
+    QString filename = ui->fileListWidget->item(ui->fileListWidget->currentRow())->text();
+    client->requestURI(filename);
+}
+
+void FilesSelection::onURIReady(QString uri) {
+    if(uriRequest) {
+        setUriRequest(false);
+        ShowUriDialog dialog;
+        dialog.setUri(uri);
+        dialog.setModal(true);
+        if(dialog.exec()){}
+    }
 }
 
 void FilesSelection::showWindow(){

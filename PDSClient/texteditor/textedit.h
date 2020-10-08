@@ -122,6 +122,8 @@ private slots:
     void onMessageFromServer(Message m);
     void onFileReady(QVector<Symbol *> s,QString text);
     void onShareURIButtonPressed();
+    void onURIReady(QString uri);
+    void onFileClosed();
 
 
 
@@ -132,6 +134,7 @@ private:
     QVector<Symbol*> _symbols;
     int counter; //Inizializzato sempre a zero nel costruttore
     int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
+    bool uriRequest = false;
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, Message& m);
@@ -141,6 +144,7 @@ private:
     int findIndexFromExistingPosition(QVector<int> position);
     int findIndexFromPosition(QVector<int> position);
     void getURI();
+    void setUriRequest(bool status);
 
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();

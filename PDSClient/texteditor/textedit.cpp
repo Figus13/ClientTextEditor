@@ -73,6 +73,7 @@
 #include <QMimeData>
 #include <QLabel>
 #include <QMimeDatabase>
+#include "showuridialog.h"
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printer)
@@ -116,6 +117,8 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
     connect(client, &Client::file_Ready,this,&TextEdit::onFileReady);
+    connect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
+    connect(client, &Client::disconnect_URI, this, &TextEdit::onFileClosed);
 
 
     /*------------Fine aggiunta--------*/
@@ -223,6 +226,7 @@ void TextEdit::setupFileActions()
     /*
      *
      */
+
     a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::onShareURIButtonPressed);
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
@@ -1000,7 +1004,9 @@ void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
     textEdit->textCursor();
 }
 
-
+void TextEdit::onFileClosed() {
+    disconnect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
+}
 
 std::string TextEdit::localInsert(int index, QChar value, Message& m)
 {
@@ -1220,13 +1226,23 @@ int TextEdit::findIndexFromExistingPosition(QVector<int> position){
     return index;
 }
 
+void TextEdit::setUriRequest(bool status) {
+    this->uriRequest = status;
+}
+
+void TextEdit::onURIReady(QString uri) {
+    if(uriRequest) {
+        setUriRequest(false);
+        ShowUriDialog dialog;
+        dialog.setUri(uri);
+        dialog.setModal(true);
+        if(dialog.exec()){}
+    }
+}
 
 void TextEdit::onShareURIButtonPressed(){
 
-
+    setUriRequest(true);
     client->requestURI(this->fileName);
-
-
-
 }
 
