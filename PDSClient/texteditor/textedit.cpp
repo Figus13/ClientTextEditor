@@ -944,6 +944,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         QString added = textEdit->toPlainText().mid(pos, add);
         QTextCursor cursor(textEdit->textCursor());
         QVector<QFont> fonts;
+
         if(cursor.position() == pos){
             for(int i=0; i<del; i++){
                 cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
@@ -959,33 +960,6 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         }
         qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
 
-        /*if(del == 0 && add>0){//sto solo aggiungendo
-            for(int i=0; i<add; i++){
-                Message mess{};
-                localInsert(pos+i, added[i] , mess);
-                message_ready(mess, fileName);
-
-            }
-        }else if(del > 0 && add == 0){ //solo cancellazione/taglia
-
-            for(int i=0; i<del; i++){
-                Message mess{'d', this->_symbols[pos]};
-                this->_symbols.erase(this->_symbols.begin() + pos);
-                message_ready(mess, fileName);
-            }
-        }else if(del == add){
-            for(int i=0; i<del; i++){
-                Message mess{'d', this->_symbols[pos]};
-                this->_symbols.erase(this->_symbols.begin() + pos);
-                message_ready(mess, fileName);
-            }
-            for(int i=0; i<add; i++){
-                Message mess{};
-                localInsert(pos+i, added[i] , mess);
-                message_ready(mess, fileName);
-
-            }
-        }*/
         for(int i=0; i<del; i++){
             Message mess{'d', this->_symbols[pos]};
             this->_symbols.erase(this->_symbols.begin() + pos);
@@ -1069,7 +1043,7 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
         return "Errore";
     }
     //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
-    Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->alignment(), qf.pointSize(),  textEdit->textColor().name(), qf.family());
+    Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor().name(), qf.family());
     qDebug() << qf.family() << qf.pointSize();
     this->_symbols.insert(this->_symbols.begin() + index, symbol);
 
@@ -1078,30 +1052,30 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
 
     return "OK";
 }
-/*
-std::string TextEdit::localInsert(int index, int textSize, int alignment,  bool isBold, bool isItalic, bool isUnderlined, QColor color, QString font, Message& m)
-{
-    QVector<int> pos;
-    if ((index > (this->_symbols.size())) || index < 0) {
-        return "Errore";//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
+
+int TextEdit::alignToInt(Qt::Alignment align){
+        if(align == Qt::AlignLeft){
+            return 0;
+        }else if(align == Qt::AlignRight){
+            return 1;
+        }else if(align == Qt::AlignHCenter){
+            return 2;
+        }else if(align == Qt::AlignJustify){
+            return 3;
+        }
+}
+
+Qt::Alignment TextEdit::intToAlign(int val){
+    if(val == 0){
+        return Qt::AlignLeft;
+    }else if(val == 1){
+        return Qt::AlignRight;
+    }else if(val == 2){
+        return Qt::AlignHCenter;
+    }else if(val == 3){
+        return Qt::AlignJustify;
     }
-    this->counter++;
-    pos = generatePos(index);
-    if (pos.size() == 0) {
-        return "Errore";
-    }
-    StyleSymbol* symbol = new StyleSymbol(true, pos , this->counter, this->siteId, isBold, isItalic, isUnderlined, alignment, textSize , color, font);
-
-
-    this->_symbols.insert(this->_symbols.begin() + index, symbol);
-
-    m.setAction('i');
-    m.setSymbol(symbol);
-
-
-    return "OK";
-}*/
-
+}
 // index: indice in cui inserire. Restituisco un vettore della posizione adatto.
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;

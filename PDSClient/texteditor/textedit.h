@@ -139,7 +139,8 @@ private:
     int findIndexFromNewPosition(QVector<int> position);
     int findIndexFromExistingPosition(QVector<int> position);
     int findIndexFromPosition(QVector<int> position);
-
+    int alignToInt(Qt::Alignment align);
+    Qt::Alignment intToAlign(int val);
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();
