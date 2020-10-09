@@ -939,54 +939,52 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 
 /*-----FATTE DA NOI-----*/
 void TextEdit::onTextChanged(int pos, int del, int add){
-    if(!FLAG_OPEN_FILE){
 
-        QString added = textEdit->toPlainText().mid(pos, add);
-        QTextCursor cursor(textEdit->textCursor());
-        QVector<QFont> fonts;
+    QString added = textEdit->toPlainText().mid(pos, add);
+    QTextCursor cursor(textEdit->textCursor());
+    QVector<QFont> fonts;
 
-        if(cursor.position() == pos){
-            for(int i=0; i<del; i++){
-                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
-                QTextCharFormat plainFormat(cursor.charFormat());
-                fonts.push_back(plainFormat.font());
+    if(cursor.position() == pos){
+         for(int i=0; i<del; i++){
+             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
+             QTextCharFormat plainFormat(cursor.charFormat());
+             fonts.push_back(plainFormat.font());
+         }
+     }else if (cursor.position() == pos + del){
+         for(int i=0; i<del; i++){
+             QTextCharFormat plainFormat(cursor.charFormat());
+             fonts.push_front(plainFormat.font());
+             cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
+         }
+     }
+     qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
+
+     for(int i=0; i<del; i++){
+         if(pos != this->_symbols.size()){
+             Message mess{'d', this->_symbols[pos]};
+             this->_symbols.erase(this->_symbols.begin() + pos);
+             //ALTRIMENTI NON FUNZIONA
+             std::this_thread::sleep_for(std::chrono::milliseconds(10));
+             message_ready(mess, fileName);
+         }
+     }
+     for(int i=0; i<add; i++){
+         Message mess{};
+         if(added.size() > i){
+            //ALTRIMENTI NON FUNZIONA
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            if(del > 0){ //controlla se con selezione e incolla funziona
+                 if(fonts.size() != 0 ){
+                     localInsert(pos+i, added[i], &(fonts[i]), mess);
+                 }else{
+                     localInsert(pos+i, added[i], nullptr, mess);
+                 }
+            }else{
+                 localInsert(pos+i, added[i], nullptr, mess);
             }
-        }else if (cursor.position() == pos + del){
-            for(int i=0; i<del; i++){
-                QTextCharFormat plainFormat(cursor.charFormat());
-                fonts.push_front(plainFormat.font());
-                cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
-            }
+            message_ready(mess, fileName);
         }
-        qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
-
-        for(int i=0; i<del; i++){
-            if(pos != this->_symbols.size()){
-                Message mess{'d', this->_symbols[pos]};
-                this->_symbols.erase(this->_symbols.begin() + pos);
-                //ALTRIMENTI NON FUNZIONA
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                message_ready(mess, fileName);
-            }
-        }
-        for(int i=0; i<add; i++){
-            Message mess{};
-            if(added.size() > i){
-                if(del > 0){ //controlla se con selezione e incolla funziona
-                    if(fonts.size() != 0 ){
-                        localInsert(pos+i, added[i], &(fonts[i]), mess);
-                    }else{
-                       localInsert(pos+i, added[i], nullptr, mess);
-                    }
-                }else{
-                    localInsert(pos+i, added[i], nullptr, mess);
-                }
-                message_ready(mess, fileName);
-            }
-        }
-
     }
-
 }
 
 void TextEdit::onMessageFromServer(Message m){
@@ -1004,7 +1002,9 @@ void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
 
     this->_symbols = s;
     textEdit->textCursor().beginEditBlock();
-    FLAG_OPEN_FILE = true;
+    //FLAG_OPEN_FILE = true; sostituita con il disconnect, evitiamo di fare signal->slot
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
     for(Symbol* sym: s){
         QTextCursor cursor(textEdit->textCursor());
         QTextCharFormat plainFormat(cursor.charFormat());
@@ -1027,7 +1027,9 @@ void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
     }
 
     textEdit->textCursor().endEditBlock();
-    FLAG_OPEN_FILE = false;
+    //FLAG_OPEN_FILE = false;
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
     //textEdit->setPlainText(text);
     textEdit->textCursor();
 }
@@ -1200,15 +1202,20 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
 }
 
 void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
     int index = findIndexFromNewPosition(sym->getPosition());
     QTextCursor cursor = textEdit->textCursor();
     cursor.setPosition(index, QTextCursor::MoveAnchor);
     QFont x = comboFont->currentFont();
     this->_symbols.insert(this->_symbols.begin() + index, sym);
     cursor.insertText(sym->getValue());
-
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
 }
 void TextEdit::remoteDelete(Symbol* sym){
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+               this, &TextEdit::onTextChanged);
     int index = findIndexFromExistingPosition(sym->getPosition());
     if(index!=-1){
         QTextCursor cursor = textEdit->textCursor();
@@ -1216,6 +1223,8 @@ void TextEdit::remoteDelete(Symbol* sym){
         cursor.deleteChar();
         this->_symbols.erase(this->_symbols.begin() + index);
     }
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
 }
 
 
