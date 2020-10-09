@@ -1,0 +1,29 @@
+#ifndef NEWFILEFROMURIDIALOG_H
+#define NEWFILEFROMURIDIALOG_H
+
+#include <QDialog>
+
+namespace Ui {
+class NewFileFromURIdialog;
+}
+
+class NewFileFromURIdialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit NewFileFromURIdialog(QWidget *parent = nullptr);
+    ~NewFileFromURIdialog();
+    QString getFilename();
+
+private slots:
+    void on_buttonBox_accepted();
+    void on_buttonBox_rejected();
+
+
+private:
+    Ui::NewFileFromURIdialog *ui;
+    QString hashedfilename;
+};
+
+#endif // NEWFILEFROMURIDIALOG_H

@@ -89,6 +89,7 @@ signals:
     /*-----AGGIUNTE DA NOI------*/
     void message_ready(Message m, QString filename);
     void closeWindow();
+
 protected:
     void closeEvent(QCloseEvent *e) override;
 
@@ -122,6 +123,10 @@ private slots:
     void onTextChanged(int pos, int del, int add);
     void onMessageFromServer(Message m);
     void onFileReady(QVector<Symbol *> s,QString text);
+    void onShareURIButtonPressed();
+    void onURIReady(QString uri);
+    void onFileClosed();
+
 
 
 private:
@@ -131,6 +136,7 @@ private:
     QVector<Symbol*> _symbols;
     int counter; //Inizializzato sempre a zero nel costruttore
     int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
+    bool uriRequest = false;
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);
@@ -141,6 +147,9 @@ private:
     int findIndexFromPosition(QVector<int> position);
     int alignToInt(int align);
     Qt::Alignment intToAlign(int val);
+    void getURI();
+    void setUriRequest(bool status);
+
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();
@@ -148,6 +157,8 @@ private:
     bool maybeSave();
     void setCurrentFileName(const QString &fileName);
     void modifyIndentation(int amount);
+
+
 
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
@@ -168,6 +179,7 @@ private:
     QAction *actionToggleCheckState;
     QAction *actionUndo;
     QAction *actionRedo;
+    QAction *actionURI;
 #ifndef QT_NO_CLIPBOARD
     QAction *actionCut;
     QAction *actionCopy;

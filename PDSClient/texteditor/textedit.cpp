@@ -71,7 +71,9 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QLabel>
 #include <QMimeDatabase>
+#include "showuridialog.h"
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printer)
@@ -115,6 +117,9 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
     connect(client, &Client::file_Ready,this,&TextEdit::onFileReady);
+    connect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
+    connect(client, &Client::disconnect_URI, this, &TextEdit::onFileClosed);
+
 
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -215,6 +220,14 @@ void TextEdit::setupFileActions()
     tb->addAction(actionSave);
 
     a = menu->addAction(tr("Save &As..."), this, &TextEdit::fileSaveAs);
+    a->setPriority(QAction::LowPriority);
+    menu->addSeparator();
+
+    /*
+     *
+     */
+
+    a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::onShareURIButtonPressed);
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
@@ -562,6 +575,21 @@ bool TextEdit::fileSaveAs()
     const QString fn = fileDialog.selectedFiles().first();
     setCurrentFileName(fn);
     return fileSave();
+}
+
+void TextEdit::getURI(){
+    /*
+
+      PROVA GET URI
+
+    QLabel *label = new QLabel(this);
+    label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    label->setText("first line\nsecond line");
+    label->setAlignment(Qt::AlignBottom | Qt::AlignRight);
+    label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    label->show();
+
+    */
 }
 
 void TextEdit::filePrint()
@@ -1034,7 +1062,9 @@ void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
     textEdit->textCursor();
 }
 
-
+void TextEdit::onFileClosed() {
+    disconnect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
+}
 
 std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& m)
 {
@@ -1264,4 +1294,24 @@ int TextEdit::findIndexFromExistingPosition(QVector<int> position){
         }
     }
     return index;
+}
+
+void TextEdit::setUriRequest(bool status) {
+    this->uriRequest = status;
+}
+
+void TextEdit::onURIReady(QString uri) {
+    if(uriRequest) {
+        setUriRequest(false);
+        ShowUriDialog dialog;
+        dialog.setUri(uri);
+        dialog.setModal(true);
+        if(dialog.exec()){}
+    }
+}
+
+void TextEdit::onShareURIButtonPressed(){
+
+    setUriRequest(true);
+    client->requestURI(this->fileName);
 }

@@ -149,6 +149,18 @@ void Client::onReadyRead(){
             qDebug() <<  "errore nella funzione per lettura file";
         }
         break;
+    case 7:
+        int operation;
+        in >> operation;
+        if(operation == 1){  //riceviamo il file.
+
+        }
+        else if(operation == 2){
+            QString uri;
+            in >> uri;
+            URI_Ready(uri);
+        }
+        break;
     case 8:
         in >> nickname >> daButtare;
         break;
@@ -161,9 +173,10 @@ void Client::closeFile(QString filename){
     QDataStream out(&buf, QIODevice::WriteOnly);
 
     out << 5 /*# operazione*/ << filename;
-
     socket->write(buf);
     socket->flush();
+    files_list_refreshed(files);
+    disconnect_URI();
 }
 
 Client::~Client(){
@@ -240,3 +253,14 @@ QTcpSocket* Client::getSocket(){
     return socket;
 }
 
+void Client::requestURI(QString filename){
+    qDebug() << filename;
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+
+    out << 7 << 2 << filename;
+
+    socket->write(buf);
+    socket->flush();
+
+}

@@ -4,8 +4,10 @@
 #include <QMainWindow>
 #include <client.h>
 #include <newfiledialog.h>
+#include <newfilefromuridialog.h>
 #include "texteditor/textedit.h"
 #include <QListWidgetItem>
+#include <QTableWidgetItem>
 
 namespace Ui {
 class FilesSelection;
@@ -27,13 +29,20 @@ protected:
 
 private slots:
     void on_newDocumentButton_clicked();
+    void on_newFileFromLink_clicked();
     void showWindow();
     void on_fileListWidget_itemDoubleClicked(QListWidgetItem *item);
     void onFilesListRefreshed(QVector<QString> files);
+    void showContextMenu(const QPoint&);
+    void onShareURIButtonPressed();
+    void onURIReady(QString uri);
 
 private:
     Ui::FilesSelection *ui;
     Client* client;
+    bool uriRequest = false;
+
+    void setUriRequest(bool status);
 };
 
 #endif // FILESSELECTION_H
