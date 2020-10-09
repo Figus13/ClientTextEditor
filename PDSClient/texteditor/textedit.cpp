@@ -961,20 +961,28 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
 
         for(int i=0; i<del; i++){
-            Message mess{'d', this->_symbols[pos]};
-            this->_symbols.erase(this->_symbols.begin() + pos);
-            //ALTRIMENTI NON FUNZIONA
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            message_ready(mess, fileName);
+            if(pos != this->_symbols.size()){
+                Message mess{'d', this->_symbols[pos]};
+                this->_symbols.erase(this->_symbols.begin() + pos);
+                //ALTRIMENTI NON FUNZIONA
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                message_ready(mess, fileName);
+            }
         }
         for(int i=0; i<add; i++){
             Message mess{};
-            if(del > 0){ //controlla se con selezione e incolla funziona
-                localInsert(pos+i, added[i], &(fonts[i]), mess);
-            }else{
-                localInsert(pos+i, added[i], nullptr, mess);
+            if(added.size() > i){
+                if(del > 0){ //controlla se con selezione e incolla funziona
+                    if(fonts.size() != 0 ){
+                        localInsert(pos+i, added[i], &(fonts[i]), mess);
+                    }else{
+                       localInsert(pos+i, added[i], nullptr, mess);
+                    }
+                }else{
+                    localInsert(pos+i, added[i], nullptr, mess);
+                }
+                message_ready(mess, fileName);
             }
-            message_ready(mess, fileName);
         }
 
     }
@@ -1007,6 +1015,8 @@ void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
         headingFormat.setForeground(sym->getColor());
         headingFormat.setFontPointSize(sym->getTextSize());
         headingFormat.setFontFamily(sym->getFont());
+        Qt::Alignment x = intToAlign(sym->getAlignment());
+        textEdit->setAlignment(x);
         cursor.insertText((const QString)sym->getValue(), headingFormat);
         if(sym->getSiteId() == this->siteId){
             if(this->counter < sym->getCounter()){
@@ -1053,14 +1063,14 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
     return "OK";
 }
 
-int TextEdit::alignToInt(Qt::Alignment align){
-        if(align == Qt::AlignLeft){
+int TextEdit::alignToInt(int align){
+        if(align == 1){ //left
             return 0;
-        }else if(align == Qt::AlignRight){
+        }else if(align == 18){ //right
             return 1;
-        }else if(align == Qt::AlignHCenter){
+        }else if(align == 4){ //hcenter
             return 2;
-        }else if(align == Qt::AlignJustify){
+        }else if(align == 8){ //justify
             return 3;
         }
 }
