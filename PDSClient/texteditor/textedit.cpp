@@ -798,8 +798,9 @@ void TextEdit::textColor()
     colorChanged(col);
 }
 
-void TextEdit::textAlign(QAction *a)
+void TextEdit::textAlign(QAction *a) //qui scatenata la ontextchanged
 {
+    this->FL
     if (a == actionAlignLeft)
         textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
     else if (a == actionAlignCenter)
@@ -927,6 +928,7 @@ void TextEdit::about()
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
+    FLAG_MODIFY_SYMBOL= true;
     QTextCursor cursor;
     cursor= textEdit->textCursor();
     /*if (!cursor.hasSelection())
@@ -935,6 +937,7 @@ void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
         cursor.mergeCharFormat(format);
     }
     textEdit->mergeCurrentCharFormat(format);
+    FLAG_MODIFY_SYMBOL=false;
 }
 
 void TextEdit::fontChanged(const QFont &f)
@@ -986,6 +989,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
          }
      }
      qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
+     qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
 
      for(int i=0; i<del; i++){
          if(pos != this->_symbols.size()){
@@ -1246,6 +1250,7 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
 void TextEdit::remoteDelete(Symbol* sym){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
+
     int index = findIndexFromExistingPosition(sym->getPosition());
     if(index!=-1){
         QTextCursor cursor = textEdit->textCursor();

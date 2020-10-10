@@ -195,7 +195,7 @@ private:
     QTextEdit *textEdit;
 
     //FLAGS
-    bool FLAG_OPEN_FILE = false;
+    bool FLAG_MODIFY_SYMBOL = false;
 };
 
 #endif // TEXTEDIT_H

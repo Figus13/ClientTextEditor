@@ -106,16 +106,15 @@ void Client::onReadyRead(){
     case 3:
         qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
         in >> insert >> position >> counter >> recSiteId >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+        s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
         if(insert==1){ //nel caso sia un inserimento
-            s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
             if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
                   Message m{'i', s};
                   message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
             }
         }else{ //nel caso sia una cancellazione
-            if( recSiteId != this->siteId){ //il simbolo non l'ho rimosso io.
-                //fare cancellazione in locale del simbolo ricevuto dal server
-            }
+                Message m{'d', s};
+                message_from_server(m);
         }
         break;
     case 4:
