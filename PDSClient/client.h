@@ -33,8 +33,7 @@ signals:
     void disconnect_URI();
 
 public slots:
-    void onMessageReady(Message m, QString filename);
-
+    void onMessageReady(QVector<Message> messages, QString filename);
 
 private slots:
     void onConnected();

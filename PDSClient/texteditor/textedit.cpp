@@ -993,16 +993,22 @@ void TextEdit::onTextChanged(int pos, int del, int add){
      }
      qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
      qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
-
+     QVector<Message> messagesDel;
      for(int i=0; i<del; i++){
+
          if(pos != this->_symbols.size()){
              Message mess{'d', this->_symbols[pos]};
              this->_symbols.erase(this->_symbols.begin() + pos);
              //ALTRIMENTI NON FUNZIONA
              std::this_thread::sleep_for(std::chrono::milliseconds(10));
-             message_ready(mess, fileName);
+             messagesDel.push_back(mess);
          }
      }
+     if(messagesDel.size() != 0){
+        message_ready(messagesDel, fileName);
+     }
+     QVector<Message> messagesAdd;
+
      for(int i=0; i<add; i++){
          Message mess{};
          if(added.size() > i){
@@ -1017,9 +1023,10 @@ void TextEdit::onTextChanged(int pos, int del, int add){
             }else{
                  localInsert(pos+i, added[i], nullptr, mess);
             }
-            message_ready(mess, fileName);
+            messagesAdd.push_back(mess);
         }
     }
+    message_ready(messagesAdd, fileName);
 }
 
 void TextEdit::onMessageFromServer(Message m){

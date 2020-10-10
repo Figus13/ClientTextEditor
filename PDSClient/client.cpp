@@ -229,19 +229,27 @@ void Client::disconnectFromServer(){
     socket->disconnectFromHost();
 }
 
-void Client::onMessageReady(Message mess, QString filename){
+void Client::onMessageReady(QVector<Message> messages, QString filename){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    if(mess.getAction()=='i'){
+    out << 3;
+    if(messages[0].getAction()=='i'){
 
-        Symbol* s = mess.getSymbol();
-        out << 3 << 1 << filename << s->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
+        out << 1 << filename << messages.size();
+        for(int i=0; i< messages.size(); i++){
+            Symbol *s = messages[i].getSymbol();
+            out << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
         << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
 
+        }
+
     }else{
-        if(mess.getAction()=='d'){
-            out << 3 << 0 << filename << mess.getSymbol()->getSiteId() << mess.getSymbol()->getCounter()
-             << mess.getSymbol()->getPosition();
+        if(messages[0].getAction()=='d'){
+            out <<  0 << filename << messages.size();
+            for(int i=0; i< messages.size(); i++){
+                Symbol *s = messages[i].getSymbol();
+                out << s->getSiteId() << s->getCounter()  << s->getPosition();
+            }
         }
     }
     socket->write(buf);
