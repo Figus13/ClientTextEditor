@@ -800,7 +800,8 @@ void TextEdit::textColor()
 
 void TextEdit::textAlign(QAction *a) //qui scatenata la ontextchanged
 {
-    this->FL
+    FLAG_MODIFY_SYMBOL= true;  // si potrebbe sfruttare per evitare di fare delete + add ma chiedere al server di modificare
+                              //  il simbolo
     if (a == actionAlignLeft)
         textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
     else if (a == actionAlignCenter)
@@ -809,6 +810,7 @@ void TextEdit::textAlign(QAction *a) //qui scatenata la ontextchanged
         textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
     else if (a == actionAlignJustify)
         textEdit->setAlignment(Qt::AlignJustify);
+    FLAG_MODIFY_SYMBOL= false;
 }
 
 void TextEdit::setChecked(bool checked)
@@ -928,7 +930,8 @@ void TextEdit::about()
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
-    FLAG_MODIFY_SYMBOL= true;
+    FLAG_MODIFY_SYMBOL= true;// si potrebbe sfruttare per evitare di fare delete + add ma chiedere al server di modificare
+                             //  il simbolo
     QTextCursor cursor;
     cursor= textEdit->textCursor();
     /*if (!cursor.hasSelection())
@@ -1238,14 +1241,29 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
 void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
+
     int index = findIndexFromNewPosition(sym->getPosition());
     QTextCursor cursor = textEdit->textCursor();
     cursor.setPosition(index, QTextCursor::MoveAnchor);
-    QFont x = comboFont->currentFont();
+    //QFont x = comboFont->currentFont();
+
+    QTextCharFormat plainFormat(cursor.charFormat());
+    QTextCharFormat headingFormat;
+    headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
+    headingFormat.setFontItalic(sym->isItalic());
+    headingFormat.setFontUnderline(sym->isUnderlined());
+    headingFormat.setForeground(sym->getColor());
+    headingFormat.setFontPointSize(sym->getTextSize());
+    headingFormat.setFontFamily(sym->getFont());
+    Qt::Alignment intAlign = intToAlign(sym->getAlignment());
+    textEdit->setAlignment(intAlign);
+    cursor.insertText((const QString)sym->getValue(), headingFormat);
+
     this->_symbols.insert(this->_symbols.begin() + index, sym);
-    cursor.insertText(sym->getValue());
+    //cursor.insertText(sym->getValue());
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
+
 }
 void TextEdit::remoteDelete(Symbol* sym){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
