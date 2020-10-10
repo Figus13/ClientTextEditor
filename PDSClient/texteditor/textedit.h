@@ -87,7 +87,7 @@ public slots:
 
 signals:
     /*-----AGGIUNTE DA NOI------*/
-    void message_ready(Message m, QString filename);
+    void message_ready(QVector<Message> messages, QString filename);
     void closeWindow();
 
 protected:
@@ -122,7 +122,7 @@ private slots:
     /*---SLOTS AGGIUNTE DA NOI----*/
     void onTextChanged(int pos, int del, int add);
     void onMessageFromServer(Message m);
-    void onFileReady(QVector<Symbol *> s,QString text);
+    void onFileReady(QVector<Symbol *> s);
     void onShareURIButtonPressed();
     void onURIReady(QString uri);
     void onFileClosed();

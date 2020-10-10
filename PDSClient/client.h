@@ -28,7 +28,7 @@ signals:
     void registration_failed();
     void message_from_server(Message m);
     void files_list_refreshed(QVector<QString> files);
-    void file_Ready(QVector<Symbol *> s, QString text);
+    void file_ready(QVector<Symbol *> s);
     void URI_Ready(QString uri);
     void disconnect_URI();
 

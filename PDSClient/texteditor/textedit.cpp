@@ -116,7 +116,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
             this, &TextEdit::onMessageFromServer);
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
-    connect(client, &Client::file_Ready,this,&TextEdit::onFileReady);
+    connect(client, &Client::file_ready,this,&TextEdit::onFileReady);
     connect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
     connect(client, &Client::disconnect_URI, this, &TextEdit::onFileClosed);
 
@@ -187,6 +187,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
     /*aggiunta*/
     client->closeFile(fileName);
     emit closeWindow();
+    disconnect(this, &TextEdit::message_ready, client, &Client::onMessageReady);
     /*fine aggiunta*/
     hide();
     /*if (maybeSave())
@@ -999,8 +1000,6 @@ void TextEdit::onTextChanged(int pos, int del, int add){
          if(pos != this->_symbols.size()){
              Message mess{'d', this->_symbols[pos]};
              this->_symbols.erase(this->_symbols.begin() + pos);
-             //ALTRIMENTI NON FUNZIONA
-             std::this_thread::sleep_for(std::chrono::milliseconds(10));
              messagesDel.push_back(mess);
          }
      }
@@ -1012,8 +1011,6 @@ void TextEdit::onTextChanged(int pos, int del, int add){
      for(int i=0; i<add; i++){
          Message mess{};
          if(added.size() > i){
-            //ALTRIMENTI NON FUNZIONA
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             if(del > 0){ //controlla se con selezione e incolla funziona
                  if(fonts.size() != 0 ){
                      localInsert(pos+i, added[i], &(fonts[i]), mess);
@@ -1040,7 +1037,7 @@ void TextEdit::onMessageFromServer(Message m){
     }
 }
 
-void TextEdit::onFileReady(QVector<Symbol*> s, QString text){
+void TextEdit::onFileReady(QVector<Symbol*> s){
 
     this->_symbols = s;
     textEdit->textCursor().beginEditBlock();
@@ -1136,7 +1133,7 @@ Qt::Alignment TextEdit::intToAlign(int val){
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;
     int i;
-
+    qDebug() << index;
     if ((index > (this->_symbols.size())) || index < 0) {
         return pos;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
     }

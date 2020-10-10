@@ -105,17 +105,22 @@ void Client::onReadyRead(){
         break;
     case 3:
         qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
-        in >> insert >> position >> counter >> recSiteId >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-        s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
-        if(insert==1){ //nel caso sia un inserimento
-            if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
-                  Message m{'i', s};
-                  message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+        int n_sym;
+        in >> insert >> n_sym;
+        for(int i=0; i<n_sym; i++){
+            in >> position >> counter >> recSiteId >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+            s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
+            if(insert==1){ //nel caso sia un inserimento
+                if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
+                      Message m{'i', s};
+                      message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                }
+            }else{ //nel caso sia una cancellazione
+                    Message m{'d', s};
+                    message_from_server(m);
             }
-        }else{ //nel caso sia una cancellazione
-                Message m{'d', s};
-                message_from_server(m);
         }
+
         break;
     case 4:
         qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
@@ -123,13 +128,12 @@ void Client::onReadyRead(){
 
         in >> fileSize;
         for(int i = 0 ; i<fileSize ; i++){
-            in >> daButtare >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+            in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
             s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font);
-            text.append(value);
             sVector.push_back(s);
         }
         if(fileSize!=0){
-            file_Ready(sVector, text);
+            file_ready(sVector);
         }
         break;
     case 6:
