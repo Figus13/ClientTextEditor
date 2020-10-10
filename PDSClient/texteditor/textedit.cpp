@@ -1023,7 +1023,9 @@ void TextEdit::onTextChanged(int pos, int del, int add){
             messagesAdd.push_back(mess);
         }
     }
-    message_ready(messagesAdd, fileName);
+    if(messagesAdd.size() != 0){
+        message_ready(messagesAdd, fileName);
+    }
 }
 
 void TextEdit::onMessageFromServer(Message m){
