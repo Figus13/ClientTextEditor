@@ -18,7 +18,8 @@ SOURCES += \
     newfiledialog.cpp \
     newfilefromuridialog.cpp \
     showuridialog.cpp \
-    texteditor/textedit.cpp
+    texteditor/textedit.cpp \
+    user.cpp
 
 HEADERS += \
     Symbol.h \
@@ -29,7 +30,8 @@ HEADERS += \
     newfiledialog.h \
     newfilefromuridialog.h \
     showuridialog.h \
-    texteditor/textedit.h
+    texteditor/textedit.h \
+    user.h
 
 FORMS += \
     filesselection.ui \

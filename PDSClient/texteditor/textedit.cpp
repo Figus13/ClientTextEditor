@@ -978,6 +978,16 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     QTextCursor cursor(textEdit->textCursor());
     QVector<QFont> fonts;
 
+    /* DEBUG DEI CURSORI */
+    if(this->_symbols.size() == 5){
+        map_user.insert(std::pair<int, User*>(siteId, new User(1, "username", textEdit)));
+        user_change_cursor(1, 2);
+    }
+    if(this->_symbols.size() == 6){
+         user_change_cursor(1, 3);
+    }
+
+    //FINE DEBUG
     if(cursor.position() == pos){
          for(int i=0; i<del; i++){
              cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
@@ -1337,4 +1347,49 @@ void TextEdit::onShareURIButtonPressed(){
 
     setUriRequest(true);
     client->requestURI(this->fileName);
+}
+
+/* DA MODIFICARE */
+void TextEdit::user_change_cursor(int siteId, int pos) {
+
+    QTextCursor cursor(textEdit->textCursor());
+    int pos_entry = cursor.position();//DEBUG
+    cursor.setPosition(pos);//setto la posizione per poter prendere le coordinate
+    QTextCharFormat plainFormat(cursor.charFormat());
+    QRect editor = textEdit->rect();
+
+    int editor_height = editor.height();//altezza editor;
+    int editor_width = editor.width();//larghezza editor;
+    QRect rt = textEdit->cursorRect(cursor);
+    int rt_height = rt.height();
+    //label con il nome utente
+    int label_width = map_user.find(siteId)->second->getLabel()->width();//larghezza label da aggiornare/inserire
+    int x = rt.x() + 7;
+    int y = rt.y() - 8;
+    if (editor_width - x < label_width) {//se sono infondo a destra non si vedrà, allora la posto più a sinistra
+        x = x - label_width;
+    }
+    if (y < 0) y = 0;
+    if (y > editor_height) y = editor_height - 20;
+    //QLabel* label;
+    //map_user.value(siteId)->getLabel()->hide();
+
+    map_user.find(siteId)->second->getLabel()->hide();
+    map_user.find(siteId)->second->getLabel()->move(x, y);
+    //map_user.find(siteId)->second->getLabel()->move(textEdit->mapToGlobal(QPoint(x, y)));
+    //map_user.find(siteId)->second->getLabel()->raise();
+    map_user.find(siteId)->second->getLabel()->show();
+
+
+    //map_user.find(siteId)->second->getLabel_cur()->setFixedHeight(comboSize->currentText().toInt() * 2);
+    //lable del cursore mobile colorato
+    //map_user.find(siteId)->second->getLabel_cur()->setFixedHeight(plainFormat.fontPointSize() * 2);
+    map_user.find(siteId)->second->getLabel_cur()->setFixedHeight(rt_height);
+    int x2 = rt.x() - 1;
+    int y2 = rt.y();
+    if (y2 < 0) y2 = 0;
+    if (y2 > editor_height) y2 = editor_height - 10;
+    map_user.find(siteId)->second->getLabel_cur()->hide();
+    map_user.find(siteId)->second->getLabel_cur()->move(x2, y2);
+    map_user.find(siteId)->second->getLabel_cur()->show();
 }

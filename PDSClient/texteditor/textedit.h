@@ -62,6 +62,7 @@
 #include "client.h"
 #include "Symbol.h"
 #include "message.h"
+#include "user.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -149,6 +150,8 @@ private:
     Qt::Alignment intToAlign(int val);
     void getURI();
     void setUriRequest(bool status);
+    void user_change_cursor(int siteId, int pos);
+    std::map<int, User*> map_user;
 
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
