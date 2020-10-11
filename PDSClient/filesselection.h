@@ -36,6 +36,7 @@ private slots:
     void showContextMenu(const QPoint&);
     void onShareURIButtonPressed();
     void onURIReady(QString uri);
+    void onUriError();
 
 private:
     Ui::FilesSelection *ui;

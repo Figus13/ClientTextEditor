@@ -140,7 +140,7 @@ void Client::onReadyRead(){
         int numFiles;
         in >> status;
         if(status == 1){  //riceviamo i file.
-            in >>this->siteId >> numFiles;
+            in >> this->siteId >> numFiles;
             files.clear();
             for(int i=0; i<numFiles; i++){
                  QString filename;
@@ -155,13 +155,19 @@ void Client::onReadyRead(){
     case 7:
         int operation;
         in >> operation;
-        if(operation == 1){  //riceviamo il file.
-
+        if(operation == 1){  //La condivisione è andata a buon fine, quindi aggiungo il nuovo file alla lista
+            QString filename;
+            in >> filename;
+            files.append(filename);
+            files_list_refreshed(files);
         }
         else if(operation == 2){
             QString uri;
             in >> uri;
             URI_Ready(uri);
+        }
+        else if (operation == 3) {
+            uri_error();
         }
         break;
     case 8:
@@ -274,4 +280,12 @@ void Client::requestURI(QString filename){
     socket->write(buf);
     socket->flush();
 
+}
+
+void Client::getFileFromURI(QString uri) {
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    out << 7 << 1 << uri;
+
+    socket->write(buf);
 }

@@ -20,6 +20,7 @@ public:
     int getSiteId();
     QTcpSocket* getSocket();
     void requestURI(QString filename);
+    void getFileFromURI(QString uri);
 
 signals:
     void login_successful();
@@ -31,6 +32,7 @@ signals:
     void file_ready(QVector<Symbol *> s);
     void URI_Ready(QString uri);
     void disconnect_URI();
+    void uri_error();
 
 public slots:
     void onMessageReady(QVector<Message> messages, QString filename);

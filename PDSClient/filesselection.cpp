@@ -1,6 +1,7 @@
 #include "filesselection.h"
 #include "ui_filesselection.h"
 #include <QMenu>
+#include <QMessageBox>
 #include "showuridialog.h"
 
 FilesSelection::FilesSelection(QWidget *parent, Client* client) :
@@ -18,8 +19,8 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
     ui->fileListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->fileListWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
-    connect(client, &Client::URI_Ready,
-            this, &FilesSelection::onURIReady);
+    connect(client, &Client::URI_Ready, this, &FilesSelection::onURIReady);
+    connect(client, &Client::uri_error, this, &FilesSelection::onUriError);
 
 }
 
@@ -34,6 +35,7 @@ void FilesSelection::setUriRequest(bool status) {
 
 void FilesSelection::onFilesListRefreshed(QVector<QString> files)
 {
+    ui->fileListWidget->clear();
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
     }
@@ -65,19 +67,8 @@ void FilesSelection::on_newFileFromLink_clicked()
     NewFileFromURIdialog dialog;
     dialog.setModal(true);
     if(dialog.exec()){
-        QString filename = dialog.getFilename();
-        ui->fileListWidget->addItem(filename);
-
-        TextEdit* mw = new TextEdit{0, client, filename};
-
-        const QRect availableGeometry = mw->screen()->availableGeometry();
-        mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-        mw->move((availableGeometry.width() - mw->width()) / 2,
-                   (availableGeometry.height() - mw->height()) / 2);
-        hide();
-        mw->show();
-        QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
-        client->getFile(filename);
+        QString uri = dialog.getUri();
+        client->getFileFromURI(uri);
     }
 
 
@@ -129,6 +120,10 @@ void FilesSelection::onURIReady(QString uri) {
         dialog.setModal(true);
         if(dialog.exec()){}
     }
+}
+
+void FilesSelection::onUriError() {
+    QMessageBox::information(this,"Condivisione documento","Condivisione non riuscita, URI inesistente.");
 }
 
 void FilesSelection::showWindow(){

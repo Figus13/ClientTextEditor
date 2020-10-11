@@ -13,7 +13,7 @@ NewFileFromURIdialog::~NewFileFromURIdialog()
     delete ui;
 }
 
-QString NewFileFromURIdialog::getFilename(){
+QString NewFileFromURIdialog::getUri(){
     return hashedfilename;
 }
 
