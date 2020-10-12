@@ -74,7 +74,7 @@ void Client::onReadyRead(){
         if(status == 0){
             login_failed();
         }else if(status == 1){
-            in >> this->nickname;
+            in >> this->username >> this->nickname;
             /*int numFiles;
             in >> operation >> status;
             if(operation == 6 && status ==1){  //riceviamo i file.
@@ -100,7 +100,7 @@ void Client::onReadyRead(){
         if(statusReg==0){
             registration_failed();
         }else if(statusReg == 1){
-            in >> this->siteId;
+            in >> this->siteId >> this->username >> this->nickname;
             registration_successful();
         }
         break;
