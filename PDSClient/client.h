@@ -4,6 +4,7 @@
 #include <Symbol.h>
 #include <iostream>
 #include <message.h>
+#include "fileinfo.h"
 
 class Client : public QObject
 {
@@ -14,13 +15,15 @@ public:
     void login(QString username, QString password);
     void registration(QString username, QString password, QString nick);
     void getFiles();
-    void addFile(QString filename);
-    void getFile(QString filename);
+    void getFile(int fileIndex);
     void closeFile(QString filename);
     int getSiteId();
     QTcpSocket* getSocket();
     void requestURI(QString filename);
     void getFileFromURI(QString uri);
+    void addFile(FileInfo * file);
+    QString getUsername();
+    QString getNickname();
 
 signals:
     void login_successful();
@@ -28,7 +31,7 @@ signals:
     void registration_successful();
     void registration_failed();
     void message_from_server(Message m);
-    void files_list_refreshed(QVector<QString> files);
+    void files_list_refreshed(QVector<FileInfo *> files);
     void file_ready(QVector<Symbol *> s);
     void URI_Ready(QString uri);
     void disconnect_URI();
@@ -47,10 +50,11 @@ public slots:
 private:
     QTcpSocket* socket;
     QString username;
+    QString nickname;
     QString password;
     int siteId;
     int counter;
-    QVector<QString> files;
+    QVector<FileInfo *> files;
     QVector<Symbol*> symbols;
     QMap<int, QString> clients;
 

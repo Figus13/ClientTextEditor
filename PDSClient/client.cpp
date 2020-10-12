@@ -73,7 +73,8 @@ void Client::onReadyRead(){
         in >> status;
         if(status == 0){
             login_failed();
-        }else if(status == 1){  
+        }else if(status == 1){
+            in >> this->nickname;
             /*int numFiles;
             in >> operation >> status;
             if(operation == 6 && status ==1){  //riceviamo i file.
@@ -88,11 +89,11 @@ void Client::onReadyRead(){
                 login_successful();
             }else{
                 qDebug() <<  "errore nella funzione per lettura file";*/
-                login_successful();
+            login_successful();
 
         }
         break;
-     case 1:
+    case 1:
         std::cout<< "registration\n";
         int statusReg;
         in >> statusReg;
@@ -112,12 +113,12 @@ void Client::onReadyRead(){
             s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
             if(insert==1){ //nel caso sia un inserimento
                 if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
-                      Message m{'i', s};
-                      message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                    Message m{'i', s};
+                    message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
                 }
             }else{ //nel caso sia una cancellazione
-                    Message m{'d', s};
-                    message_from_server(m);
+                Message m{'d', s};
+                message_from_server(m);
             }
         }
 
@@ -143,9 +144,12 @@ void Client::onReadyRead(){
             in >> this->siteId >> numFiles;
             files.clear();
             for(int i=0; i<numFiles; i++){
-                 QString filename;
-                in >> filename;
-                files.append(filename);
+                QString filename;
+                QString usernameOwner; //riceve lo username del creatore
+                QString nicknameOwner;
+                in >> filename >> usernameOwner >> nicknameOwner;
+                FileInfo * file = new FileInfo(filename, username, nicknameOwner);
+                files.append(file);
             }
             files_list_refreshed(files);
         }else{
@@ -157,8 +161,11 @@ void Client::onReadyRead(){
         in >> operation;
         if(operation == 1){  //La condivisione è andata a buon fine, quindi aggiungo il nuovo file alla lista
             QString filename;
-            in >> filename;
-            files.append(filename);
+            QString usernameOwner; //riceve lo username del creatore
+            QString nicknameOwner;
+            in >> filename >> usernameOwner >> nicknameOwner;
+            FileInfo * file = new FileInfo(filename, username, nicknameOwner);
+            files.append(file);
             files_list_refreshed(files);
         }
         else if(operation == 2){
@@ -221,15 +228,25 @@ void Client::getFiles(){
     return; // i file vengono inviati dalla signal list_files_refreshed
 }
 
-void Client::addFile(QString filename){
-    files.append(filename);
+
+/*
+ * La addFile aggiunge alla lista di files un nuovo file e
+ *  richiama la funzione per la ricezione di un file dal server
+ */
+void Client::addFile(FileInfo * file){
+    files.append(file);
+    getFile(files.size()-1);
 }
 
-void Client::getFile(QString filename){
+/*
+ * modificata, ora riceve come argomento l'indice del file del vettore di files
+ */
+void Client::getFile(int fileIndex){
 
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    out << 4 << filename;
+    FileInfo * file = files[fileIndex];
+    out << 4 << file->getFileName() << file->getUsername();
 
     socket->write(buf);
 }
@@ -249,7 +266,7 @@ void Client::onMessageReady(QVector<Message> messages, QString filename){
         for(int i=0; i< messages.size(); i++){
             Symbol *s = messages[i].getSymbol();
             out << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
-        << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
+                << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
 
         }
 
@@ -288,4 +305,12 @@ void Client::getFileFromURI(QString uri) {
     out << 7 << 1 << uri;
 
     socket->write(buf);
+}
+
+QString Client::getNickname(){
+    return nickname;
+}
+
+QString Client::getUsername(){
+    return username;
 }

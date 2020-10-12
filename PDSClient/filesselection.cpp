@@ -33,11 +33,11 @@ void FilesSelection::setUriRequest(bool status) {
     this->uriRequest = status;
 }
 
-void FilesSelection::onFilesListRefreshed(QVector<QString> files)
+void FilesSelection::onFilesListRefreshed(QVector<FileInfo *> files)
 {
     ui->fileListWidget->clear();
-    for(int i=0; i<files.size(); i++){
-        ui->fileListWidget->addItem(files[i]);
+    for(int i=0; i<files.size(); i++){   
+        ui->fileListWidget->addItem(files[i]->getFileName() + " (" + files[i]->getNickname() + ")");
     }
 }
 
@@ -47,7 +47,8 @@ void FilesSelection::on_newDocumentButton_clicked()
     dialog.setModal(true);
     if(dialog.exec()){
         QString filename = dialog.getFilename();
-        ui->fileListWidget->addItem(filename);
+        FileInfo * file = new FileInfo(filename,client->getUsername(),client->getNickname());
+        ui->fileListWidget->addItem(filename + " ("+client->getNickname()+")");
 
         TextEdit* mw = new TextEdit{0, client, filename};
 
@@ -58,7 +59,7 @@ void FilesSelection::on_newDocumentButton_clicked()
         hide();
         mw->show();
         QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
-        client->getFile(filename);
+        client->addFile(file);
     }
 }
 
@@ -76,8 +77,9 @@ void FilesSelection::on_newFileFromLink_clicked()
 
 void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
 {
-    QString filename = item->text();
-    client->getFile(filename);
+    QString filename = item->text().split(" ")[0];
+    int fileIndex = ui->fileListWidget->currentRow();
+    client->getFile(fileIndex);
     TextEdit* mw = new TextEdit{0, client, filename};
     hide();
     const QRect availableGeometry = mw->screen()->availableGeometry();

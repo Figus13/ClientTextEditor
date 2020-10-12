@@ -32,7 +32,7 @@ private slots:
     void on_newFileFromLink_clicked();
     void showWindow();
     void on_fileListWidget_itemDoubleClicked(QListWidgetItem *item);
-    void onFilesListRefreshed(QVector<QString> files);
+    void onFilesListRefreshed(QVector<FileInfo *> files);
     void showContextMenu(const QPoint&);
     void onShareURIButtonPressed();
     void onURIReady(QString uri);
