@@ -125,7 +125,8 @@ void Client::onReadyRead(){
     case 4:
         qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
         int fileSize; //1 se inserimento, 0 se cancellazione
-
+        int alreadyConnected;
+        int siteId;
         in >> fileSize;
         for(int i = 0 ; i<fileSize ; i++){
             in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
@@ -134,6 +135,11 @@ void Client::onReadyRead(){
         }
         if(fileSize!=0){
             file_ready(sVector);
+        }
+        in >> alreadyConnected;
+        for(int i = 0; i<alreadyConnected; i++){
+            in >> siteId >> nickname;
+            emit signal_connection(siteId, nickname, 1);
         }
         break;
     case 6:
