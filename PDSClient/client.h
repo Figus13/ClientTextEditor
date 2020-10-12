@@ -24,12 +24,13 @@ public:
     void addFile(FileInfo * file);
     QString getUsername();
     QString getNickname();
+    QVector<FileInfo *> getMyFileList();
 
 signals:
     void login_successful();
     void login_failed();
     void registration_successful();
-    void registration_failed();
+    void registration_failed(int status);
     void message_from_server(Message m);
     void files_list_refreshed(QVector<FileInfo *> files);
     void file_ready(QVector<Symbol *> s);

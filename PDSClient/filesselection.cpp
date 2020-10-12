@@ -36,8 +36,15 @@ void FilesSelection::setUriRequest(bool status) {
 void FilesSelection::onFilesListRefreshed(QVector<FileInfo *> files)
 {
     ui->fileListWidget->clear();
-    for(int i=0; i<files.size(); i++){   
-        ui->fileListWidget->addItem(files[i]->getFileName() + " (" + files[i]->getNickname() + ")");
+    for(int i=0; i<files.size(); i++){
+
+        int nameLength = files[i]->getFileName().size() - 4;
+
+        /*
+         * Eliminazione dell'estensione
+         */
+
+        ui->fileListWidget->addItem(files[i]->getFileName().remove(nameLength,4) + " (" + files[i]->getNickname() + ")");
     }
 }
 
@@ -47,20 +54,44 @@ void FilesSelection::on_newDocumentButton_clicked()
     dialog.setModal(true);
     if(dialog.exec()){
         QString filename = dialog.getFilename();
-        FileInfo * file = new FileInfo(filename,client->getUsername(),client->getNickname());
-        ui->fileListWidget->addItem(filename + " ("+client->getNickname()+")");
-        int fileIndex =  ui->fileListWidget->count()-1;
 
-        TextEdit* mw = new TextEdit{0, client, filename, fileIndex};
 
-        const QRect availableGeometry = mw->screen()->availableGeometry();
-        mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-        mw->move((availableGeometry.width() - mw->width()) / 2,
-                   (availableGeometry.height() - mw->height()) / 2);
-        hide();
-        mw->show();
-        QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
-        client->addFile(file);
+        if( filename.contains("/") || filename.contains("\\") || filename.contains(":") ||
+                filename.contains("*") || filename.contains("?") || filename.contains("\"") ||
+                filename.contains("<") || filename.contains(">") || filename.contains("|"))
+        {
+            QMessageBox::warning(this,"Nuovo Documento","Il nome del file non può contenere i seguenti caratteri: / \\ : * ? \" < > |");
+            return;
+
+        }else{
+            bool flag = false;
+            FileInfo * file = new FileInfo(filename + ".txt",client->getUsername(),client->getNickname());
+            for(FileInfo * f : client->getMyFileList()){
+                if( f->getFileName() == filename + ".txt" && f->getUsername() == client->getUsername()){
+                  flag = true;
+                  break;
+                }
+            }
+            if(flag){
+                QMessageBox::warning(this,"Nuovo Documento","Il file è già presente nella lista");
+                return;
+            }else{
+
+                ui->fileListWidget->addItem(filename + " ("+client->getNickname()+")");
+                int fileIndex =  ui->fileListWidget->count()-1;
+
+                TextEdit* mw = new TextEdit{0, client, filename, fileIndex};
+
+                const QRect availableGeometry = mw->screen()->availableGeometry();
+                mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+                mw->move((availableGeometry.width() - mw->width()) / 2,
+                         (availableGeometry.height() - mw->height()) / 2);
+                hide();
+                mw->show();
+                QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
+                client->addFile(file);
+            }
+        }
     }
 }
 
@@ -86,7 +117,7 @@ void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
     const QRect availableGeometry = mw->screen()->availableGeometry();
     mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
     mw->move((availableGeometry.width() - mw->width()) / 2,
-               (availableGeometry.height() - mw->height()) / 2);
+             (availableGeometry.height() - mw->height()) / 2);
     mw->show();
     QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
 }

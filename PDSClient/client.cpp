@@ -97,9 +97,9 @@ void Client::onReadyRead(){
         std::cout<< "registration\n";
         int statusReg;
         in >> statusReg;
-        if(statusReg==0){
-            registration_failed();
-        }else if(statusReg == 1){
+        if(statusReg!=1){
+            registration_failed(statusReg);
+        }else{
             in >> this->siteId >> this->username >> this->nickname;
             registration_successful();
         }
@@ -125,16 +125,28 @@ void Client::onReadyRead(){
         break;
     case 4:
         qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
+        int operazione;
+
         int fileSize; //1 se inserimento, 0 se cancellazione
 
-        in >> fileSize;
-        for(int i = 0 ; i<fileSize ; i++){
-            in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font);
-            sVector.push_back(s);
-        }
-        if(fileSize!=0){
-            file_ready(sVector);
+        in >> operazione;
+
+        if(operazione == 2){
+            /*
+             * Gestione Errore
+             */
+            qDebug()<<"Errore";
+
+        }else{
+            in >> fileSize;
+            for(int i = 0 ; i<fileSize ; i++){
+                in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+                s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font);
+                sVector.push_back(s);
+            }
+            if(fileSize!=0){
+                file_ready(sVector);
+            }
         }
         break;
     case 6:
@@ -226,6 +238,10 @@ void Client::getFiles(){
     socket->write(buf);
     socket->flush();
     return; // i file vengono inviati dalla signal list_files_refreshed
+}
+
+QVector<FileInfo *> Client::getMyFileList(){
+    return this->files;
 }
 
 
