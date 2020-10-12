@@ -49,8 +49,9 @@ void FilesSelection::on_newDocumentButton_clicked()
         QString filename = dialog.getFilename();
         FileInfo * file = new FileInfo(filename,client->getUsername(),client->getNickname());
         ui->fileListWidget->addItem(filename + " ("+client->getNickname()+")");
+        int fileIndex =  ui->fileListWidget->count()-1;
 
-        TextEdit* mw = new TextEdit{0, client, filename};
+        TextEdit* mw = new TextEdit{0, client, filename, fileIndex};
 
         const QRect availableGeometry = mw->screen()->availableGeometry();
         mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
@@ -80,7 +81,7 @@ void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
     QString filename = item->text().split(" ")[0];
     int fileIndex = ui->fileListWidget->currentRow();
     client->getFile(fileIndex);
-    TextEdit* mw = new TextEdit{0, client, filename};
+    TextEdit* mw = new TextEdit{0, client, filename, fileIndex};
     hide();
     const QRect availableGeometry = mw->screen()->availableGeometry();
     mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
@@ -110,8 +111,8 @@ void FilesSelection::showContextMenu(const QPoint &pos)
 
 void FilesSelection::onShareURIButtonPressed(){
     setUriRequest(true);
-    QString filename = ui->fileListWidget->item(ui->fileListWidget->currentRow())->text();
-    client->requestURI(filename);
+    int fileIndex = ui->fileListWidget->currentRow();
+    client->requestURI(fileIndex);
 }
 
 void FilesSelection::onURIReady(QString uri) {

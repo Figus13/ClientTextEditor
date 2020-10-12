@@ -95,8 +95,8 @@ const QString rsrcPath = ":/images/mac";
 const QString rsrcPath = ":/images/win";
 #endif
 
-TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
-    : QMainWindow(parent), client(client), fileName(filename)
+TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIndex)
+    : QMainWindow(parent), client(client), fileName(filename), fileIndex(fileIndex)
 {
     counter=0;
     siteId=client->getSiteId();
@@ -185,7 +185,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
     /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
 
     /*aggiunta*/
-    client->closeFile(fileName);
+    client->closeFile(this->fileIndex);
     emit closeWindow();
     disconnect(this, &TextEdit::message_ready, client, &Client::onMessageReady);
     /*fine aggiunta*/
@@ -1004,7 +1004,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
          }
      }
      if(messagesDel.size() != 0){
-        message_ready(messagesDel, fileName);
+        message_ready(messagesDel, this->fileIndex);
      }
      QVector<Message> messagesAdd;
 
@@ -1024,7 +1024,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         }
     }
     if(messagesAdd.size() != 0){
-        message_ready(messagesAdd, fileName);
+        message_ready(messagesAdd, this->fileIndex);
     }
 }
 
@@ -1342,5 +1342,5 @@ void TextEdit::onURIReady(QString uri) {
 void TextEdit::onShareURIButtonPressed(){
 
     setUriRequest(true);
-    client->requestURI(this->fileName);
+    client->requestURI(this->fileIndex);
 }

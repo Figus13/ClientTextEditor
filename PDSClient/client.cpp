@@ -148,7 +148,7 @@ void Client::onReadyRead(){
                 QString usernameOwner; //riceve lo username del creatore
                 QString nicknameOwner;
                 in >> filename >> usernameOwner >> nicknameOwner;
-                FileInfo * file = new FileInfo(filename, username, nicknameOwner);
+                FileInfo * file = new FileInfo(filename, usernameOwner, nicknameOwner);
                 files.append(file);
             }
             files_list_refreshed(files);
@@ -164,7 +164,7 @@ void Client::onReadyRead(){
             QString usernameOwner; //riceve lo username del creatore
             QString nicknameOwner;
             in >> filename >> usernameOwner >> nicknameOwner;
-            FileInfo * file = new FileInfo(filename, username, nicknameOwner);
+            FileInfo * file = new FileInfo(filename, usernameOwner, nicknameOwner);
             files.append(file);
             files_list_refreshed(files);
         }
@@ -184,11 +184,11 @@ void Client::onReadyRead(){
     }
 }
 
-void Client::closeFile(QString filename){
+void Client::closeFile(int fileIndex){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-
-    out << 5 /*# operazione*/ << filename;
+    FileInfo * fi = files[fileIndex];
+    out << 5 /*# operazione*/ << fi->getFileName() << fi->getUsername();
     socket->write(buf);
     socket->flush();
     files_list_refreshed(files);
@@ -235,7 +235,8 @@ void Client::getFiles(){
  */
 void Client::addFile(FileInfo * file){
     files.append(file);
-    getFile(files.size()-1);
+    int size = files.size() - 1;
+    getFile(size);
 }
 
 /*
@@ -256,13 +257,16 @@ void Client::disconnectFromServer(){
     socket->disconnectFromHost();
 }
 
-void Client::onMessageReady(QVector<Message> messages, QString filename){
+void Client::onMessageReady(QVector<Message> messages, int fileIndex){
+
+    FileInfo * fi = files[fileIndex];
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+
     out << 3;
     if(messages[0].getAction()=='i'){
 
-        out << 1 << filename << messages.size();
+        out << 1 << fi->getFileName() << fi->getUsername() << messages.size();
         for(int i=0; i< messages.size(); i++){
             Symbol *s = messages[i].getSymbol();
             out << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
@@ -272,7 +276,7 @@ void Client::onMessageReady(QVector<Message> messages, QString filename){
 
     }else{
         if(messages[0].getAction()=='d'){
-            out <<  0 << filename << messages.size();
+            out <<  0 << fi->getFileName() << fi->getUsername() << messages.size();
             for(int i=0; i< messages.size(); i++){
                 Symbol *s = messages[i].getSymbol();
                 out << s->getSiteId() << s->getCounter()  << s->getPosition();
@@ -287,12 +291,12 @@ QTcpSocket* Client::getSocket(){
     return socket;
 }
 
-void Client::requestURI(QString filename){
-    qDebug() << filename;
+void Client::requestURI(int fileIndex){
+    qDebug() << files[fileIndex];
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
 
-    out << 7 << 2 << filename;
+    out << 7 << 2 << files[fileIndex]->getFileName() <<files[fileIndex]->getUsername();
 
     socket->write(buf);
     socket->flush();

@@ -16,10 +16,10 @@ public:
     void registration(QString username, QString password, QString nick);
     void getFiles();
     void getFile(int fileIndex);
-    void closeFile(QString filename);
+    void closeFile(int fileIndex);
     int getSiteId();
     QTcpSocket* getSocket();
-    void requestURI(QString filename);
+    void requestURI(int fileIndex);
     void getFileFromURI(QString uri);
     void addFile(FileInfo * file);
     QString getUsername();
@@ -38,7 +38,7 @@ signals:
     void uri_error();
 
 public slots:
-    void onMessageReady(QVector<Message> messages, QString filename);
+    void onMessageReady(QVector<Message> messages, int fileIndex);
 
 private slots:
     void onConnected();

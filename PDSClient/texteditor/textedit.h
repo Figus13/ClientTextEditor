@@ -78,16 +78,17 @@ class TextEdit : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent = 0, Client *client=nullptr, QString filename="");
+    TextEdit(QWidget *parent = 0, Client *client=nullptr, QString filename="", int fileIndex = -1);
 
     bool load(const QString &f);
+
 
 public slots:
     void fileNew();
 
 signals:
     /*-----AGGIUNTE DA NOI------*/
-    void message_ready(QVector<Message> messages, QString filename);
+    void message_ready(QVector<Message> messages, int fileIndex);
     void closeWindow();
 
 protected:
@@ -192,6 +193,7 @@ private:
 
     QToolBar *tb;
     QString fileName;
+    int fileIndex;
     QTextEdit *textEdit;
 
     //FLAGS
