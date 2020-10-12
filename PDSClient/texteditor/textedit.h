@@ -62,7 +62,7 @@
 #include "client.h"
 #include "Symbol.h"
 #include "message.h"
-
+#include "usercursor.h"
 QT_BEGIN_NAMESPACE
 class QAction;
 class QComboBox;
@@ -126,13 +126,14 @@ private slots:
     void onShareURIButtonPressed();
     void onURIReady(QString uri);
     void onFileClosed();
-
+    void onSignalConnection(int siteId, QString nickname, int ins);
 
 
 private:
     /*----AGGIUNTE DA NOI -----*/
     Client *client;
-
+    QMap<int, UserCursor*> cursorsMap;
+    int colorId;
     QVector<Symbol*> _symbols;
     int counter; //Inizializzato sempre a zero nel costruttore
     int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---

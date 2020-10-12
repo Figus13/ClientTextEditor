@@ -31,6 +31,7 @@ signals:
     void file_ready(QVector<Symbol *> s);
     void URI_Ready(QString uri);
     void disconnect_URI();
+    void signal_connection(int siteId, QString nickname, int ins);
 
 public slots:
     void onMessageReady(QVector<Message> messages, QString filename);

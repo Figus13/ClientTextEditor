@@ -119,8 +119,8 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     connect(client, &Client::file_ready,this,&TextEdit::onFileReady);
     connect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
     connect(client, &Client::disconnect_URI, this, &TextEdit::onFileClosed);
-
-
+    connect(client, &Client::signal_connection, this, &TextEdit::onSignalConnection);
+    colorId=0;
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
 
@@ -177,6 +177,16 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     pal.setColor(QPalette::Text, QColor(Qt::black));
     textEdit->setPalette(pal);
 #endif
+}
+
+void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
+    if(ins == 1){
+        cursorsMap.insert(siteId, new UserCursor(siteId, nickname, colorId++));
+    }else if(ins == 0){
+        if(cursorsMap.contains(siteId)){
+            cursorsMap.remove(siteId);
+        }
+    }
 }
 
 

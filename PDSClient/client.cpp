@@ -165,7 +165,9 @@ void Client::onReadyRead(){
         }
         break;
     case 8:
-        in >> nickname >> daButtare;
+        int ins;
+        in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
+        emit signal_connection(siteId, nickname, ins);
         break;
     default: break;
     }
