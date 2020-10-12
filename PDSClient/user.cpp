@@ -30,10 +30,10 @@ User::User(int id_color, QString username, QWidget* text)
     label_cur->hide();
     label->setTextFormat(Qt::RichText);
     label->setFixedHeight(20);
-    label->setAutoFillBackground(false);
+    label->setAutoFillBackground(false); //se settato a true si vede la label ma non quello sotto.
     label->setFont(QFont("Comic Sans MS", 9, 63, false));
     label->setStyleSheet("color:" + colors[id_color% N_COLOR]);
-    label->setText("<p>" + username + "  <img src=:/images/win/user.png vertical-align=middle> </p>");
+    label->setText("<p>" + username /*+ "  <img src=:/images/win/user.png vertical-align=middle> </p>"*/);
     label->topLevelWidget();
     label->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     label->setWindowFlags(Qt::WindowStaysOnTopHint);

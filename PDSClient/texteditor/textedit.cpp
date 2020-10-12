@@ -980,7 +980,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 
     /* DEBUG DEI CURSORI */
     if(this->_symbols.size() == 5){
-        map_user.insert(std::pair<int, User*>(siteId, new User(1, "username", textEdit)));
+        map_user.insert(std::pair<int, User*>(1, new User(2, "username", textEdit)));
         user_change_cursor(1, 2);
     }
     if(this->_symbols.size() == 6){
