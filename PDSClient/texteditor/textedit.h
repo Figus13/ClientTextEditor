@@ -132,7 +132,7 @@ private slots:
 private:
     /*----AGGIUNTE DA NOI -----*/
     Client *client;
-    QMap<int, UserCursor*> cursorsMap;
+    QMap<int, std::shared_ptr<UserCursor>> cursorsMap;
     int colorId;
     QVector<Symbol*> _symbols;
     int counter; //Inizializzato sempre a zero nel costruttore

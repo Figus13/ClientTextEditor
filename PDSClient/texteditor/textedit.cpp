@@ -181,7 +181,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
 
 void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
     if(ins == 1){
-        cursorsMap.insert(siteId, new UserCursor(siteId, nickname, colorId++));
+        cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId++)));
     }else if(ins == 0){
         if(cursorsMap.contains(siteId)){
             cursorsMap.remove(siteId);
