@@ -130,11 +130,12 @@ void FilesSelection::showContextMenu(const QPoint &pos)
     // Create menu and insert some actions
     QMenu menu;
 
-    /*
-     * menu.addAction(tr("&Elimina file"), this, &FilesSelection::EraseFile); // DA IMPLEMENTARE
-     */
+
+
+
 
     menu.addAction(tr("&Condividi Documento"), this, &FilesSelection::onShareURIButtonPressed);
+    menu.addAction(tr("&Elimina file"), this, &FilesSelection::OnEraseFileButtonPressed);
 
     // Show context menu at handling position
     menu.exec(globalPos);
@@ -144,6 +145,11 @@ void FilesSelection::onShareURIButtonPressed(){
     setUriRequest(true);
     int fileIndex = ui->fileListWidget->currentRow();
     client->requestURI(fileIndex);
+}
+
+void FilesSelection::OnEraseFileButtonPressed(){
+     int fileIndex = ui->fileListWidget->currentRow();
+     client->deleteFile(fileIndex);
 }
 
 void FilesSelection::onURIReady(QString uri) {

@@ -17,6 +17,7 @@ public:
     void getFiles();
     void getFile(int fileIndex);
     void closeFile(int fileIndex);
+    void deleteFile(int fileIndex);
     int getSiteId();
     QTcpSocket* getSocket();
     void requestURI(int fileIndex);

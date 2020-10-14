@@ -192,6 +192,28 @@ void Client::onReadyRead(){
     case 8:
         in >> nickname >> daButtare;
         break;
+    case 9:
+        int value;
+        in >> value;
+
+        if(value == 0){
+            getFiles();
+        }else if(value == 1){
+            /*
+             * Errore Non sei il creatore del file non puoi cancellarlo
+             */
+            qDebug() << " Non sei il creatore del file";
+        }else if(value == 2){
+            /*
+             * il file non esiste
+             */
+            qDebug() << " Il file potrebbe essere stato rimosso" ;
+            getFiles();
+        }
+
+
+        break;
+
     default: break;
     }
 }
@@ -333,4 +355,16 @@ QString Client::getNickname(){
 
 QString Client::getUsername(){
     return username;
+}
+
+void Client::deleteFile(int fileIndex){
+
+
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    out << 9 << files[fileIndex]->getFileName() <<files[fileIndex]->getUsername();
+
+    socket->write(buf);
+
+
 }
