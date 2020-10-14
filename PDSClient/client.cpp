@@ -139,7 +139,7 @@ void Client::onReadyRead(){
         in >> alreadyConnected;
         for(int i = 0; i<alreadyConnected; i++){
             in >> siteId >> nickname;
-            emit signal_connection(siteId, nickname, 1);
+            emit signal_connection(siteId, nickname, 1); //PENSARCI: forse lo gestirei diversamente
         }
         break;
     case 6:
@@ -175,8 +175,16 @@ void Client::onReadyRead(){
         in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
         emit signal_connection(siteId, nickname, ins);
         break;
+    case 11:
+    {
+        int siteIdSender, index;
+        QString filename;
+        in >> filename >> index >> siteIdSender;
+        remote_cursor_changed(filename, index, siteIdSender);
+    }
     default: break;
     }
+
 }
 
 void Client::closeFile(QString filename){
@@ -281,5 +289,14 @@ void Client::requestURI(QString filename){
 
     socket->write(buf);
     socket->flush();
+}
 
+void Client::onMyCursorPositionChanged(int index){
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+
+    out << 11 << index;
+
+    socket->write(buf);
+    socket->flush();
 }

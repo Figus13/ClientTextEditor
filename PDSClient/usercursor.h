@@ -7,7 +7,7 @@ constexpr auto N_COLOR = 18;
 class UserCursor
 {
 public:
-    UserCursor(int siteId, QString nickname, int colorId);
+    UserCursor(int siteId, QString nickname, int colorId,  QWidget* text);
     int getColorId();
     void setNickname(QString nickname);
     QString getNickname();
@@ -17,6 +17,8 @@ public:
     int getPos();
     void setPos(int pos);
     int getSiteId();
+    QLabel* getLabel_cur();
+
 private:
     QString nickname;
     int siteId;
@@ -24,6 +26,7 @@ private:
     int colorId;
     QColor color;
     QLabel* label;
+    QLabel *label_cur;
 };
 
 #endif // USERCURSOR_H

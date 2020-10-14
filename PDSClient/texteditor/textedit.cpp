@@ -120,6 +120,11 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     connect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
     connect(client, &Client::disconnect_URI, this, &TextEdit::onFileClosed);
     connect(client, &Client::signal_connection, this, &TextEdit::onSignalConnection);
+    connect(this, &TextEdit::my_cursor_position_changed,
+            client, &Client::onMyCursorPositionChanged);
+    connect(client, &Client::remote_cursor_changed,
+            this, &TextEdit::remoteCursorChanged);
+
     colorId=0;
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -181,7 +186,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
 
 void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
     if(ins == 1){
-        cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId++)));
+        cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId++, textEdit)));
     }else if(ins == 0){
         if(cursorsMap.contains(siteId)){
             cursorsMap.remove(siteId);
@@ -922,6 +927,8 @@ void TextEdit::cursorPositionChanged()
         int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
         comboStyle->setCurrentIndex(headingLevel ? headingLevel + 10 : 0);
     }
+    int index = textEdit->textCursor().anchor();
+    my_cursor_position_changed(index);
 }
 
 void TextEdit::clipboardDataChanged()
@@ -989,6 +996,14 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     QTextCursor cursor(textEdit->textCursor());
     QVector<QFont> fonts;
 
+    /*PER DEBUG CURSORI
+     * if(_symbols.size()>4){
+        if(!cursorsMap.contains(1))
+            cursorsMap.insert(1, std::make_shared<UserCursor>(UserCursor(1, "nickname", 3, textEdit)));
+
+        remoteCursorChangePosition(1, _symbols.size()-2);
+    }*/
+
     if(cursor.position() == pos){
          for(int i=0; i<del; i++){
              cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
@@ -1050,7 +1065,8 @@ void TextEdit::onMessageFromServer(Message m){
 }
 
 void TextEdit::onFileReady(QVector<Symbol*> s){
-
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
     this->_symbols = s;
     textEdit->textCursor().beginEditBlock();
     //FLAG_OPEN_FILE = true; sostituita con il disconnect, evitiamo di fare signal->slot
@@ -1083,6 +1099,8 @@ void TextEdit::onFileReady(QVector<Symbol*> s){
             this, &TextEdit::onTextChanged);
     //textEdit->setPlainText(text);
     textEdit->textCursor();
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
 }
 
 void TextEdit::onFileClosed() {
@@ -1353,4 +1371,50 @@ void TextEdit::onShareURIButtonPressed(){
 
     setUriRequest(true);
     client->requestURI(this->fileName);
+}
+
+void TextEdit::remoteCursorChangePosition(int siteId, int pos) {
+
+    QTextCursor cursor(textEdit->textCursor());
+    int pos_entry = cursor.position();//DEBUG
+    cursor.setPosition(pos);//setto la posizione per poter prendere le coordinate
+    QTextCharFormat plainFormat(cursor.charFormat());
+    QRect editor = textEdit->rect();
+
+    int editor_height = editor.height();//altezza editor;
+    int editor_width = editor.width();//larghezza editor;
+    QRect rt = textEdit->cursorRect(cursor);
+    int rt_height = rt.height();
+    //label con il nome utente
+    int label_width = cursorsMap[siteId]->getLabel()->width();//larghezza label da aggiornare/inserire
+    int x = rt.x() + 7;
+    int y = rt.y() - 8;
+    if (editor_width - x < label_width) {//se sono infondo a destra non si vedrà, allora la posto più a sinistra
+        x = x - label_width;
+    }
+    if (y < 0) y = 0;
+    if (y > editor_height) y = editor_height - 20;
+
+    std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
+    uc->getLabel()->hide();
+    uc->getLabel()->move(x, y);
+    uc->getLabel()->show();
+
+
+
+    uc->getLabel_cur()->setFixedHeight(rt_height);
+    int x2 = rt.x() - 1;
+    int y2 = rt.y();
+    if (y2 < 0) y2 = 0;
+    if (y2 > editor_height) y2 = editor_height - 10;
+    uc->getLabel_cur()->hide();
+    uc->getLabel_cur()->move(x2, y2);
+    uc->getLabel_cur()->show();
+}
+
+void TextEdit::remoteCursorChanged(QString filename, int index, int siteIdSender){
+    if(filename != this->fileName){
+        return;
+    }
+    remoteCursorChangePosition(siteIdSender, index);
 }

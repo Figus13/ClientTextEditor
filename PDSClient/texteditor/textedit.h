@@ -84,11 +84,13 @@ public:
 
 public slots:
     void fileNew();
+    void remoteCursorChanged(QString filename, int index, int siteIdSender);
 
 signals:
     /*-----AGGIUNTE DA NOI------*/
     void message_ready(QVector<Message> messages, QString filename);
     void closeWindow();
+    void my_cursor_position_changed(int index);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -127,6 +129,7 @@ private slots:
     void onURIReady(QString uri);
     void onFileClosed();
     void onSignalConnection(int siteId, QString nickname, int ins);
+    void remoteCursorChangePosition(int siteId, int pos);
 
 
 private:
