@@ -119,6 +119,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIn
     connect(client, &Client::file_ready,this,&TextEdit::onFileReady);
     connect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
     connect(client, &Client::disconnect_URI, this, &TextEdit::onFileClosed);
+    connect(client, &Client::file_erased, this, &TextEdit::onFileErased);
 
 
     /*------------Fine aggiunta--------*/
@@ -179,7 +180,6 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIn
 #endif
 }
 
-
 void TextEdit::closeEvent(QCloseEvent *e)
 {
     /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
@@ -194,6 +194,15 @@ void TextEdit::closeEvent(QCloseEvent *e)
         e->accept();
     else
         e->ignore();*/
+}
+
+void TextEdit::onFileErased(int index) {
+    if(this->fileIndex == index && !this->isHidden()) {
+        qDebug() << "ciao";
+        emit closeWindow();
+        disconnect(this, &TextEdit::message_ready, client, &Client::onMessageReady);
+        hide();
+    }
 }
 
 void TextEdit::setupFileActions()
@@ -1031,10 +1040,10 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 void TextEdit::onMessageFromServer(Message m){
 
     if(m.getAction()=='i'){
-        remoteInsert(m.getSymbol());
+        this->remoteInsert(m.getSymbol());
     }else{
         if(m.getAction()=='d'){
-            remoteDelete(m.getSymbol());
+            this->remoteDelete(m.getSymbol());
         }
     }
 }
@@ -1247,7 +1256,6 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
 void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
-
     int index = findIndexFromNewPosition(sym->getPosition());
     QTextCursor cursor = textEdit->textCursor();
     cursor.setPosition(index, QTextCursor::MoveAnchor);

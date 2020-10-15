@@ -22,6 +22,7 @@ public:
     void requestURI(int fileIndex);
     void getFileFromURI(QString uri);
     void addFile(FileInfo * file);
+    void eraseFile(int fileIndex);
     QString getUsername();
     QString getNickname();
     QVector<FileInfo *> getMyFileList();
@@ -37,6 +38,8 @@ signals:
     void URI_Ready(QString uri);
     void disconnect_URI();
     void uri_error();
+    void file_erased(int index);
+    void eraseFileError();
 
 public slots:
     void onMessageReady(QVector<Message> messages, int fileIndex);

@@ -21,6 +21,8 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     connect(ui->fileListWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(client, &Client::URI_Ready, this, &FilesSelection::onURIReady);
     connect(client, &Client::uri_error, this, &FilesSelection::onUriError);
+    connect(client, &Client::file_erased, this, &FilesSelection::onFileErased);
+    connect(client, &Client::eraseFileError, this, &FilesSelection::onEraseFileError);
 
 }
 
@@ -124,26 +126,34 @@ void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
 
 void FilesSelection::showContextMenu(const QPoint &pos)
 {
-    // Handle global position
-    QPoint globalPos = ui->fileListWidget->mapToGlobal(pos);
+    if(ui->fileListWidget->currentRow() != -1) {
+        // Handle global position
+        QPoint globalPos = ui->fileListWidget->mapToGlobal(pos);
 
-    // Create menu and insert some actions
-    QMenu menu;
+        // Create menu and insert some actions
+        QMenu menu;
 
-    /*
-     * menu.addAction(tr("&Elimina file"), this, &FilesSelection::EraseFile); // DA IMPLEMENTARE
-     */
+        int fileIndex = ui->fileListWidget->currentRow();
+        if(client->getMyFileList()[fileIndex]->getUsername() == client->getUsername()) {
+            menu.addAction(tr("&Elimina file"), this, &FilesSelection::onEraseFileButtonPressed);
+        }
 
-    menu.addAction(tr("&Condividi Documento"), this, &FilesSelection::onShareURIButtonPressed);
+        menu.addAction(tr("&Condividi Documento"), this, &FilesSelection::onShareURIButtonPressed);
 
-    // Show context menu at handling position
-    menu.exec(globalPos);
+        // Show context menu at handling position
+        menu.exec(globalPos);
+    }
 }
 
 void FilesSelection::onShareURIButtonPressed(){
     setUriRequest(true);
     int fileIndex = ui->fileListWidget->currentRow();
     client->requestURI(fileIndex);
+}
+
+void FilesSelection::onEraseFileButtonPressed() {
+    int fileIndex = ui->fileListWidget->currentRow();
+    client->eraseFile(fileIndex);
 }
 
 void FilesSelection::onURIReady(QString uri) {
@@ -156,8 +166,16 @@ void FilesSelection::onURIReady(QString uri) {
     }
 }
 
+void FilesSelection::onFileErased(int index) {
+    onFilesListRefreshed(client->getMyFileList());
+}
+
 void FilesSelection::onUriError() {
     QMessageBox::information(this,"Condivisione documento","Condivisione non riuscita, URI inesistente.");
+}
+
+void FilesSelection::onEraseFileError() {
+    QMessageBox::information(this,"Elimina documento","Errore: impossibile eliminare il file.");
 }
 
 void FilesSelection::showWindow(){

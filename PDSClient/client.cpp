@@ -105,7 +105,7 @@ void Client::onReadyRead(){
         }
         break;
     case 3:
-        qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
+        qDebug() << "3) Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
         int n_sym;
         in >> insert >> n_sym;
         for(int i=0; i<n_sym; i++){
@@ -124,7 +124,7 @@ void Client::onReadyRead(){
 
         break;
     case 4:
-        qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
+        qDebug() << "4) Dobbiamo gestire la ricezione di un file già scritto.";
         int operazione;
 
         int fileSize; //1 se inserimento, 0 se cancellazione
@@ -192,6 +192,26 @@ void Client::onReadyRead(){
     case 8:
         in >> nickname >> daButtare;
         break;
+    case 9:
+        in >> status;
+        if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
+            QString filename;
+            QString usernameOwner;
+            in >> filename >> usernameOwner;
+            FileInfo * file;
+            for(FileInfo * f : files){
+                if( f->getFileName() == filename && f->getUsername() == usernameOwner){   
+                    int index = files.indexOf(f);
+                    files.removeOne(f);
+                    file_erased(index);
+                    break;
+                }
+            }
+        }
+        else {
+            eraseFileError();
+        }
+        break;
     default: break;
     }
 }
@@ -253,6 +273,14 @@ void Client::addFile(FileInfo * file){
     files.append(file);
     int size = files.size() - 1;
     getFile(size);
+}
+
+void Client::eraseFile(int fileIndex) {
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    FileInfo * file = files[fileIndex];
+    out << 9 << file->getFileName() << file->getUsername();
+    socket->write(buf);
 }
 
 /*

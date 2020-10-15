@@ -82,9 +82,9 @@ public:
 
     bool load(const QString &f);
 
-
 public slots:
     void fileNew();
+    void onFileErased(int index);
 
 signals:
     /*-----AGGIUNTE DA NOI------*/

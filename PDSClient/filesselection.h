@@ -35,8 +35,11 @@ private slots:
     void onFilesListRefreshed(QVector<FileInfo *> files);
     void showContextMenu(const QPoint&);
     void onShareURIButtonPressed();
+    void onEraseFileButtonPressed();
     void onURIReady(QString uri);
     void onUriError();
+    void onFileErased(int index);
+    void onEraseFileError();
 
 private:
     Ui::FilesSelection *ui;
