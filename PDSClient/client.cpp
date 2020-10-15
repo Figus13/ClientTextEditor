@@ -108,7 +108,7 @@ void Client::onReadyRead(){
         int n_sym;
         in >> insert >> n_sym;
         for(int i=0; i<n_sym; i++){
-            in >> position >> counter >> recSiteId >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+            in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
             s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
             if(insert==1){ //nel caso sia un inserimento
                 if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
