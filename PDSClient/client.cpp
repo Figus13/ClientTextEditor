@@ -52,31 +52,101 @@ int Client::getSiteId(){
 }
 
 void Client::onReadyRead(){
-    QVector<int> position;
-    int counter, recSiteId, alignment, textSize, daButtare, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
-    QString color, font, text, nickname;
-    QChar value;
-    QVector<Symbol*> sVector;
-    bool isBold, isItalic, isUnderlined;
-    Symbol *s;
+    while (socket->bytesAvailable() != 0) {
+        QVector<int> position;
+        int counter, recSiteId, alignment, textSize, daButtare, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
+        QString color, font, text, nickname;
+        QChar value;
+        QVector<Symbol*> sVector;
+        bool isBold, isItalic, isUnderlined;
+        Symbol *s;
 
-    if (socket->state() != QAbstractSocket::ConnectedState)	return;
+        if (socket->state() != QAbstractSocket::ConnectedState)	return;
 
-    QDataStream in;
-    in.setDevice(socket);//setto lo stream per la ricezione
-    int operation;
-    in >> operation;
-    switch(operation){
-    //ritorno login riuscito o fallito
-    case 0:
-        int status;
-        in >> status;
-        if(status == 0){
-            login_failed();
-        }else if(status == 1){  
-            /*int numFiles;
-            in >> operation >> status;
-            if(operation == 6 && status ==1){  //riceviamo i file.
+        QDataStream in;
+        in.setDevice(socket);//setto lo stream per la ricezione
+        int operation;
+        in >> operation;
+        switch(operation){
+        //ritorno login riuscito o fallito
+        case 0:
+            int status;
+            in >> status;
+            if(status == 0){
+                login_failed();
+            }else if(status == 1){
+                /*int numFiles;
+                in >> operation >> status;
+                if(operation == 6 && status ==1){  //riceviamo i file.
+                    in >>this->siteId >> numFiles;
+                    files.clear();
+                    for(int i=0; i<numFiles; i++){
+                         QString filename;
+                        in >> filename;
+                        files.append(filename);
+                    }
+                    files_list_refreshed(files);
+                    login_successful();
+                }else{
+                    qDebug() <<  "errore nella funzione per lettura file";*/
+                    login_successful();
+
+            }
+            break;
+         case 1:
+            std::cout<< "registration\n";
+            int statusReg;
+            in >> statusReg;
+            if(statusReg==0){
+                registration_failed();
+            }else if(statusReg == 1){
+                in >> this->siteId;
+                registration_successful();
+            }
+            break;
+        case 3:
+            qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
+            int n_sym;
+            in >> insert >> n_sym;
+            for(int i=0; i<n_sym; i++){
+                in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+                s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
+                if(insert==1){ //nel caso sia un inserimento
+                    if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
+                          Message m{'i', s};
+                          message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                    }
+                }else{ //nel caso sia una cancellazione
+                        Message m{'d', s};
+                        message_from_server(m);
+                }
+            }
+
+            break;
+        case 4:
+            qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
+            int fileSize; //1 se inserimento, 0 se cancellazione
+            int alreadyConnected;
+            int siteId;
+            in >> fileSize;
+            for(int i = 0 ; i<fileSize ; i++){
+                in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+                s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font);
+                sVector.push_back(s);
+            }
+            if(fileSize!=0){
+                file_ready(sVector);
+            }
+            in >> alreadyConnected;
+            for(int i = 0; i<alreadyConnected; i++){
+                in >> siteId >> nickname;
+                emit signal_connection(siteId, nickname, 1); //PENSARCI: forse lo gestirei diversamente
+            }
+            break;
+        case 6:
+            int numFiles;
+            in >> status;
+            if(status == 1){  //riceviamo i file.
                 in >>this->siteId >> numFiles;
                 files.clear();
                 for(int i=0; i<numFiles; i++){
@@ -85,104 +155,36 @@ void Client::onReadyRead(){
                     files.append(filename);
                 }
                 files_list_refreshed(files);
-                login_successful();
             }else{
-                qDebug() <<  "errore nella funzione per lettura file";*/
-                login_successful();
-
-        }
-        break;
-     case 1:
-        std::cout<< "registration\n";
-        int statusReg;
-        in >> statusReg;
-        if(statusReg==0){
-            registration_failed();
-        }else if(statusReg == 1){
-            in >> this->siteId;
-            registration_successful();
-        }
-        break;
-    case 3:
-        qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
-        int n_sym;
-        in >> insert >> n_sym;
-        for(int i=0; i<n_sym; i++){
-            in >> position >> counter >> recSiteId >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
-            if(insert==1){ //nel caso sia un inserimento
-                if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
-                      Message m{'i', s};
-                      message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
-                }
-            }else{ //nel caso sia una cancellazione
-                    Message m{'d', s};
-                    message_from_server(m);
+                qDebug() <<  "errore nella funzione per lettura file";
             }
-        }
+            break;
+        case 7:
+            int operation;
+            in >> operation;
+            if(operation == 1){  //riceviamo il file.
 
-        break;
-    case 4:
-        qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
-        int fileSize; //1 se inserimento, 0 se cancellazione
-        int alreadyConnected;
-        int siteId;
-        in >> fileSize;
-        for(int i = 0 ; i<fileSize ; i++){
-            in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font);
-            sVector.push_back(s);
-        }
-        if(fileSize!=0){
-            file_ready(sVector);
-        }
-        in >> alreadyConnected;
-        for(int i = 0; i<alreadyConnected; i++){
-            in >> siteId >> nickname;
-            emit signal_connection(siteId, nickname, 1); //PENSARCI: forse lo gestirei diversamente
-        }
-        break;
-    case 6:
-        int numFiles;
-        in >> status;
-        if(status == 1){  //riceviamo i file.
-            in >>this->siteId >> numFiles;
-            files.clear();
-            for(int i=0; i<numFiles; i++){
-                 QString filename;
-                in >> filename;
-                files.append(filename);
             }
-            files_list_refreshed(files);
-        }else{
-            qDebug() <<  "errore nella funzione per lettura file";
+            else if(operation == 2){
+                QString uri;
+                in >> uri;
+                URI_Ready(uri);
+            }
+            break;
+        case 8:
+            int ins;
+            in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
+            emit signal_connection(siteId, nickname, ins);
+            break;
+        case 11:
+        {
+            int siteIdSender, index;
+            QString filename;
+            in >> filename >> index >> siteIdSender;
+            remote_cursor_changed(filename, index, siteIdSender);
         }
-        break;
-    case 7:
-        int operation;
-        in >> operation;
-        if(operation == 1){  //riceviamo il file.
-
+        default: break;
         }
-        else if(operation == 2){
-            QString uri;
-            in >> uri;
-            URI_Ready(uri);
-        }
-        break;
-    case 8:
-        int ins;
-        in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
-        emit signal_connection(siteId, nickname, ins);
-        break;
-    case 11:
-    {
-        int siteIdSender, index;
-        QString filename;
-        in >> filename >> index >> siteIdSender;
-        remote_cursor_changed(filename, index, siteIdSender);
-    }
-    default: break;
     }
 
 }

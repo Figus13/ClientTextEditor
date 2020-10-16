@@ -927,8 +927,11 @@ void TextEdit::cursorPositionChanged()
         int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
         comboStyle->setCurrentIndex(headingLevel ? headingLevel + 10 : 0);
     }
-    int index = textEdit->textCursor().anchor();
-    my_cursor_position_changed(index);
+    if(!writingFlag){
+         int index = textEdit->textCursor().anchor();
+         my_cursor_position_changed(index);
+    }
+    writingFlag=false;
 }
 
 void TextEdit::clipboardDataChanged()
@@ -948,7 +951,7 @@ void TextEdit::about()
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
-    FLAG_MODIFY_SYMBOL= true;// si potrebbe sfruttare per evitare di fare delete + add ma chiedere al server di modificare
+    //FLAG_MODIFY_SYMBOL= true;// si potrebbe sfruttare per evitare di fare delete + add ma chiedere al server di modificare
                              //  il simbolo
     QTextCursor cursor;
     cursor= textEdit->textCursor();
@@ -958,7 +961,7 @@ void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
         cursor.mergeCharFormat(format);
     }
     textEdit->mergeCurrentCharFormat(format);
-    FLAG_MODIFY_SYMBOL=false;
+    //FLAG_MODIFY_SYMBOL=false;
 }
 
 void TextEdit::fontChanged(const QFont &f)
@@ -1021,7 +1024,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
      qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
      QVector<Message> messagesDel;
      for(int i=0; i<del; i++){
-
+         writingFlag= true;
          if(pos != this->_symbols.size()){
              Message mess{'d', this->_symbols[pos]};
              this->_symbols.erase(this->_symbols.begin() + pos);
@@ -1034,6 +1037,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
      QVector<Message> messagesAdd;
 
      for(int i=0; i<add; i++){
+         writingFlag=true;
          Message mess{};
          if(added.size() > i){
             if(del > 0){ //controlla se con selezione e incolla funziona
@@ -1294,7 +1298,8 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
     cursor.insertText((const QString)sym->getValue(), headingFormat);
 
     this->_symbols.insert(this->_symbols.begin() + index, sym);
-    //cursor.insertText(sym->getValue());
+
+    remoteCursorChanged(this->fileName, index+1, sym->getSiteId());
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
 
@@ -1309,6 +1314,7 @@ void TextEdit::remoteDelete(Symbol* sym){
         cursor.setPosition(index, QTextCursor::MoveAnchor);
         cursor.deleteChar();
         this->_symbols.erase(this->_symbols.begin() + index);
+        remoteCursorChanged(this->fileName, index, sym->getSiteId());
     }
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
@@ -1403,6 +1409,7 @@ void TextEdit::remoteCursorChangePosition(int siteId, int pos) {
 
 
     uc->getLabel_cur()->setFixedHeight(rt_height);
+    uc->getLabel_cur()->setFixedWidth(2);
     int x2 = rt.x() - 1;
     int y2 = rt.y();
     if (y2 < 0) y2 = 0;

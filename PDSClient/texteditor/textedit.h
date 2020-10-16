@@ -141,6 +141,9 @@ private:
     int counter; //Inizializzato sempre a zero nel costruttore
     int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
     bool uriRequest = false;
+    bool writingFlag = false; //Questo flag permette di non mandare la modifica del puntatore aggiornato nel caso si
+                              //stia scrivendo, verrà dedotto dal fatto che si sta scrivendo in una determinata posizione.
+
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);
