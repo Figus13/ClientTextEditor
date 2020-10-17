@@ -1021,7 +1021,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
          }
      }
      qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
-     qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
+     //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
      QVector<Message> messagesDel;
      for(int i=0; i<del; i++){
          writingFlag= true;
@@ -1035,8 +1035,11 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         message_ready(messagesDel, fileName);
      }
      QVector<Message> messagesAdd;
-
+     qDebug() << "Add " << add << " Added.size() " << added.size();
      for(int i=0; i<add; i++){
+         if(i>=1128){
+              qDebug() << "ciao";
+         }
          writingFlag=true;
          Message mess{};
          if(added.size() > i){
@@ -1131,7 +1134,15 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
     }
     //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
     Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor().name(), qf.family());
-    qDebug() << qf.family() << qf.pointSize();
+    qDebug() << qf.family() <<  qf.family().length();
+    /*qDebug() << sizeof(int)*pos.size() << sizeof(this->counter) << sizeof(this->siteId) << sizeof(value) << sizeof(actionTextBold->isChecked()) <<
+                sizeof(actionTextItalic->isChecked()) << sizeof(actionTextUnderline->isChecked()) << sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment()))
+             << sizeof(qf.pointSize()) << sizeof(textEdit->textColor().name()) << sizeof(char)*qf.family().length();
+    int max = sizeof(pos) + sizeof(this->counter) + sizeof(this->siteId) + sizeof(value) + sizeof(actionTextBold->isChecked()) +
+                             sizeof(actionTextItalic->isChecked()) + sizeof(actionTextUnderline->isChecked()) +
+                             sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment())) +
+                             sizeof(qf.pointSize()) + sizeof(textEdit->textColor().name()) + sizeof(char)*qf.family().length();
+    qDebug() << max;*/
     this->_symbols.insert(this->_symbols.begin() + index, symbol);
 
     m.setAction('i');

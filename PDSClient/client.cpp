@@ -89,11 +89,11 @@ void Client::onReadyRead(){
                     login_successful();
                 }else{
                     qDebug() <<  "errore nella funzione per lettura file";*/
-                    login_successful();
+                login_successful();
 
             }
             break;
-         case 1:
+        case 1:
             std::cout<< "registration\n";
             int statusReg;
             in >> statusReg;
@@ -113,12 +113,12 @@ void Client::onReadyRead(){
                 s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
                 if(insert==1){ //nel caso sia un inserimento
                     if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
-                          Message m{'i', s};
-                          message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                        Message m{'i', s};
+                        message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
                     }
                 }else{ //nel caso sia una cancellazione
-                        Message m{'d', s};
-                        message_from_server(m);
+                    Message m{'d', s};
+                    message_from_server(m);
                 }
             }
 
@@ -150,7 +150,7 @@ void Client::onReadyRead(){
                 in >>this->siteId >> numFiles;
                 files.clear();
                 for(int i=0; i<numFiles; i++){
-                     QString filename;
+                    QString filename;
                     in >> filename;
                     files.append(filename);
                 }
@@ -252,31 +252,136 @@ void Client::disconnectFromServer(){
 }
 
 void Client::onMessageReady(QVector<Message> messages, QString filename){
-    QByteArray buf;
-    QDataStream out(&buf, QIODevice::WriteOnly);
-    out << 3;
+    QByteArray buf_header;
+    QDataStream out_header(&buf_header, QIODevice::WriteOnly);
+    QByteArray buf_payload;
+    QDataStream out_payload(&buf_payload, QIODevice::WriteOnly);
+    QByteArray tot;
+    int counter = 0;
     if(messages[0].getAction()=='i'){
 
-        out << 1 << filename << messages.size();
         for(int i=0; i< messages.size(); i++){
+            counter++;
             Symbol *s = messages[i].getSymbol();
-            out << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
-        << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
+            out_payload << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
+                        << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
+            if(buf_payload.size() > 50000){ //max buff 65532
+                out_header << 3 << 1 << filename << counter;
+                counter=0;
+                tot.append(buf_header);
+                tot.append(buf_payload);
+                socket->write(tot);
+                socket->flush();
+                out_payload.device()->reset();
+                out_header.device()->reset();
+                buf_header = "";
+                buf_payload= "";
+                tot = "";
+            }
 
         }
 
     }else{
         if(messages[0].getAction()=='d'){
-            out <<  0 << filename << messages.size();
             for(int i=0; i< messages.size(); i++){
+                counter++;
                 Symbol *s = messages[i].getSymbol();
-                out << s->getSiteId() << s->getCounter()  << s->getPosition();
+                out_payload << s->getSiteId() << s->getCounter()  << s->getPosition();
+
+                if(buf_payload.size() > 50000){ //max buff 65532
+                    out_header << 3 << 0 << filename << counter;
+                    counter=0;
+                    tot.append(buf_header);
+                    tot.append(buf_payload);
+                    socket->write(tot);
+                    socket->flush();
+                    out_payload.device()->reset();
+                    out_header.device()->reset();
+                    buf_header = "";
+                    buf_payload= "";
+                    tot = "";
+                }
             }
         }
     }
-    socket->write(buf);
-    socket->flush();
+    if(counter!=0){
+        if(messages[0].getAction()=='i'){
+            out_header << 3 << 1 << filename << counter;
+        }else{
+            out_header << 3 << 0 << filename << counter;
+        }
+        tot.append(buf_header);
+        tot.append(buf_payload);
+        socket->write(tot);
+        socket->flush();
+    }
 }
+
+/*void Client::onMessageReady(QVector<Message> messages, QString filename){
+    int i=0;
+    int counter=0;
+    while(i<messages.size()){
+        QByteArray buf_header;
+        QDataStream out_header(&buf_header, QIODevice::WriteOnly);
+        QByteArray buf_payload;
+        QDataStream out_payload(&buf_payload, QIODevice::WriteOnly);
+        QByteArray tot;
+
+        if(messages[0].getAction()=='i'){
+
+            for(; i< messages.size(); i++){
+                counter++;
+                Symbol *s = messages[i].getSymbol();
+                out_payload << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
+                            << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
+                if(buf_payload.size() > 50000){ //max buff 65532
+                    out_header << 3 << 1 << filename << counter;
+                    counter=0;
+                    tot.append(buf_header);
+                    tot.append(buf_payload);
+                    socket->write(tot);
+                    socket->flush();
+                    buf_header = "";
+                    buf_payload= "";
+                    tot = "";
+                }
+
+            }
+
+        }else{
+            if(messages[0].getAction()=='d'){
+                for(; i< messages.size(); i++){
+                    counter++;
+                    Symbol *s = messages[i].getSymbol();
+                    out_payload << s->getSiteId() << s->getCounter()  << s->getPosition();
+
+                    if(buf_payload.size() > 50000){ //max buff 65532
+                        out_header << 3 << 0 << filename << counter;
+                        counter=0;
+                        tot.append(buf_header);
+                        tot.append(buf_payload);
+                        socket->write(tot);
+                        socket->flush();
+                        buf_header = "";
+                        buf_payload= "";
+                        tot = "";
+                    }
+                }
+            }
+        }
+    }
+    if(counter!=0){
+        if(messages[0].getAction()=='i'){
+            out_header << 3 << 1 << filename << counter;
+        }else{
+            out_header << 3 << 0 << filename << counter;
+        }
+        tot.append(buf_header);
+        tot.append(buf_payload);
+        socket->write(tot);
+        socket->flush();
+    }
+}*/
 
 QTcpSocket* Client::getSocket(){
     return socket;
