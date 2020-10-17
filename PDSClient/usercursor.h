@@ -2,27 +2,18 @@
 #define USERCURSOR_H
 #include <QtGui>
 #include <QLabel>
-
-constexpr auto N_COLOR = 18;
-class UserCursor
+#include "user.h"
+class UserCursor: public User
 {
 public:
     UserCursor(int siteId, QString nickname, int colorId);
-    int getColorId();
-    void setNickname(QString nickname);
-    QString getNickname();
-    QColor getColor();
-    void setColor(int colorId);
+    UserCursor(User user);
     QLabel* getLabel();
     int getPos();
     void setPos(int pos);
-    int getSiteId();
+    void setLabelColor(int colorId);
 private:
-    QString nickname;
-    int siteId;
     int pos;
-    int colorId;
-    QColor color;
     QLabel* label;
 };
 

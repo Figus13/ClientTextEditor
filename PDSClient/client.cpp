@@ -53,13 +53,14 @@ int Client::getSiteId(){
 
 void Client::onReadyRead(){
     QVector<int> position;
-    int counter, recSiteId, alignment, textSize, daButtare, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
+    int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
     QString color, font, text, nickname;
     QChar value;
     QVector<Symbol*> sVector;
     bool isBold, isItalic, isUnderlined;
     Symbol *s;
 
+    QMap<int, QString> owners;
     if (socket->state() != QAbstractSocket::ConnectedState)	return;
 
     QDataStream in;
@@ -127,6 +128,7 @@ void Client::onReadyRead(){
         int fileSize; //1 se inserimento, 0 se cancellazione
         int alreadyConnected;
         int siteId;
+        int otherOwners;
         in >> fileSize;
         for(int i = 0 ; i<fileSize ; i++){
             in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
@@ -134,13 +136,20 @@ void Client::onReadyRead(){
             sVector.push_back(s);
         }
         if(fileSize!=0){
-            file_ready(sVector);
+            emit file_ready(sVector);
         }
         in >> alreadyConnected;
         for(int i = 0; i<alreadyConnected; i++){
             in >> siteId >> nickname;
             emit signal_connection(siteId, nickname, 1);
         }
+
+        in >> otherOwners;
+        for(int i=0; i<otherOwners; i++){
+             in >> siteId >> nickname;
+             owners.insert(siteId, nickname);
+        }
+        emit signal_owners(owners);
         break;
     case 6:
         int numFiles;
@@ -231,7 +240,7 @@ void Client::getFile(QString filename){
 
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    out << 4 << filename;
+    out << 4 << filename << siteId;
 
     socket->write(buf);
 }

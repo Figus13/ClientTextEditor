@@ -32,7 +32,7 @@ signals:
     void URI_Ready(QString uri);
     void disconnect_URI();
     void signal_connection(int siteId, QString nickname, int ins);
-
+    void signal_owners(QMap<int, QString> owners);
 public slots:
     void onMessageReady(QVector<Message> messages, QString filename);
 
@@ -51,7 +51,7 @@ private:
     int counter;
     QVector<QString> files;
     QVector<Symbol*> symbols;
-    QMap<int, QString> clients;
+    QMap<int, QString> connectedUsers; //non usata per ora
 
 };
 
