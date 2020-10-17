@@ -14,7 +14,7 @@ class NewFileFromURIdialog : public QDialog
 public:
     explicit NewFileFromURIdialog(QWidget *parent = nullptr);
     ~NewFileFromURIdialog();
-    QString getFilename();
+    QString getUri();
 
 private slots:
     void on_buttonBox_accepted();

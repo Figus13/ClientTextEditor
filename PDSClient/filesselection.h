@@ -32,10 +32,14 @@ private slots:
     void on_newFileFromLink_clicked();
     void showWindow();
     void on_fileListWidget_itemDoubleClicked(QListWidgetItem *item);
-    void onFilesListRefreshed(QVector<QString> files);
+    void onFilesListRefreshed(QVector<FileInfo *> files);
     void showContextMenu(const QPoint&);
     void onShareURIButtonPressed();
+    void onEraseFileButtonPressed();
     void onURIReady(QString uri);
+    void onUriError();
+    void onFileErased(int index);
+    void onEraseFileError();
 
 private:
     Ui::FilesSelection *ui;

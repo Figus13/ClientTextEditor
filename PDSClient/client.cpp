@@ -75,6 +75,7 @@ void Client::onReadyRead(){
             if(status == 0){
                 login_failed();
             }else if(status == 1){
+                in >> this->username >> this->nickname;
                 /*int numFiles;
                 in >> operation >> status;
                 if(operation == 6 && status ==1){  //riceviamo i file.
@@ -90,17 +91,16 @@ void Client::onReadyRead(){
                 }else{
                     qDebug() <<  "errore nella funzione per lettura file";*/
                 login_successful();
-
             }
             break;
         case 1:
             std::cout<< "registration\n";
             int statusReg;
             in >> statusReg;
-            if(statusReg==0){
-                registration_failed();
-            }else if(statusReg == 1){
-                in >> this->siteId;
+            if(statusReg!=1){
+                registration_failed(statusReg);
+            }else{
+                in >> this->siteId >> this->username >> this->nickname;
                 registration_successful();
             }
             break;
@@ -145,7 +145,6 @@ void Client::onReadyRead(){
                 in >> siteId >> nickname;
                 emit signal_connection(siteId, nickname, 1);
             }
-
             in >> otherOwners;
             for(int i=0; i<otherOwners; i++){
                 in >> siteId >> nickname;
@@ -154,7 +153,6 @@ void Client::onReadyRead(){
             emit signal_owners(owners);
             break;
 
-            
         case 6:
             int numFiles;
             in >> status;
@@ -163,8 +161,11 @@ void Client::onReadyRead(){
                 files.clear();
                 for(int i=0; i<numFiles; i++){
                     QString filename;
-                    in >> filename;
-                    files.append(filename);
+                    QString usernameOwner; //riceve lo username del creatore
+                    QString nicknameOwner;
+                    in >> filename >> usernameOwner >> nicknameOwner;
+                    FileInfo * file = new FileInfo(filename, usernameOwner, nicknameOwner);
+                    files.append(file);
                 }
                 files_list_refreshed(files);
             }
@@ -172,13 +173,16 @@ void Client::onReadyRead(){
         case 7:
             int operation;
             in >> operation;
-            if(operation == 1){  //riceviamo il file.
-                
-            }
-            else if(operation == 2){
-                QString uri;
-                in >> uri;
-                URI_Ready(uri);
+            if(operation == 1){  //La condivisione è andata a buon fine, quindi aggiungo il nuovo file alla lista
+                QString filename;
+                QString usernameOwner; //riceve lo username del creatore
+                QString nicknameOwner;
+                in >> filename >> usernameOwner >> nicknameOwner;
+                FileInfo * file = new FileInfo(filename, usernameOwner, nicknameOwner);
+                files.append(file);
+                files_list_refreshed(files);
+            }else if (operation == 3) {
+                uri_error();
             }
             break;
         case 8:
@@ -186,6 +190,26 @@ void Client::onReadyRead(){
             in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
             emit signal_connection(siteId, nickname, ins);
             break;
+        case 9:
+        in >> status;
+        if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
+            QString filename;
+            QString usernameOwner;
+            in >> filename >> usernameOwner;
+            FileInfo * file;
+            for(FileInfo * f : files){
+                if( f->getFileName() == filename && f->getUsername() == usernameOwner){   
+                    int index = files.indexOf(f);
+                    files.removeOne(f);
+                    file_erased(index);
+                    break;
+                }
+            }
+        }
+        else {
+            eraseFileError();
+        }
+        break;
         case 11:
         {
             int siteIdSender, index;
@@ -199,11 +223,11 @@ void Client::onReadyRead(){
 
 }
 
-void Client::closeFile(QString filename){
+void Client::closeFile(int fileIndex){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-
-    out << 5 /*# operazione*/ << filename;
+    FileInfo * fi = files[fileIndex];
+    out << 5 /*# operazione*/ << fi->getFileName() << fi->getUsername();
     socket->write(buf);
     socket->flush();
     files_list_refreshed(files);
@@ -243,15 +267,38 @@ void Client::getFiles(){
     return; // i file vengono inviati dalla signal list_files_refreshed
 }
 
-void Client::addFile(QString filename){
-    files.append(filename);
+QVector<FileInfo *> Client::getMyFileList(){
+    return this->files;
 }
 
-void Client::getFile(QString filename){
+
+/*
+ * La addFile aggiunge alla lista di files un nuovo file e
+ *  richiama la funzione per la ricezione di un file dal server
+ */
+void Client::addFile(FileInfo * file){
+    files.append(file);
+    int size = files.size() - 1;
+    getFile(size);
+}
+
+void Client::eraseFile(int fileIndex) {
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    FileInfo * file = files[fileIndex];
+    out << 9 << file->getFileName() << file->getUsername();
+    socket->write(buf);
+}
+
+/*
+ * modificata, ora riceve come argomento l'indice del file del vettore di files
+ */
+void Client::getFile(int fileIndex){
 
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    out << 4 << filename << siteId;
+    FileInfo * file = files[fileIndex];
+    out << 4 << file->getFileName() << file->getUsername() << siteId;
 
     socket->write(buf);
 }
@@ -261,7 +308,8 @@ void Client::disconnectFromServer(){
     socket->disconnectFromHost();
 }
 
-void Client::onMessageReady(QVector<Message> messages, QString filename){
+void Client::onMessageReady(QVector<Message> messages, int fileIndex){
+    FileInfo * fi = files[fileIndex];
     QByteArray buf_header;
     QDataStream out_header(&buf_header, QIODevice::WriteOnly);
     QByteArray buf_payload;
@@ -276,7 +324,7 @@ void Client::onMessageReady(QVector<Message> messages, QString filename){
             out_payload << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
                         << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
             if(buf_payload.size() > 50000){ //max buff 65532
-                out_header << 3 << 1 << filename << counter;
+                out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
                 counter=0;
                 tot.append(buf_header);
                 tot.append(buf_payload);
@@ -299,7 +347,7 @@ void Client::onMessageReady(QVector<Message> messages, QString filename){
                 out_payload << s->getSiteId() << s->getCounter()  << s->getPosition();
 
                 if(buf_payload.size() > 50000){ //max buff 65532
-                    out_header << 3 << 0 << filename << counter;
+                    out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
                     counter=0;
                     tot.append(buf_header);
                     tot.append(buf_payload);
@@ -316,9 +364,9 @@ void Client::onMessageReady(QVector<Message> messages, QString filename){
     }
     if(counter!=0){
         if(messages[0].getAction()=='i'){
-            out_header << 3 << 1 << filename << counter;
+            out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
         }else{
-            out_header << 3 << 0 << filename << counter;
+            out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
         }
         tot.append(buf_header);
         tot.append(buf_payload);
@@ -397,12 +445,12 @@ QTcpSocket* Client::getSocket(){
     return socket;
 }
 
-void Client::requestURI(QString filename){
-    qDebug() << filename;
+void Client::requestURI(int fileIndex){
+    qDebug() << files[fileIndex];
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
 
-    out << 7 << 2 << filename;
+    out << 7 << 2 << files[fileIndex]->getFileName() <<files[fileIndex]->getUsername();
 
     socket->write(buf);
     socket->flush();
@@ -416,4 +464,20 @@ void Client::onMyCursorPositionChanged(int index){
 
     socket->write(buf);
     socket->flush();
+}
+
+void Client::getFileFromURI(QString uri) {
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    out << 7 << 1 << uri;
+
+    socket->write(buf);
+}
+
+QString Client::getNickname(){
+    return nickname;
+}
+
+QString Client::getUsername(){
+    return username;
 }

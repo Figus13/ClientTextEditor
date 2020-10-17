@@ -63,6 +63,13 @@ void MainWindow::on_registrationButton_clicked()
        return;
     }
 
+    if(username.contains("/") || username.contains("\\") || username.contains(":") ||
+       username.contains("*") || username.contains("?") || username.contains("\"") ||
+       username.contains("<") || username.contains(">") || username.contains("|")){
+        QMessageBox::warning(this,"Registrazione","L'username non può contenere i seguenti caratteri: / \\ : * ? \" < > |");
+        return;
+    }
+
     client->registration(username,password,nick);
 }
 
@@ -72,13 +79,30 @@ void MainWindow::onLoginFailed(){
     return;
 }
 
-void MainWindow::onRegistrationFailed(){
-    QMessageBox::information(this,"Registrazione","Operazione di registrazione non riuscita");
-    ui->registrationFirstPassword->clear();
-    ui->registrationSecondPassword->clear();
-    ui->registrationNickname->clear();
-    ui->registrationUsername->clear();
-    return;
+void MainWindow::onRegistrationFailed(int status){
+
+    if(status == 2){
+        QMessageBox::information(this,"Registrazione","Username già esistente!");
+        ui->registrationFirstPassword->clear();
+        ui->registrationSecondPassword->clear();
+        ui->registrationNickname->clear();
+        ui->registrationUsername->clear();
+        return;
+    }else if(status == 3){
+        QMessageBox::information(this,"Registrazione","Nickname già esistente!");
+        ui->registrationFirstPassword->clear();
+        ui->registrationSecondPassword->clear();
+        ui->registrationNickname->clear();
+        return;
+    }else{
+        QMessageBox::information(this,"Registrazione","Operazione di registrazione non riuscita");
+        ui->registrationFirstPassword->clear();
+        ui->registrationSecondPassword->clear();
+        ui->registrationNickname->clear();
+        ui->registrationUsername->clear();
+        return;
+
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

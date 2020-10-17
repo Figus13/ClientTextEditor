@@ -11,6 +11,7 @@ CONFIG += c++11
 SOURCES += \
     Symbol.cpp \
     client.cpp \
+    fileinfo.cpp \
     filesselection.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -25,6 +26,7 @@ SOURCES += \
 HEADERS += \
     Symbol.h \
     client.h \
+    fileinfo.h \
     filesselection.h \
     mainwindow.h \
     message.h \

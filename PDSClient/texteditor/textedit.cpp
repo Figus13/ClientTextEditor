@@ -95,8 +95,8 @@ const QString rsrcPath = ":/images/mac";
 const QString rsrcPath = ":/images/win";
 #endif
 
-TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
-    : QMainWindow(parent), client(client), fileName(filename)
+TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIndex)
+    : QMainWindow(parent), client(client), fileName(filename), fileIndex(fileIndex)
 {
     counter=0;
     siteId=client->getSiteId();
@@ -125,7 +125,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
             client, &Client::onMyCursorPositionChanged);
     connect(client, &Client::remote_cursor_changed,
             this, &TextEdit::remoteCursorChanged);
-
+    connect(client, &Client::file_erased, this, &TextEdit::onFileErased);
     colorId=0;
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -217,7 +217,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
     /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
 
     /*aggiunta*/
-    client->closeFile(fileName);
+    client->closeFile(this->fileIndex);
     emit closeWindow();
     disconnect(this, &TextEdit::message_ready, client, &Client::onMessageReady);
     /*fine aggiunta*/
@@ -226,6 +226,15 @@ void TextEdit::closeEvent(QCloseEvent *e)
         e->accept();
     else
         e->ignore();*/
+}
+
+void TextEdit::onFileErased(int index) {
+    if(this->fileIndex == index && !this->isHidden()) {
+        qDebug() << "ciao";
+        emit closeWindow();
+        disconnect(this, &TextEdit::message_ready, client, &Client::onMessageReady);
+        hide();
+    }
 }
 
 void TextEdit::setupFileActions()
@@ -1215,7 +1224,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
          }
      }
      if(messagesDel.size() != 0){
-        message_ready(messagesDel, fileName);
+        message_ready(messagesDel, this->fileIndex);
      }
      QVector<Message> messagesAdd;
      qDebug() << "Add " << add << " Added.size() " << added.size();
@@ -1239,17 +1248,17 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         }
     }
     if(messagesAdd.size() != 0){
-        message_ready(messagesAdd, fileName);
+        message_ready(messagesAdd, this->fileIndex);
     }
 }
 
 void TextEdit::onMessageFromServer(Message m){
 
     if(m.getAction()=='i'){
-        remoteInsert(m.getSymbol());
+        this->remoteInsert(m.getSymbol());
     }else{
         if(m.getAction()=='d'){
-            remoteDelete(m.getSymbol());
+            this->remoteDelete(m.getSymbol());
         }
     }
 }
@@ -1473,7 +1482,6 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
 void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
-
     int index = findIndexFromNewPosition(sym->getPosition());
     QTextCursor cursor = textEdit->textCursor();
     cursor.setPosition(index, QTextCursor::MoveAnchor);
@@ -1575,7 +1583,7 @@ void TextEdit::onURIReady(QString uri) {
 void TextEdit::onShareURIButtonPressed(){
 
     setUriRequest(true);
-    client->requestURI(this->fileName);
+    client->requestURI(this->fileIndex);
 }
 
 void TextEdit::remoteCursorChangePosition(int siteId, int pos) {

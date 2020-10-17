@@ -28,7 +28,7 @@ private slots:
     void onLoginSuccess();
     void onLoginFailed();
     void onRegistrationSuccess();
-    void onRegistrationFailed();
+    void onRegistrationFailed(int status);
 
 private:
     Ui::MainWindow *ui;
