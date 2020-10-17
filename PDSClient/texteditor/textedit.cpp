@@ -121,6 +121,11 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     connect(client, &Client::disconnect_URI, this, &TextEdit::onFileClosed);
     connect(client, &Client::signal_connection, this, &TextEdit::onSignalConnection);
     connect(client, &Client::signal_owners, this, &TextEdit::onSignalOwners);
+    connect(this, &TextEdit::my_cursor_position_changed,
+            client, &Client::onMyCursorPositionChanged);
+    connect(client, &Client::remote_cursor_changed,
+            this, &TextEdit::remoteCursorChanged);
+
     colorId=0;
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -183,7 +188,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
 void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
     if(ins == 1){
 
-        cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId)));
+        cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId, textEdit)));
         if(!colorableUsers.contains(siteId)){
             comboUser->addItem(QString::number(siteId) + " - " + nickname, siteId);
             User user(siteId, nickname, colorId);
@@ -1103,6 +1108,11 @@ void TextEdit::cursorPositionChanged()
         int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
         comboStyle->setCurrentIndex(headingLevel ? headingLevel + 10 : 0);
     }
+    if(!writingFlag){
+         int index = textEdit->textCursor().anchor();
+         my_cursor_position_changed(index);
+    }
+    writingFlag=false;
 }
 
 void TextEdit::clipboardDataChanged()
@@ -1122,7 +1132,7 @@ void TextEdit::about()
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
-    FLAG_MODIFY_SYMBOL= true;// si potrebbe sfruttare per evitare di fare delete + add ma chiedere al server di modificare
+    //FLAG_MODIFY_SYMBOL= true;// si potrebbe sfruttare per evitare di fare delete + add ma chiedere al server di modificare
                              //  il simbolo
     QTextCursor cursor;
     cursor= textEdit->textCursor();
@@ -1132,7 +1142,7 @@ void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
         cursor.mergeCharFormat(format);
     }
     textEdit->mergeCurrentCharFormat(format);
-    FLAG_MODIFY_SYMBOL=false;
+    //FLAG_MODIFY_SYMBOL=false;
 }
 
 void TextEdit::fontChanged(const QFont &f)
@@ -1172,6 +1182,14 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
 
 
+    /*PER DEBUG CURSORI
+     * if(_symbols.size()>4){
+        if(!cursorsMap.contains(1))
+            cursorsMap.insert(1, std::make_shared<UserCursor>(UserCursor(1, "nickname", 3, textEdit)));
+
+        remoteCursorChangePosition(1, _symbols.size()-2);
+    }*/
+
     if(cursor.position() == pos){
          for(int i=0; i<del; i++){
              cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
@@ -1186,10 +1204,10 @@ void TextEdit::onTextChanged(int pos, int del, int add){
          }
      }
      qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
-     qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
+     //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
      QVector<Message> messagesDel;
      for(int i=0; i<del; i++){
-
+         writingFlag= true;
          if(pos != this->_symbols.size()){
              Message mess{'d', this->_symbols[pos]};
              this->_symbols.erase(this->_symbols.begin() + pos);
@@ -1200,8 +1218,12 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         message_ready(messagesDel, fileName);
      }
      QVector<Message> messagesAdd;
-
+     qDebug() << "Add " << add << " Added.size() " << added.size();
      for(int i=0; i<add; i++){
+         if(i>=1128){
+              qDebug() << "ciao";
+         }
+         writingFlag=true;
          Message mess{};
          if(added.size() > i){
             if(del > 0){ //controlla se con selezione e incolla funziona
@@ -1233,7 +1255,8 @@ void TextEdit::onMessageFromServer(Message m){
 }
 
 void TextEdit::onFileReady(QVector<Symbol*> s){
-
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
     this->_symbols = s;
     textEdit->textCursor().beginEditBlock();
     //FLAG_OPEN_FILE = true; sostituita con il disconnect, evitiamo di fare signal->slot
@@ -1266,6 +1289,8 @@ void TextEdit::onFileReady(QVector<Symbol*> s){
             this, &TextEdit::onTextChanged);
     //textEdit->setPlainText(text);
     textEdit->textCursor();
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
 }
 
 void TextEdit::onFileClosed() {
@@ -1292,7 +1317,15 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
     }
     //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
     Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor().name(), qf.family());
-    qDebug() << qf.family() << qf.pointSize();
+    qDebug() << qf.family() <<  qf.family().length();
+    /*qDebug() << sizeof(int)*pos.size() << sizeof(this->counter) << sizeof(this->siteId) << sizeof(value) << sizeof(actionTextBold->isChecked()) <<
+                sizeof(actionTextItalic->isChecked()) << sizeof(actionTextUnderline->isChecked()) << sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment()))
+             << sizeof(qf.pointSize()) << sizeof(textEdit->textColor().name()) << sizeof(char)*qf.family().length();
+    int max = sizeof(pos) + sizeof(this->counter) + sizeof(this->siteId) + sizeof(value) + sizeof(actionTextBold->isChecked()) +
+                             sizeof(actionTextItalic->isChecked()) + sizeof(actionTextUnderline->isChecked()) +
+                             sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment())) +
+                             sizeof(qf.pointSize()) + sizeof(textEdit->textColor().name()) + sizeof(char)*qf.family().length();
+    qDebug() << max;*/
     this->_symbols.insert(this->_symbols.begin() + index, symbol);
 
     m.setAction('i');
@@ -1464,7 +1497,8 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
     cursor.insertText((const QString)sym->getValue(), headingFormat);
 
     this->_symbols.insert(this->_symbols.begin() + index, sym);
-    //cursor.insertText(sym->getValue());
+
+    remoteCursorChanged(this->fileName, index+1, sym->getSiteId());
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
 
@@ -1479,6 +1513,7 @@ void TextEdit::remoteDelete(Symbol* sym){
         cursor.setPosition(index, QTextCursor::MoveAnchor);
         cursor.deleteChar();
         this->_symbols.erase(this->_symbols.begin() + index);
+        remoteCursorChanged(this->fileName, index, sym->getSiteId());
     }
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
@@ -1541,4 +1576,51 @@ void TextEdit::onShareURIButtonPressed(){
 
     setUriRequest(true);
     client->requestURI(this->fileName);
+}
+
+void TextEdit::remoteCursorChangePosition(int siteId, int pos) {
+
+    QTextCursor cursor(textEdit->textCursor());
+    int pos_entry = cursor.position();//DEBUG
+    cursor.setPosition(pos);//setto la posizione per poter prendere le coordinate
+    QTextCharFormat plainFormat(cursor.charFormat());
+    QRect editor = textEdit->rect();
+
+    int editor_height = editor.height();//altezza editor;
+    int editor_width = editor.width();//larghezza editor;
+    QRect rt = textEdit->cursorRect(cursor);
+    int rt_height = rt.height();
+    //label con il nome utente
+    int label_width = cursorsMap[siteId]->getLabel()->width();//larghezza label da aggiornare/inserire
+    int x = rt.x() + 7;
+    int y = rt.y() - 8;
+    if (editor_width - x < label_width) {//se sono infondo a destra non si vedrà, allora la posto più a sinistra
+        x = x - label_width;
+    }
+    if (y < 0) y = 0;
+    if (y > editor_height) y = editor_height - 20;
+
+    std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
+    uc->getLabel()->hide();
+    uc->getLabel()->move(x, y);
+    uc->getLabel()->show();
+
+
+
+    uc->getLabel_cur()->setFixedHeight(rt_height);
+    uc->getLabel_cur()->setFixedWidth(2);
+    int x2 = rt.x() - 1;
+    int y2 = rt.y();
+    if (y2 < 0) y2 = 0;
+    if (y2 > editor_height) y2 = editor_height - 10;
+    uc->getLabel_cur()->hide();
+    uc->getLabel_cur()->move(x2, y2);
+    uc->getLabel_cur()->show();
+}
+
+void TextEdit::remoteCursorChanged(QString filename, int index, int siteIdSender){
+    if(filename != this->fileName){
+        return;
+    }
+    remoteCursorChangePosition(siteIdSender, index);
 }

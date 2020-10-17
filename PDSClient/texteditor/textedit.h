@@ -84,11 +84,13 @@ public:
 
 public slots:
     void fileNew();
+    void remoteCursorChanged(QString filename, int index, int siteIdSender);
 
 signals:
     /*-----AGGIUNTE DA NOI------*/
     void message_ready(QVector<Message> messages, QString filename);
     void closeWindow();
+    void my_cursor_position_changed(int index);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -128,6 +130,8 @@ private slots:
     void onFileClosed();
     void onSignalConnection(int siteId, QString nickname, int ins);
     void onPrintOnPDF();
+    void remoteCursorChangePosition(int siteId, int pos);
+
 
 private:
     /*----AGGIUNTE DA NOI -----*/
@@ -141,6 +145,9 @@ private:
     int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
     bool uriRequest = false;
     QMap<int, std::shared_ptr<User>> colorableUsers;
+    bool writingFlag = false; //Questo flag permette di non mandare la modifica del puntatore aggiornato nel caso si
+                              //stia scrivendo, verrà dedotto dal fatto che si sta scrivendo in una determinata posizione.
+
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);

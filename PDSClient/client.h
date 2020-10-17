@@ -33,8 +33,11 @@ signals:
     void disconnect_URI();
     void signal_connection(int siteId, QString nickname, int ins);
     void signal_owners(QMap<int, QString> owners);
+    void remote_cursor_changed(QString filename, int index, int siteIdSender);
+
 public slots:
     void onMessageReady(QVector<Message> messages, QString filename);
+    void onMyCursorPositionChanged(int index);
 
 private slots:
     void onConnected();
