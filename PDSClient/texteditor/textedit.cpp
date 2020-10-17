@@ -120,6 +120,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
     connect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
     connect(client, &Client::disconnect_URI, this, &TextEdit::onFileClosed);
     connect(client, &Client::signal_connection, this, &TextEdit::onSignalConnection);
+    connect(client, &Client::signal_owners, this, &TextEdit::onSignalOwners);
     colorId=0;
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -181,11 +182,27 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename)
 
 void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
     if(ins == 1){
-        cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId++)));
+
+        cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId)));
+        if(!colorableUsers.contains(siteId)){
+            comboUser->addItem(QString::number(siteId) + " - " + nickname, siteId);
+            User user(siteId, nickname, colorId);
+            colorableUsers.insert(siteId,  std::make_shared<User>(user));
+        }
+        colorId++;
     }else if(ins == 0){
         if(cursorsMap.contains(siteId)){
             cursorsMap.remove(siteId);
+
         }
+    }
+}
+
+void TextEdit::onSignalOwners(QMap<int, QString> owners){
+    for(int siteId: owners.keys()){
+        User user(siteId, owners[siteId], colorId++);
+        colorableUsers.insert(siteId, std::make_shared<User>(user)); //TODO deve contenere anche un colore, nuova classe? PROVA
+        comboUser->addItem(QString::number(siteId) + " - " + user.getNickname());
     }
 }
 
@@ -239,6 +256,10 @@ void TextEdit::setupFileActions()
      */
 
     a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::onShareURIButtonPressed);
+    a->setPriority(QAction::LowPriority);
+    menu->addSeparator();
+
+    a = menu->addAction( tr("&Stampa in PDF"), this, &TextEdit::onPrintOnPDF);
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
@@ -303,6 +324,23 @@ void TextEdit::setupEditActions()
     if (const QMimeData *md = QApplication::clipboard()->mimeData())
         actionPaste->setEnabled(md->hasText());
 #endif
+}
+
+void TextEdit::onPrintOnPDF(){
+    QFileDialog fileDialog(this, tr("Export PDF"));
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setMimeTypeFilters(QStringList("application/pdf"));
+    fileDialog.setDefaultSuffix("pdf");
+    if (fileDialog.exec() != QDialog::Accepted)
+        return;
+    QString fileName = fileDialog.selectedFiles().first();
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(fileName);
+    textEdit->document()->print(&printer);
+    statusBar()->showMessage(tr("Exported \"%1\"")
+                             .arg(QDir::toNativeSeparators(fileName)));
+
 }
 
 void TextEdit::setupTextActions()
@@ -451,6 +489,147 @@ void TextEdit::setupTextActions()
     comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 
     connect(comboSize, &QComboBox::textActivated, this, &TextEdit::textSize);
+    /*AGGIUNTA DA NOI */
+    comboUser = new QComboBox(tb);
+    comboUser->setObjectName("comboUser");
+    tb->addWidget(comboUser);
+    comboUser->setEditable(true);
+    comboUser->clear();
+    comboUser->addItem("Non evidenziare", -2);
+    comboUser->addItem("Evidenzia tutti", -1);
+    for(int siteId: colorableUsers.keys()){
+        comboUser->addItem(QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname(), siteId);
+    }
+    connect(comboUser, &QComboBox::textActivated, this, &TextEdit::highlightUserText);
+
+    /*FINE AGGIUNTA DA NOI*/
+}
+
+void TextEdit::highlightUserText(const QString &str){
+
+    disconnect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
+    if(str == "Evidenzia tutti"){
+        flag_all_highlighted = true;
+        flag_one_highlighted = -1;
+        for(int i=0; i<textEdit->toPlainText().size(); i++){
+            const QSignalBlocker blocker(textEdit);
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+            cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+            int siteIdTmp = _symbols[i]->getSiteId();
+            if (colorableUsers.contains(siteIdTmp)) {
+                QTextCharFormat plainFormat(cursor.charFormat());
+                plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
+                cursor.setCharFormat(plainFormat);
+           }
+           QTextCharFormat plainFormat(cursor.charFormat());
+        }
+    }else if(str == "Non evidenziare"){
+        flag_all_highlighted = false;
+        flag_one_highlighted = -1;
+        for(int i=0; i<textEdit->toPlainText().size(); i++){
+            const QSignalBlocker blocker(textEdit);
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+            cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+            QTextCharFormat plainFormat(cursor.charFormat());
+            plainFormat.setBackground(Qt::white); //bianco
+            cursor.setCharFormat(plainFormat);
+        }
+    }else if(str.contains("Modifica testo")){
+        int pos = str.split(" - ")[1].toInt();
+        int add = str.split(" - ")[2].toInt();
+        for(int i=pos; i<pos+add; i++){
+            const QSignalBlocker blocker(textEdit);
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+            cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+            QTextCharFormat plainFormat(cursor.charFormat());
+            if(flag_all_highlighted || flag_one_highlighted == siteId){
+                plainFormat.setBackground(colorableUsers[siteId]->getColor());
+            }else{
+                plainFormat.setBackground(Qt::white);
+            }
+            cursor.setCharFormat(plainFormat);
+        }
+        /*if(flag_all_highlighted){
+            for(int i=0; i<textEdit->toPlainText().size(); i++){
+                const QSignalBlocker blocker(textEdit);
+                QTextCursor cursor = textEdit->textCursor();
+                cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+                cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+                int siteIdTmp = _symbols[i]->getSiteId();
+                if (colorableUsers.contains(siteIdTmp)) {
+                    QTextCharFormat plainFormat(cursor.charFormat());
+                    plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
+                    cursor.setCharFormat(plainFormat);
+               }
+               QTextCharFormat plainFormat(cursor.charFormat());
+            }
+        }else if(flag_one_highlighted == siteId){
+            for(int i=0; i<textEdit->toPlainText().size(); i++){
+                const QSignalBlocker blocker(textEdit);
+                QTextCursor cursor = textEdit->textCursor();
+                cursor.setPosition(i, QTextCursor::MoveAnchor);
+                cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+                QTextCharFormat plainFormat(cursor.charFormat());
+                plainFormat.setBackground(colorableUsers[siteId]->getColor());
+                cursor.setCharFormat(plainFormat);
+            }
+        }else{
+            for(int i=0; i<textEdit->toPlainText().size(); i++){
+                if(_symbols[i]->getSiteId() == siteId){
+                    const QSignalBlocker blocker(textEdit);
+                    QTextCursor cursor = textEdit->textCursor();
+                    cursor.setPosition(i, QTextCursor::MoveAnchor);
+                    cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+                    auto it = colorableUsers.find(siteId);
+                    if (it != colorableUsers.end()) {
+                        QTextCharFormat plainFormat(cursor.charFormat());
+                        plainFormat.setBackground(colorableUsers[siteId]->getColor());
+                        cursor.setCharFormat(plainFormat);
+                   }
+                }else{
+                    const QSignalBlocker blocker(textEdit);
+                    QTextCursor cursor = textEdit->textCursor();
+                    cursor.setPosition(i, QTextCursor::MoveAnchor);
+                    cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+                    QTextCharFormat plainFormat(cursor.charFormat());
+                    plainFormat.setBackground(Qt::white);
+                    cursor.setCharFormat(plainFormat);
+                }
+            }
+        }*/
+    }else{
+        flag_all_highlighted = false;
+        int siteIdTmp = str.split(" - ")[0].toInt();
+        flag_one_highlighted = siteIdTmp;
+        for(int i=0; i<textEdit->toPlainText().size(); i++){
+            if(_symbols[i]->getSiteId() == siteIdTmp){
+                const QSignalBlocker blocker(textEdit);
+                QTextCursor cursor = textEdit->textCursor();
+                cursor.setPosition(i, QTextCursor::MoveAnchor);
+                cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+                auto it = colorableUsers.find(siteIdTmp);
+                if (it != colorableUsers.end()) {
+                    QTextCharFormat plainFormat(cursor.charFormat());
+                    plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
+                    cursor.setCharFormat(plainFormat);
+               }
+            }else{
+                const QSignalBlocker blocker(textEdit);
+                QTextCursor cursor = textEdit->textCursor();
+                cursor.setPosition(i, QTextCursor::MoveAnchor);
+                cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+                QTextCharFormat plainFormat(cursor.charFormat());
+                plainFormat.setBackground(Qt::white);
+                cursor.setCharFormat(plainFormat);
+            }
+        }
+    }
+    connect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
+
+
 }
 
 bool TextEdit::load(const QString &f)
@@ -874,7 +1053,9 @@ void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
 void TextEdit::cursorPositionChanged()
 {
     alignmentChanged(textEdit->alignment());
+
     QTextList *list = textEdit->textCursor().currentList();
+
     if (list) {
         switch (list->format().style()) {
         case QTextListFormat::ListDisc:
@@ -988,6 +1169,8 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     QString added = textEdit->toPlainText().mid(pos, add);
     QTextCursor cursor(textEdit->textCursor());
     QVector<QFont> fonts;
+    highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
+
 
     if(cursor.position() == pos){
          for(int i=0; i<del; i++){
@@ -1271,6 +1454,11 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
     headingFormat.setForeground(sym->getColor());
     headingFormat.setFontPointSize(sym->getTextSize());
     headingFormat.setFontFamily(sym->getFont());
+    if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
+        headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
+    }else{
+        headingFormat.setBackground(Qt::white);
+    }
     Qt::Alignment intAlign = intToAlign(sym->getAlignment());
     textEdit->setAlignment(intAlign);
     cursor.insertText((const QString)sym->getValue(), headingFormat);

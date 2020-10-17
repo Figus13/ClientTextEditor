@@ -63,6 +63,7 @@
 #include "Symbol.h"
 #include "message.h"
 #include "usercursor.h"
+#include <QPrinter>
 QT_BEGIN_NAMESPACE
 class QAction;
 class QComboBox;
@@ -70,7 +71,6 @@ class QFontComboBox;
 class QTextEdit;
 class QTextCharFormat;
 class QMenu;
-class QPrinter;
 QT_END_NAMESPACE
 
 class TextEdit : public QMainWindow
@@ -127,17 +127,20 @@ private slots:
     void onURIReady(QString uri);
     void onFileClosed();
     void onSignalConnection(int siteId, QString nickname, int ins);
-
+    void onPrintOnPDF();
 
 private:
     /*----AGGIUNTE DA NOI -----*/
     Client *client;
     QMap<int, std::shared_ptr<UserCursor>> cursorsMap;
     int colorId;
+    bool flag_all_highlighted = false;
+    int flag_one_highlighted = -1;
     QVector<Symbol*> _symbols;
     int counter; //Inizializzato sempre a zero nel costruttore
     int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
     bool uriRequest = false;
+    QMap<int, std::shared_ptr<User>> colorableUsers;
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);
@@ -150,7 +153,8 @@ private:
     Qt::Alignment intToAlign(int val);
     void getURI();
     void setUriRequest(bool status);
-
+    void highlightUserText(const QString &str);
+    void onSignalOwners(QMap<int,QString> owners);
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();
@@ -190,7 +194,9 @@ private:
     QComboBox *comboStyle;
     QFontComboBox *comboFont;
     QComboBox *comboSize;
-
+    /*AGGIUNTO DA NOI*/
+    QComboBox *comboUser;
+    /*FINE AGGIUNTA DA NOI*/
     QToolBar *tb;
     QString fileName;
     QTextEdit *textEdit;

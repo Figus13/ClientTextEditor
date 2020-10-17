@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,6 +19,7 @@ SOURCES += \
     newfilefromuridialog.cpp \
     showuridialog.cpp \
     texteditor/textedit.cpp \
+    user.cpp \
     usercursor.cpp
 
 HEADERS += \
@@ -31,6 +32,7 @@ HEADERS += \
     newfilefromuridialog.h \
     showuridialog.h \
     texteditor/textedit.h \
+    user.h \
     usercursor.h
 
 FORMS += \
