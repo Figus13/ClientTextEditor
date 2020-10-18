@@ -181,7 +181,12 @@ void Client::onReadyRead(){
                 FileInfo * file = new FileInfo(filename, usernameOwner, nicknameOwner);
                 files.append(file);
                 files_list_refreshed(files);
-            }else if (operation == 3) {
+            }  else if(operation == 2){
+                QString uri;
+                in >> uri;
+                URI_Ready(uri);
+            }
+            else if (operation == 3) {
                 uri_error();
             }
             break;
