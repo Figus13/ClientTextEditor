@@ -205,10 +205,13 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
 
 void TextEdit::onSignalOwners(QMap<int, QString> owners){
     for(int siteId: owners.keys()){
-        User user(siteId, owners[siteId], colorId++);
-        colorableUsers.insert(siteId, std::make_shared<User>(user)); //TODO deve contenere anche un colore, nuova classe? PROVA
-        comboUser->addItem(QString::number(siteId) + " - " + user.getNickname());
-    }
+        //perché se ci sono già connessi entra prima nella onSignalConnection, quindi raddoppio gli item
+        if(!colorableUsers.contains(siteId)){
+            User user(siteId, owners[siteId], colorId++);
+            colorableUsers.insert(siteId, std::make_shared<User>(user)); //TODO deve contenere anche un colore, nuova classe? PROVA
+            comboUser->addItem(QString::number(siteId) + " - " + user.getNickname());
+        }
+        }
 }
 
 
