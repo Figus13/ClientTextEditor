@@ -9,7 +9,6 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    Symbol.cpp \
     client.cpp \
     fileinfo.cpp \
     filesselection.cpp \
@@ -19,12 +18,12 @@ SOURCES += \
     newfiledialog.cpp \
     newfilefromuridialog.cpp \
     showuridialog.cpp \
+    symbol.cpp \
     texteditor/textedit.cpp \
     user.cpp \
     usercursor.cpp
 
 HEADERS += \
-    Symbol.h \
     client.h \
     fileinfo.h \
     filesselection.h \
@@ -33,6 +32,7 @@ HEADERS += \
     newfiledialog.h \
     newfilefromuridialog.h \
     showuridialog.h \
+    symbol.h \
     texteditor/textedit.h \
     user.h \
     usercursor.h

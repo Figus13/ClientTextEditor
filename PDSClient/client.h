@@ -1,7 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 #include <QtNetwork>
-#include <Symbol.h>
+#include <symbol.h>
 #include <iostream>
 #include <message.h>
 #include "fileinfo.h"

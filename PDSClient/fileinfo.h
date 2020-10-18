@@ -1,7 +1,7 @@
 #ifndef FILEINFO_H
 #define FILEINFO_H
 #include <QtNetwork>
-#include <Symbol.h>
+#include <symbol.h>
 #include <iostream>
 #include <message.h>
 

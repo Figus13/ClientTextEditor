@@ -1,4 +1,4 @@
-#include "Symbol.h"
+#include "symbol.h"
 
 Symbol::Symbol(QVector<int>& position, int counter, int siteId, QChar value, bool bold, bool italic, bool underlined, int alignment,
                int textSize, QColor color, QString font): position(position), counter(counter), siteId(siteId), value(value), bold(bold),

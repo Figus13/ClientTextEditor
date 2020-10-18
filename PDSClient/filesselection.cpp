@@ -22,7 +22,7 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     connect(client, &Client::URI_Ready, this, &FilesSelection::onURIReady);
     connect(client, &Client::uri_error, this, &FilesSelection::onUriError);
     connect(client, &Client::file_erased, this, &FilesSelection::onFileErased);
-    connect(client, &Client::eraseFileError, this, &FilesSelection::onEraseFileError);
+    connect(client, &Client::erase_file_error, this, &FilesSelection::onEraseFileError);
 
 }
 

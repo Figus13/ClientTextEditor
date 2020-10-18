@@ -1,5 +1,5 @@
 #pragma once
-#include "Symbol.h"
+#include "symbol.h"
 
 class Message
 {

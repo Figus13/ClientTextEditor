@@ -60,7 +60,7 @@
 #include <chrono>
 #include <thread>
 #include "client.h"
-#include "Symbol.h"
+#include "symbol.h"
 #include "message.h"
 #include "usercursor.h"
 #include <QPrinter>

@@ -207,7 +207,7 @@ void Client::onReadyRead(){
             }
         }
         else {
-            eraseFileError();
+            erase_file_error();
         }
         break;
         case 11:
