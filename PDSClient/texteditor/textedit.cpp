@@ -190,9 +190,13 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
 
         cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId, textEdit)));
         if(!colorableUsers.contains(siteId)){
-            comboUser->addItem(QString::number(siteId) + " - " + nickname, siteId);
             User user(siteId, nickname, colorId);
             colorableUsers.insert(siteId,  std::make_shared<User>(user));
+            QPixmap px(15,15);//create pixmap,size choose yourself, by your taste
+            px.fill(colorableUsers[siteId]->getColor());//all pixmap will be red
+            QIcon icon(px);
+            comboUser->addItem(icon, QString::number(siteId) + " - " + nickname, siteId);
+
         }
         colorId++;
     }else if(ins == 0){
@@ -209,7 +213,10 @@ void TextEdit::onSignalOwners(QMap<int, QString> owners){
         if(!colorableUsers.contains(siteId)){
             User user(siteId, owners[siteId], colorId++);
             colorableUsers.insert(siteId, std::make_shared<User>(user)); //TODO deve contenere anche un colore, nuova classe? PROVA
-            comboUser->addItem(QString::number(siteId) + " - " + user.getNickname());
+            QPixmap px(15,15);//create pixmap,size choose yourself, by your taste
+            px.fill(colorableUsers[siteId]->getColor());//all pixmap will be red
+            QIcon icon(px);
+            comboUser->addItem(icon, QString::number(siteId) + " - " + user.getNickname());
         }
         }
 }
@@ -510,12 +517,15 @@ void TextEdit::setupTextActions()
     comboUser = new QComboBox(tb);
     comboUser->setObjectName("comboUser");
     tb->addWidget(comboUser);
-    comboUser->setEditable(true);
+    comboUser->setEditable(false);
     comboUser->clear();
     comboUser->addItem("Non evidenziare", -2);
     comboUser->addItem("Evidenzia tutti", -1);
     for(int siteId: colorableUsers.keys()){
-        comboUser->addItem(QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname(), siteId);
+        QPixmap px(15,15);//create pixmap,size choose yourself, by your taste
+        px.fill(colorableUsers[siteId]->getColor());//all pixmap will be red
+        QIcon icon(px);
+        comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname(), siteId);
     }
     connect(comboUser, &QComboBox::textActivated, this, &TextEdit::highlightUserText);
 
