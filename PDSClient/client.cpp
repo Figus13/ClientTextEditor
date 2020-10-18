@@ -1,6 +1,5 @@
 #include "client.h"
 
-
 Client::Client(QObject* parent) : QObject(parent), counter(0)
 {
     socket = new QTcpSocket(this);
@@ -333,6 +332,7 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
                 counter=0;
                 tot.append(buf_header);
                 tot.append(buf_payload);
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 socket->write(tot);
                 socket->flush();
                 out_payload.device()->reset();
@@ -340,6 +340,10 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
                 buf_header = "";
                 buf_payload= "";
                 tot = "";
+            }
+
+            if(tot.size() > 60000){
+                qDebug() << "Disastro disastroso";
             }
 
         }
@@ -368,6 +372,12 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
         }
     }
     if(counter!=0){
+
+        if(tot.size() > 60000){
+            qDebug() << "Disastro disastroso";
+        }
+
+
         if(messages[0].getAction()=='i'){
             out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
         }else{
@@ -377,6 +387,9 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
         tot.append(buf_payload);
         socket->write(tot);
         socket->flush();
+        buf_header = "";
+        buf_payload= "";
+        tot = "";
     }
 }
 
