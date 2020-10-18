@@ -40,21 +40,18 @@ signals:
     void signal_connection(int siteId, QString nickname, int ins);
     void signal_owners(QMap<int, QString> owners);
     void remote_cursor_changed(QString filename, int index, int siteIdSender);
+    void uri_error();
+    void file_erased(int index);
+    void erase_file_error();
 
 public slots:
     void onMessageReady(QVector<Message> messages, int fileIndex);
     void onMyCursorPositionChanged(int index);
-    void uri_error();
-    void file_erased(int index);
-    void eraseFileError();
-
+    void disconnectFromServer();
 
 private slots:
     void onConnected();
     void onReadyRead();
-
-public slots:
-    void disconnectFromServer();
 
 private:
     QTcpSocket* socket;
