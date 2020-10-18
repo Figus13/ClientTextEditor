@@ -170,8 +170,13 @@ void FilesSelection::onFileErased(int index) {
     onFilesListRefreshed(client->getMyFileList());
 }
 
-void FilesSelection::onUriError() {
-    QMessageBox::information(this,"Condivisione documento","Condivisione non riuscita, URI inesistente.");
+void FilesSelection::onUriError(int operation) {
+    if(operation == 3) {
+        QMessageBox::information(this,"Condivisione documento","Condivisione non riuscita, URI inesistente.");
+    }
+    else if(operation == 4) {
+        QMessageBox::information(this,"Condivisione documento","Hai già accesso al file.");
+    }
 }
 
 void FilesSelection::onEraseFileError() {

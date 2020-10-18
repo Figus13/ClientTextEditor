@@ -41,7 +41,7 @@ signals:
     void signal_connection(int siteId, QString nickname, int ins);
     void signal_owners(QMap<int, QString> owners);
     void remote_cursor_changed(int index, int siteIdSender);
-    void uri_error();
+    void uri_error(int operation);
     void file_erased(int index);
     void erase_file_error();
 
