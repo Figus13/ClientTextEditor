@@ -332,7 +332,6 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
                 counter=0;
                 tot.append(buf_header);
                 tot.append(buf_payload);
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 socket->write(tot);
                 socket->flush();
                 out_payload.device()->reset();
