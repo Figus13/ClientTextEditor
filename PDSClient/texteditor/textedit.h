@@ -84,7 +84,7 @@ public:
 
 public slots:
     void fileNew();
-    void remoteCursorChanged(QString filename, int index, int siteIdSender);
+    void onRemoteCursorChanged(int cursorIndex, int siteIdSender);
     void onFileErased(int index);
 
 signals:
@@ -131,7 +131,6 @@ private slots:
     void onFileClosed();
     void onSignalConnection(int siteId, QString nickname, int ins);
     void onPrintOnPDF();
-    void remoteCursorChangePosition(int siteId, int pos);
 
 
 private:
@@ -163,6 +162,7 @@ private:
     void setUriRequest(bool status);
     void highlightUserText(const QString &str);
     void onSignalOwners(QMap<int,QString> owners);
+    void remoteCursorChangePosition(int cursorPos, int siteId);
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();

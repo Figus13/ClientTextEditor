@@ -16,6 +16,7 @@ public:
     QString getFileName();
     QString getUsername();
     QString getNickname();
+    QString getFilePath();
 
 private:
     QString filename;

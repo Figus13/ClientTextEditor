@@ -26,6 +26,7 @@ public:
     QString getUsername();
     QString getNickname();
     QVector<FileInfo *> getMyFileList();
+    void setFileIndex(int index);
 
 signals:
     void login_successful();
@@ -39,7 +40,7 @@ signals:
     void disconnect_URI();
     void signal_connection(int siteId, QString nickname, int ins);
     void signal_owners(QMap<int, QString> owners);
-    void remote_cursor_changed(QString filename, int index, int siteIdSender);
+    void remote_cursor_changed(int index, int siteIdSender);
     void uri_error();
     void file_erased(int index);
     void erase_file_error();
@@ -60,6 +61,7 @@ private:
     QString password;
     int siteId;
     int counter;
+    int fileIndexOpened;
     QVector<FileInfo *> files;
     QVector<Symbol*> symbols;
     QMap<int, QString> connectedUsers; //non usata per ora

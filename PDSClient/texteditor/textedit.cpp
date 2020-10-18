@@ -124,7 +124,7 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIn
     connect(this, &TextEdit::my_cursor_position_changed,
             client, &Client::onMyCursorPositionChanged);
     connect(client, &Client::remote_cursor_changed,
-            this, &TextEdit::remoteCursorChanged);
+            this, &TextEdit::onRemoteCursorChanged);
     connect(client, &Client::file_erased, this, &TextEdit::onFileErased);
     colorId=0;
     /*------------Fine aggiunta--------*/
@@ -1506,7 +1506,7 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
 
     this->_symbols.insert(this->_symbols.begin() + index, sym);
 
-    remoteCursorChanged(this->fileName, index+1, sym->getSiteId());
+    remoteCursorChangePosition(index+1, sym->getSiteId());
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
 
@@ -1521,7 +1521,7 @@ void TextEdit::remoteDelete(Symbol* sym){
         cursor.setPosition(index, QTextCursor::MoveAnchor);
         cursor.deleteChar();
         this->_symbols.erase(this->_symbols.begin() + index);
-        remoteCursorChanged(this->fileName, index, sym->getSiteId());
+        remoteCursorChangePosition(index, sym->getSiteId());
     }
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
@@ -1586,11 +1586,11 @@ void TextEdit::onShareURIButtonPressed(){
     client->requestURI(this->fileIndex);
 }
 
-void TextEdit::remoteCursorChangePosition(int siteId, int pos) {
+void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
 
     QTextCursor cursor(textEdit->textCursor());
     int pos_entry = cursor.position();//DEBUG
-    cursor.setPosition(pos);//setto la posizione per poter prendere le coordinate
+    cursor.setPosition(cursorPos);//setto la posizione per poter prendere le coordinate
     QTextCharFormat plainFormat(cursor.charFormat());
     QRect editor = textEdit->rect();
 
@@ -1626,9 +1626,6 @@ void TextEdit::remoteCursorChangePosition(int siteId, int pos) {
     uc->getLabel_cur()->show();
 }
 
-void TextEdit::remoteCursorChanged(QString filename, int index, int siteIdSender){
-    if(filename != this->fileName){
-        return;
-    }
-    remoteCursorChangePosition(siteIdSender, index);
+void TextEdit::onRemoteCursorChanged(int cursorIndex, int siteIdSender){ //forse è un ERRORE: ci vuole il vettore delle pos non
+    remoteCursorChangePosition(cursorIndex, siteIdSender);                    // l'indice (cursorIndex);
 }

@@ -36,6 +36,7 @@ Client::Client(QObject* parent) : QObject(parent), counter(0)
     // we need to wait...
     if (!socket->waitForConnected(5000))
         qDebug() << "Error: " << socket->errorString();
+    this->fileIndexOpened = -1; //ancora nessun file è stato aperto
 }
 
 void Client::onConnected(){
@@ -216,10 +217,11 @@ void Client::onReadyRead(){
         break;
         case 11:
         {
-            int siteIdSender, index;
-            QString filename;
-            in >> filename >> index >> siteIdSender;
-            remote_cursor_changed(filename, index, siteIdSender);
+            int siteIdSender, cursorIndex;
+            QString filepath;
+            in >> filepath >> cursorIndex >> siteIdSender;
+            if(filepath == this->files[this->fileIndexOpened]->getFilePath())
+                remote_cursor_changed(cursorIndex, siteIdSender);
         }
         default: break;
         }
@@ -234,6 +236,7 @@ void Client::closeFile(int fileIndex){
     out << 5 /*# operazione*/ << fi->getFileName() << fi->getUsername();
     socket->write(buf);
     socket->flush();
+    fileIndexOpened = -1;
     files_list_refreshed(files);
     disconnect_URI();
 }
@@ -286,6 +289,10 @@ void Client::addFile(FileInfo * file){
     getFile(size);
 }
 
+void Client::setFileIndex(int index){
+    fileIndexOpened = index;
+}
+
 void Client::eraseFile(int fileIndex) {
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
@@ -303,7 +310,7 @@ void Client::getFile(int fileIndex){
     QDataStream out(&buf, QIODevice::WriteOnly);
     FileInfo * file = files[fileIndex];
     out << 4 << file->getFileName() << file->getUsername() << siteId;
-
+    fileIndexOpened = fileIndex;
     socket->write(buf);
 }
 
@@ -392,71 +399,6 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
     }
 }
 
-/*void Client::onMessageReady(QVector<Message> messages, QString filename){
-    int i=0;
-    int counter=0;
-    while(i<messages.size()){
-        QByteArray buf_header;
-        QDataStream out_header(&buf_header, QIODevice::WriteOnly);
-        QByteArray buf_payload;
-        QDataStream out_payload(&buf_payload, QIODevice::WriteOnly);
-        QByteArray tot;
-
-        if(messages[0].getAction()=='i'){
-
-            for(; i< messages.size(); i++){
-                counter++;
-                Symbol *s = messages[i].getSymbol();
-                out_payload << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
-                            << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
-                if(buf_payload.size() > 50000){ //max buff 65532
-                    out_header << 3 << 1 << filename << counter;
-                    counter=0;
-                    tot.append(buf_header);
-                    tot.append(buf_payload);
-                    socket->write(tot);
-                    socket->flush();
-                    buf_header = "";
-                    buf_payload= "";
-                    tot = "";
-                }
-
-            }
-
-        }else{
-            if(messages[0].getAction()=='d'){
-                for(; i< messages.size(); i++){
-                    counter++;
-                    Symbol *s = messages[i].getSymbol();
-                    out_payload << s->getSiteId() << s->getCounter()  << s->getPosition();
-
-                    if(buf_payload.size() > 50000){ //max buff 65532
-                        out_header << 3 << 0 << filename << counter;
-                        counter=0;
-                        tot.append(buf_header);
-                        tot.append(buf_payload);
-                        socket->write(tot);
-                        socket->flush();
-                        buf_header = "";
-                        buf_payload= "";
-                        tot = "";
-                    }
-                }
-            }
-        }
-    }
-    if(counter!=0){
-        if(messages[0].getAction()=='i'){
-            out_header << 3 << 1 << filename << counter;
-        }else{
-            out_header << 3 << 0 << filename << counter;
-        }
-        tot.append(buf_header);
-        tot.append(buf_payload);
-        socket->write(tot);
-        socket->flush();
-    }
-}*/
 
 QTcpSocket* Client::getSocket(){
     return socket;

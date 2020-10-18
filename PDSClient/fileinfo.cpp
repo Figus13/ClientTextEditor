@@ -15,6 +15,8 @@ QString FileInfo::getUsername(){
 QString FileInfo::getNickname(){
     return nicknameOwner;
 }
-
+QString FileInfo::getFilePath(){
+    return usernameOwner + "/" + filename;
+}
 
 
