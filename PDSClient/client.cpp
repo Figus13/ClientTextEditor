@@ -192,8 +192,8 @@ void Client::onReadyRead(){
                 in >> uri;
                 URI_Ready(uri);
             }
-            else if (operation == 3) {
-                uri_error();
+            else if (operation == 3 || operation == 4) {
+                uri_error(operation);
             }
             break;
         case 8:
@@ -207,7 +207,6 @@ void Client::onReadyRead(){
             QString filename;
             QString usernameOwner;
             in >> filename >> usernameOwner;
-            FileInfo * file;
             for(FileInfo * f : files){
                 if( f->getFileName() == filename && f->getUsername() == usernameOwner){   
                     int index = files.indexOf(f);

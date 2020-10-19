@@ -37,7 +37,7 @@ private slots:
     void onShareURIButtonPressed();
     void onEraseFileButtonPressed();
     void onURIReady(QString uri);
-    void onUriError();
+    void onUriError(int operation);
     void onFileErased(int index);
     void onEraseFileError();
 

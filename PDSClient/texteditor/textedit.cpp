@@ -240,7 +240,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
 
 void TextEdit::onFileErased(int index) {
     if(this->fileIndex == index && !this->isHidden()) {
-        qDebug() << "ciao";
+        QMessageBox::information(this,"OPS!","Il creatore ha eliminato il file.");
         emit closeWindow();
         disconnect(this, &TextEdit::message_ready, client, &Client::onMessageReady);
         hide();
