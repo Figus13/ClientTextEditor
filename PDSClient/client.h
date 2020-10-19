@@ -33,7 +33,7 @@ signals:
     void login_failed();
     void registration_successful();
     void registration_failed(int status);
-    void message_from_server(Message m);
+    void message_from_server(Message m, int siteIdSender);
     void files_list_refreshed(QVector<FileInfo *> files);
     void file_ready(QVector<Symbol *> s);
     void URI_Ready(QString uri);

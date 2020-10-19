@@ -106,25 +106,31 @@ void Client::onReadyRead(){
             break;
             
         case 3:
+        {
+            int siteIdSender=-1;
             qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
             int n_sym;
-            in >> insert >> n_sym;
+            in >> insert;
+            if(insert==0){
+                in >> siteIdSender;
+            }
+            in >> n_sym;
             for(int i=0; i<n_sym; i++){
                 in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
                 s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
                 if(insert==1){ //nel caso sia un inserimento
                     if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
                         Message m{'i', s};
-                        message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                        message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
                     }
                 }else{ //nel caso sia una cancellazione
                     Message m{'d', s};
-                    message_from_server(m);
+                    message_from_server(m, siteIdSender);
                 }
             }
 
             break;
-            
+        }
         case 4:
             qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
             int fileSize; //1 se inserimento, 0 se cancellazione

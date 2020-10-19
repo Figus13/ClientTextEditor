@@ -1203,15 +1203,6 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     QVector<QFont> fonts;
     highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
 
-
-    /*PER DEBUG CURSORI
-     * if(_symbols.size()>4){
-        if(!cursorsMap.contains(1))
-            cursorsMap.insert(1, std::make_shared<UserCursor>(UserCursor(1, "nickname", 3, textEdit)));
-
-        remoteCursorChangePosition(1, _symbols.size()-2);
-    }*/
-
     if(cursor.position() == pos){
          for(int i=0; i<del; i++){
              cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
@@ -1265,13 +1256,16 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     }
 }
 
-void TextEdit::onMessageFromServer(Message m){
+void TextEdit::onMessageFromServer(Message m, int siteIdSender){
 
     if(m.getAction()=='i'){
         this->remoteInsert(m.getSymbol());
     }else{
         if(m.getAction()=='d'){
-            this->remoteDelete(m.getSymbol());
+            if(siteIdSender == -1){
+                qDebug() << "Errore, non può esserci un site id -1";   /*** SOLO PER DEBUG*****/
+            }
+            this->remoteDelete(m.getSymbol(), siteIdSender);
         }
     }
 }
@@ -1524,7 +1518,7 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
             this, &TextEdit::onTextChanged);
 
 }
-void TextEdit::remoteDelete(Symbol* sym){
+void TextEdit::remoteDelete(Symbol* sym, int siteIdSender){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
 
@@ -1534,7 +1528,7 @@ void TextEdit::remoteDelete(Symbol* sym){
         cursor.setPosition(index, QTextCursor::MoveAnchor);
         cursor.deleteChar();
         this->_symbols.erase(this->_symbols.begin() + index);
-        remoteCursorChangePosition(index, sym->getSiteId());
+        remoteCursorChangePosition(index, siteIdSender);
     }
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
