@@ -554,19 +554,22 @@ void TextEdit::highlightUserText(const QString &str){
     }else if(str == "Non evidenziare"){
         flag_all_highlighted = false;
         flag_one_highlighted = -1;
-        for(int i=0; i<textEdit->toPlainText().size(); i++){
+        //for(int i=0; i<textEdit->toPlainText().size(); i++){
             const QSignalBlocker blocker(textEdit);
             QTextCursor cursor = textEdit->textCursor();
-            cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
-            cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+          //cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+          //cursor.setPosition(i + 1, QTextCursor::KeepAnchor);
+            cursor.setPosition(0, QTextCursor::MoveAnchor); //per selezionare un carattere
+            cursor.setPosition(textEdit->toPlainText().size(), QTextCursor::KeepAnchor);
             QTextCharFormat plainFormat(cursor.charFormat());
             plainFormat.setBackground(Qt::white); //bianco
             cursor.setCharFormat(plainFormat);
-        }
+        //}
     }else if(str.contains("Modifica testo")){
         int pos = str.split(" - ")[1].toInt();
         int add = str.split(" - ")[2].toInt();
-        for(int i=pos; i<pos+add; i++){
+
+        /*for(int i=pos; i<pos+add; i++){
             const QSignalBlocker blocker(textEdit);
             QTextCursor cursor = textEdit->textCursor();
             cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
@@ -578,8 +581,20 @@ void TextEdit::highlightUserText(const QString &str){
                 plainFormat.setBackground(Qt::white);
             }
             cursor.setCharFormat(plainFormat);
+        }*/
+        const QSignalBlocker blocker(textEdit);
+        QTextCursor cursor = textEdit->textCursor();
+        cursor.setPosition(pos, QTextCursor::MoveAnchor); //per selezionare un carattere
+        cursor.setPosition(pos + add, QTextCursor::KeepAnchor);
+        QTextCharFormat plainFormat(cursor.charFormat());
+        if(flag_all_highlighted || flag_one_highlighted == siteId){
+            plainFormat.setBackground(colorableUsers[siteId]->getColor());
+        }else{
+            plainFormat.setBackground(Qt::white);
         }
-        /*if(flag_all_highlighted){
+        cursor.setCharFormat(plainFormat);
+
+         /*if(flag_all_highlighted){
             for(int i=0; i<textEdit->toPlainText().size(); i++){
                 const QSignalBlocker blocker(textEdit);
                 QTextCursor cursor = textEdit->textCursor();
@@ -1199,6 +1214,7 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 void TextEdit::onTextChanged(int pos, int del, int add){
 
     QString added = textEdit->toPlainText().mid(pos, add);
+
     QTextCursor cursor(textEdit->textCursor());
     QVector<QFont> fonts;
     highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
@@ -1216,7 +1232,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
              cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
          }
      }
-     qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
+     //qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
      //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
      QVector<Message> messagesDel;
      for(int i=0; i<del; i++){
@@ -1231,11 +1247,8 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         message_ready(messagesDel, this->fileIndex);
      }
      QVector<Message> messagesAdd;
-     qDebug() << "Add " << add << " Added.size() " << added.size();
+     //qDebug() << "Add " << add << " Added.size() " << added.size();
      for(int i=0; i<add; i++){
-         if(i>=1128){
-              qDebug() << "ciao";
-         }
          writingFlag=true;
          Message mess{};
          if(added.size() > i){
@@ -1243,10 +1256,10 @@ void TextEdit::onTextChanged(int pos, int del, int add){
                  if(fonts.size() != 0 ){
                      localInsert(pos+i, added[i], &(fonts[i]), mess);
                  }else{
-                     localInsert(pos+i, added[i], nullptr, mess);
+                    localInsert(pos+i, added[i], nullptr, mess);
                  }
             }else{
-                 localInsert(pos+i, added[i], nullptr, mess);
+                  localInsert(pos+i, added[i], nullptr, mess);
             }
             messagesAdd.push_back(mess);
         }
@@ -1333,7 +1346,7 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
     }
     //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
     Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor().name(), qf.family());
-    qDebug() << qf.family() <<  qf.family().length();
+    //qDebug() << qf.family() <<  qf.family().length();
     /*qDebug() << sizeof(int)*pos.size() << sizeof(this->counter) << sizeof(this->siteId) << sizeof(value) << sizeof(actionTextBold->isChecked()) <<
                 sizeof(actionTextItalic->isChecked()) << sizeof(actionTextUnderline->isChecked()) << sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment()))
              << sizeof(qf.pointSize()) << sizeof(textEdit->textColor().name()) << sizeof(char)*qf.family().length();
