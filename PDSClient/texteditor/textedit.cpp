@@ -187,7 +187,6 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIn
 
 void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
     if(ins == 1){
-
         cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId, textEdit)));
         if(!colorableUsers.contains(siteId)){
             User user(siteId, nickname, colorId);
@@ -195,8 +194,7 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
             QPixmap px(15,15);//create pixmap,size choose yourself, by your taste
             px.fill(colorableUsers[siteId]->getColor());//all pixmap will be red
             QIcon icon(px);
-            comboUser->addItem(icon, QString::number(siteId) + " - " + nickname, siteId);
-
+            comboUser->addItem(icon, QString::number(siteId) + " - " + nickname + " (connesso)", siteId);
         }
         colorId++;
     }else if(ins == 0){
@@ -538,7 +536,27 @@ void TextEdit::highlightUserText(const QString &str){
     if(str == "Evidenzia tutti"){
         flag_all_highlighted = true;
         flag_one_highlighted = -1;
-        for(int i=0; i<textEdit->toPlainText().size(); i++){
+        for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
+            int siteIdTmp = _symbols[i]->getSiteId();
+            for(j=1; j<textEdit->toPlainText().size()-i; j++){
+                if(_symbols[i+j]->getSiteId() != siteIdTmp){
+                    break;
+                }
+            }
+            qDebug() << i << " " << j << " " << siteIdTmp;
+            const QSignalBlocker blocker(textEdit);
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+            cursor.setPosition(i + j, QTextCursor::KeepAnchor);
+            if (colorableUsers.contains(siteIdTmp)) {
+                QTextCharFormat plainFormat(cursor.charFormat());
+                plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
+                cursor.setCharFormat(plainFormat);
+            }
+            QTextCharFormat plainFormat(cursor.charFormat());
+            i = i+j-1;
+        }
+        /*for(int i=0; i<textEdit->toPlainText().size(); i++){
             const QSignalBlocker blocker(textEdit);
             QTextCursor cursor = textEdit->textCursor();
             cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
@@ -550,7 +568,7 @@ void TextEdit::highlightUserText(const QString &str){
                 cursor.setCharFormat(plainFormat);
            }
            QTextCharFormat plainFormat(cursor.charFormat());
-        }
+        }*/
     }else if(str == "Non evidenziare"){
         flag_all_highlighted = false;
         flag_one_highlighted = -1;
