@@ -193,6 +193,7 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
             colorableUsers.insert(siteId,  std::make_shared<User>(user));
             QPixmap px(15,15);
             px.fill(colorableUsers[siteId]->getColor());
+            QIcon icon(px);
             comboUser->addItem(icon, QString::number(siteId) + " - " + nickname + " (connesso)", siteId);
         }
         colorId++;
@@ -209,7 +210,7 @@ void TextEdit::onSignalOwners(QMap<int, QString> owners){
         //perché se ci sono già connessi entra prima nella onSignalConnection, quindi raddoppio gli item
         if(!colorableUsers.contains(siteId)){
             User user(siteId, owners[siteId], colorId++);
-            colorableUsers.insert(siteId, std::make_shared<User>(user));
+            colorableUsers.insert(siteId, std::make_shared<User>(user)); //TODO deve contenere anche un colore, nuova classe? PROVA
             QPixmap px(15,15);
             px.fill(colorableUsers[siteId]->getColor());
             QIcon icon(px);
