@@ -209,6 +209,7 @@ private:
     QString fileName;
     int fileIndex;
     QTextEdit *textEdit;
+    QStatusBar *bar;
 
     //FLAGS
     bool FLAG_MODIFY_SYMBOL = false;

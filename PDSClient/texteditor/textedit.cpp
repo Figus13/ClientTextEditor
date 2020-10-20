@@ -175,6 +175,11 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIn
     //setCurrentFileName(QString());  ****MODIFICATA DA NOI*****
     setCurrentFileName(fileName);
 
+    this->bar =  statusBar();
+    QString s("Utenti Connessi: " + QString::number(this->cursorsMap.size() + 1));
+    bar->showMessage(tr(qPrintable(s)));
+
+
 
 #ifdef Q_OS_MACOS
     // Use dark text on light background on macOS, also in dark mode.
@@ -188,6 +193,13 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIn
 void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
     if(ins == 1){
 
+        if(colorableUsers.contains(siteId)){
+           // comboUser->setItemText(colorableUsers.keys().indexOf(siteId) + 2,  QString::number(siteId) + " - " + nickname +  "- connesso" );
+            comboUser->setItemText(comboUser->findData(siteId),  QString::number(siteId) + " - " + nickname +  "- connesso" );
+
+
+        }
+
         cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId, textEdit)));
         if(!colorableUsers.contains(siteId)){
             User user(siteId, nickname, colorId);
@@ -195,13 +207,24 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
             QPixmap px(15,15);//create pixmap,size choose yourself, by your taste
             px.fill(colorableUsers[siteId]->getColor());//all pixmap will be red
             QIcon icon(px);
-            comboUser->addItem(icon, QString::number(siteId) + " - " + nickname, siteId);
+            comboUser->addItem(icon, QString::number(siteId) + " - " + nickname +"- connesso", siteId);
 
         }
         colorId++;
+
+        bar->clearMessage();
+        QString s("Utenti Connessi: " + QString::number(this->cursorsMap.size() +1 ) );
+        bar->showMessage(tr(qPrintable(s)));
+
     }else if(ins == 0){
         if(cursorsMap.contains(siteId)){
+
             cursorsMap.remove(siteId);
+            bar->clearMessage();
+            QString s("Utenti Connessi: " + QString::number(this->cursorsMap.size() + 1) );
+            bar->showMessage(tr(qPrintable(s)));
+            comboUser->setItemText(comboUser->findData(siteId),  QString::number(siteId) + " - " + nickname +  " - disconnesso" );
+
 
         }
     }
@@ -216,9 +239,18 @@ void TextEdit::onSignalOwners(QMap<int, QString> owners){
             QPixmap px(15,15);//create pixmap,size choose yourself, by your taste
             px.fill(colorableUsers[siteId]->getColor());//all pixmap will be red
             QIcon icon(px);
-            comboUser->addItem(icon, QString::number(siteId) + " - " + user.getNickname());
+            if( this->siteId == siteId){
+                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - (Io)", siteId);
+            }else{
+                if(this->cursorsMap.contains(siteId)){
+                    comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - connesso", siteId);
+                }else{
+                    comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - disconnesso", siteId);
+                }
+            }
+
         }
-        }
+    }
 }
 
 
@@ -525,7 +557,15 @@ void TextEdit::setupTextActions()
         QPixmap px(15,15);//create pixmap,size choose yourself, by your taste
         px.fill(colorableUsers[siteId]->getColor());//all pixmap will be red
         QIcon icon(px);
-        comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname(), siteId);
+        if( this->siteId == siteId){
+            comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - (Io)", siteId);
+        }else{
+            if(this->cursorsMap.contains(siteId)){
+                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - connesso", siteId);
+            }else{
+                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - disconnesso", siteId);
+            }
+        }
     }
     connect(comboUser, &QComboBox::textActivated, this, &TextEdit::highlightUserText);
 
@@ -548,8 +588,8 @@ void TextEdit::highlightUserText(const QString &str){
                 QTextCharFormat plainFormat(cursor.charFormat());
                 plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
                 cursor.setCharFormat(plainFormat);
-           }
-           QTextCharFormat plainFormat(cursor.charFormat());
+            }
+            QTextCharFormat plainFormat(cursor.charFormat());
         }
     }else if(str == "Non evidenziare"){
         flag_all_highlighted = false;
@@ -642,7 +682,7 @@ void TextEdit::highlightUserText(const QString &str){
                     QTextCharFormat plainFormat(cursor.charFormat());
                     plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
                     cursor.setCharFormat(plainFormat);
-               }
+                }
             }else{
                 const QSignalBlocker blocker(textEdit);
                 QTextCursor cursor = textEdit->textCursor();
@@ -694,10 +734,10 @@ bool TextEdit::maybeSave()
         return true;
 
     const QMessageBox::StandardButton ret =
-        QMessageBox::warning(this, QCoreApplication::applicationName(),
-                             tr("The document has been modified.\n"
-                                "Do you want to save your changes?"),
-                             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+            QMessageBox::warning(this, QCoreApplication::applicationName(),
+                                 tr("The document has been modified.\n"
+                                    "Do you want to save your changes?"),
+                                 QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
     if (ret == QMessageBox::Save)
         return fileSave();
     else if (ret == QMessageBox::Cancel)
@@ -734,13 +774,13 @@ void TextEdit::fileOpen()
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
     fileDialog.setFileMode(QFileDialog::ExistingFile);
     fileDialog.setMimeTypeFilters(QStringList()
-#if QT_CONFIG(texthtmlparser)
+                              #if QT_CONFIG(texthtmlparser)
                                   << "text/html"
-#endif
-#if QT_CONFIG(textmarkdownreader)
+                              #endif
+                              #if QT_CONFIG(textmarkdownreader)
 
                                   << "text/markdown"
-#endif
+                              #endif
                                   << "text/plain");
     if (fileDialog.exec() != QDialog::Accepted)
         return;
@@ -776,12 +816,12 @@ bool TextEdit::fileSaveAs()
     fileDialog.setAcceptMode(QFileDialog::AcceptSave);
     QStringList mimeTypes;
     mimeTypes << "text/plain"
-#if QT_CONFIG(textodfwriter)
+             #if QT_CONFIG(textodfwriter)
               << "application/vnd.oasis.opendocument.text"
-#endif
-#if QT_CONFIG(textmarkdownwriter)
+             #endif
+             #if QT_CONFIG(textmarkdownwriter)
               << "text/markdown"
-#endif
+             #endif
               << "text/html";
     fileDialog.setMimeTypeFilters(mimeTypes);
 #if QT_CONFIG(textodfwriter)
@@ -846,7 +886,7 @@ void TextEdit::printPreview(QPrinter *printer)
 void TextEdit::filePrintPdf()
 {
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
-//! [0]
+    //! [0]
     QFileDialog fileDialog(this, tr("Export PDF"));
     fileDialog.setAcceptMode(QFileDialog::AcceptSave);
     fileDialog.setMimeTypeFilters(QStringList("application/pdf"));
@@ -860,7 +900,7 @@ void TextEdit::filePrintPdf()
     textEdit->document()->print(&printer);
     statusBar()->showMessage(tr("Exported \"%1\"")
                              .arg(QDir::toNativeSeparators(fileName)));
-//! [0]
+    //! [0]
 #endif
 }
 
@@ -885,7 +925,7 @@ void TextEdit::textBold()
         message_ready(mess, fileName);
     }*/
 
-      mergeFormatOnWordOrSelection(fmt);
+    mergeFormatOnWordOrSelection(fmt);
     mergeFormatOnWordOrSelection(fmt);
 }
 
@@ -1018,7 +1058,7 @@ void TextEdit::textColor()
 void TextEdit::textAlign(QAction *a) //qui scatenata la ontextchanged
 {
     FLAG_MODIFY_SYMBOL= true;  // si potrebbe sfruttare per evitare di fare delete + add ma chiedere al server di modificare
-                              //  il simbolo
+    //  il simbolo
     if (a == actionAlignLeft)
         textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
     else if (a == actionAlignCenter)
@@ -1131,8 +1171,8 @@ void TextEdit::cursorPositionChanged()
         comboStyle->setCurrentIndex(headingLevel ? headingLevel + 10 : 0);
     }
     if(!writingFlag){
-         int index = textEdit->textCursor().anchor();
-         my_cursor_position_changed(index);
+        int index = textEdit->textCursor().anchor();
+        my_cursor_position_changed(index);
     }
     writingFlag=false;
 }
@@ -1148,14 +1188,14 @@ void TextEdit::clipboardDataChanged()
 void TextEdit::about()
 {
     QMessageBox::about(this, tr("About"), tr("This example demonstrates Qt's "
-        "rich text editing facilities in action, providing an example "
-        "document for you to experiment with."));
+                                             "rich text editing facilities in action, providing an example "
+                                             "document for you to experiment with."));
 }
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
     //FLAG_MODIFY_SYMBOL= true;// si potrebbe sfruttare per evitare di fare delete + add ma chiedere al server di modificare
-                             //  il simbolo
+    //  il simbolo
     QTextCursor cursor;
     cursor= textEdit->textCursor();
     /*if (!cursor.hasSelection())
@@ -1204,49 +1244,49 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
 
     if(cursor.position() == pos){
-         for(int i=0; i<del; i++){
-             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
-             QTextCharFormat plainFormat(cursor.charFormat());
-             fonts.push_back(plainFormat.font());
-         }
-     }else if (cursor.position() == pos + del){
-         for(int i=0; i<del; i++){
-             QTextCharFormat plainFormat(cursor.charFormat());
-             fonts.push_front(plainFormat.font());
-             cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
-         }
-     }
-     qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
-     //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
-     QVector<Message> messagesDel;
-     for(int i=0; i<del; i++){
-         writingFlag= true;
-         if(pos != this->_symbols.size()){
-             Message mess{'d', this->_symbols[pos]};
-             this->_symbols.erase(this->_symbols.begin() + pos);
-             messagesDel.push_back(mess);
-         }
-     }
-     if(messagesDel.size() != 0){
+        for(int i=0; i<del; i++){
+            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
+            QTextCharFormat plainFormat(cursor.charFormat());
+            fonts.push_back(plainFormat.font());
+        }
+    }else if (cursor.position() == pos + del){
+        for(int i=0; i<del; i++){
+            QTextCharFormat plainFormat(cursor.charFormat());
+            fonts.push_front(plainFormat.font());
+            cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
+        }
+    }
+    qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
+    //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
+    QVector<Message> messagesDel;
+    for(int i=0; i<del; i++){
+        writingFlag= true;
+        if(pos != this->_symbols.size()){
+            Message mess{'d', this->_symbols[pos]};
+            this->_symbols.erase(this->_symbols.begin() + pos);
+            messagesDel.push_back(mess);
+        }
+    }
+    if(messagesDel.size() != 0){
         message_ready(messagesDel, this->fileIndex);
-     }
-     QVector<Message> messagesAdd;
-     qDebug() << "Add " << add << " Added.size() " << added.size();
-     for(int i=0; i<add; i++){
-         if(i>=1128){
-              qDebug() << "ciao";
-         }
-         writingFlag=true;
-         Message mess{};
-         if(added.size() > i){
+    }
+    QVector<Message> messagesAdd;
+    qDebug() << "Add " << add << " Added.size() " << added.size();
+    for(int i=0; i<add; i++){
+        if(i>=1128){
+            qDebug() << "ciao";
+        }
+        writingFlag=true;
+        Message mess{};
+        if(added.size() > i){
             if(del > 0){ //controlla se con selezione e incolla funziona
-                 if(fonts.size() != 0 ){
-                     localInsert(pos+i, added[i], &(fonts[i]), mess);
-                 }else{
-                     localInsert(pos+i, added[i], nullptr, mess);
-                 }
+                if(fonts.size() != 0 ){
+                    localInsert(pos+i, added[i], &(fonts[i]), mess);
+                }else{
+                    localInsert(pos+i, added[i], nullptr, mess);
+                }
             }else{
-                 localInsert(pos+i, added[i], nullptr, mess);
+                localInsert(pos+i, added[i], nullptr, mess);
             }
             messagesAdd.push_back(mess);
         }
@@ -1272,12 +1312,12 @@ void TextEdit::onMessageFromServer(Message m, int siteIdSender){
 
 void TextEdit::onFileReady(QVector<Symbol*> s){
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-            this, &TextEdit::cursorPositionChanged);
+               this, &TextEdit::cursorPositionChanged);
     this->_symbols = s;
     textEdit->textCursor().beginEditBlock();
     //FLAG_OPEN_FILE = true; sostituita con il disconnect, evitiamo di fare signal->slot
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
+               this, &TextEdit::onTextChanged);
     for(Symbol* sym: s){
         QTextCursor cursor(textEdit->textCursor());
         QTextCharFormat plainFormat(cursor.charFormat());
@@ -1351,15 +1391,15 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
 }
 
 int TextEdit::alignToInt(int align){
-        if(align == 1){ //left
-            return 0;
-        }else if(align == 18){ //right
-            return 1;
-        }else if(align == 4){ //hcenter
-            return 2;
-        }else if(align == 8){ //justify
-            return 3;
-        }
+    if(align == 1){ //left
+        return 0;
+    }else if(align == 18){ //right
+        return 1;
+    }else if(align == 4){ //hcenter
+        return 2;
+    }else if(align == 8){ //justify
+        return 3;
+    }
 }
 
 Qt::Alignment TextEdit::intToAlign(int val){
@@ -1488,7 +1528,7 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
 
 void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
+               this, &TextEdit::onTextChanged);
     int index = findIndexFromNewPosition(sym->getPosition());
     QTextCursor cursor = textEdit->textCursor();
     cursor.setPosition(index, QTextCursor::MoveAnchor);
@@ -1537,29 +1577,29 @@ void TextEdit::remoteDelete(Symbol* sym, int siteIdSender){
 
 int TextEdit::findIndexFromNewPosition(QVector<int> position){
     int index = _symbols.size();
-        if (_symbols.size() == 0) {
+    if (_symbols.size() == 0) {
+        index = 0;
+    }
+    if (_symbols.size() == 1) {
+        if (_symbols[0]->getPosition() > position) {
             index = 0;
         }
-        if (_symbols.size() == 1) {
-            if (_symbols[0]->getPosition() > position) {
-                index = 0;
-            }
-            else {
-                index = 1;
+        else {
+            index = 1;
+        }
+    }
+    if (_symbols.size() > 1) {
+        if (position < _symbols[0]->getPosition()) {
+            index = 0;
+        }
+        for (int i = 1; i < _symbols.size(); i++) {
+            if (_symbols[i - 1]->getPosition() < position && position < _symbols[i]->getPosition()) {
+                index = i;
+                break;
             }
         }
-        if (_symbols.size() > 1) {
-            if (position < _symbols[0]->getPosition()) {
-                index = 0;
-            }
-            for (int i = 1; i < _symbols.size(); i++) {
-                if (_symbols[i - 1]->getPosition() < position && position < _symbols[i]->getPosition()) {
-                    index = i;
-                    break;
-                }
-            }
-        }
-       return index;
+    }
+    return index;
 }
 
 int TextEdit::findIndexFromExistingPosition(QVector<int> position){
