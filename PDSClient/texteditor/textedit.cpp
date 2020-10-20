@@ -200,24 +200,24 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
 
         }
 
-        cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId, textEdit)));
         if(!colorableUsers.contains(siteId)){
+            cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId, textEdit)));
             User user(siteId, nickname, colorId);
             colorableUsers.insert(siteId,  std::make_shared<User>(user));
             QPixmap px(15,15);
             px.fill(colorableUsers[siteId]->getColor());
             QIcon icon(px);
             comboUser->addItem(icon, QString::number(siteId) + " - " + nickname + " (connesso)", siteId);
+        }else{
+            cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorableUsers[siteId]->getColorId(), textEdit)));
         }
         colorId++;
-
         bar->clearMessage();
         QString s("Utenti Connessi: " + QString::number(this->cursorsMap.size() +1 ) );
         bar->showMessage(tr(qPrintable(s)));
 
     }else if(ins == 0){
         if(cursorsMap.contains(siteId)){
-
             cursorsMap.remove(siteId);
             bar->clearMessage();
             QString s("Utenti Connessi: " + QString::number(this->cursorsMap.size() + 1) );
