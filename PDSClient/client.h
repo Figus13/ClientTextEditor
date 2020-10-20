@@ -33,7 +33,7 @@ signals:
     void login_failed();
     void registration_successful();
     void registration_failed(int status);
-    void message_from_server(Message m);
+    void message_from_server(Message m, int siteIdSender);
     void files_list_refreshed(QVector<FileInfo *> files);
     void file_ready(QVector<Symbol *> s);
     void URI_Ready(QString uri);
@@ -41,7 +41,7 @@ signals:
     void signal_connection(int siteId, QString nickname, int ins);
     void signal_owners(QMap<int, QString> owners);
     void remote_cursor_changed(int index, int siteIdSender);
-    void uri_error();
+    void uri_error(int operation);
     void file_erased(int index);
     void erase_file_error();
 
