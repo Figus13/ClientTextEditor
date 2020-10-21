@@ -115,6 +115,11 @@ void Client::onReadyRead(){
             if(insert==0){
                 in >> siteIdSender;
             }
+            if(insert==2){ //arrivo ack, richiesta blocco successivo
+                QVector<Message> messages;
+                onMessageReady(messages, fileIndexOpened);
+                break;
+            }
             in >> n_sym;
             for(int i=0; i<n_sym; i++){
                 in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
@@ -329,6 +334,72 @@ void Client::disconnectFromServer(){
 }
 
 void Client::onMessageReady(QVector<Message> messages, int fileIndex){
+    messagesReady.append(messages);
+    if(messagesReady.size()==0){
+        return;
+    }
+
+    FileInfo * fi = files[fileIndex];
+    QByteArray buf_header;
+    QDataStream out_header(&buf_header, QIODevice::WriteOnly);
+    QByteArray buf_payload;
+    QDataStream out_payload(&buf_payload, QIODevice::WriteOnly);
+    QByteArray tot;
+    int counter = 0;
+    if(messagesReady[0].getAction()=='i'){
+       while(!messagesReady.isEmpty()){
+            if(messagesReady[0].getAction()!='i'){ //non stiamo ancora trattando inserimenti
+                return;
+            }
+            counter++;
+            Symbol *s = messagesReady[0].getSymbol();
+            out_payload << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
+                            << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
+            if(buf_payload.size() > 50000){ //max buff 65532
+                 out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
+                 tot.append(buf_header);
+                 tot.append(buf_payload);
+                 socket->write(tot);
+                 socket->flush();
+                 return;
+            }
+            messagesReady.remove(0);
+       }
+       out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
+       tot.append(buf_header);
+       tot.append(buf_payload);
+       socket->write(tot);
+       socket->flush();
+    }else{
+        if(messages[0].getAction()=='d'){
+            while(!messagesReady.isEmpty()){
+                 if(messagesReady[0].getAction()!='d'){ //non stiamo ancora trattando cancellazioni
+                     return;
+                  }
+                 counter++;
+                 Symbol *s = messagesReady[0].getSymbol();
+                 out_payload << s->getSiteId() << s->getCounter()  << s->getPosition();
+
+                if(buf_payload.size() > 50000){ //max buff 65532
+                    out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
+                    tot.append(buf_header);
+                    tot.append(buf_payload);
+                    socket->write(tot);
+                    socket->flush();
+                    return;
+                }
+                messagesReady.remove(0);
+           }
+           out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
+           tot.append(buf_header);
+           tot.append(buf_payload);
+           socket->write(tot);
+           socket->flush();
+        }
+    }
+}
+
+/*void Client::onMessageReady(QVector<Message> messages, int fileIndex){
     FileInfo * fi = files[fileIndex];
     QByteArray buf_header;
     QDataStream out_header(&buf_header, QIODevice::WriteOnly);
@@ -406,7 +477,7 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
         buf_payload= "";
         tot = "";
     }
-}
+}*/
 
 
 QTcpSocket* Client::getSocket(){
