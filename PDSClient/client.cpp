@@ -119,33 +119,33 @@ void Client::onReadyRead(){
         {
             int siteIdSender=-1;
             qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
-            int n_sym;
+            //int n_sym;
             QVector<Message> messages;
             in >> insert;
             if(insert==0){
                 in >> siteIdSender;
             }
-            if(insert==2){ //arrivo ack, richiesta blocco successivo
+            /*if(insert==2){ //arrivo ack, richiesta blocco successivo
                 QVector<Message> messages;
                 onMessageReady(messages, fileIndexOpened);
                 break;
-            }
-            in >> n_sym;
-            for(int i=0; i<n_sym; i++){
-                in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-                s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
-                if(insert==1){ //nel caso sia un inserimento
-                    if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
-                        Message m{'i', s};
-                        messages.push_back(m);
-                     //   message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
-                    }
-                }else{ //nel caso sia una cancellazione
-                    Message m{'d', s};
+            }*/
+            //in >> n_sym;
+            //for(int i=0; i<n_sym; i++){
+            in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+            s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
+            if(insert==1){ //nel caso sia un inserimento
+                if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
+                    Message m{'i', s};
                     messages.push_back(m);
-                    //message_from_server(m, siteIdSender);
+                 //   message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
                 }
+            }else{ //nel caso sia una cancellazione
+                Message m{'d', s};
+                messages.push_back(m);
+                //message_from_server(m, siteIdSender);
             }
+            //}
             messages_from_server(messages, siteIdSender);
 
             break;
