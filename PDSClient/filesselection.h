@@ -30,6 +30,7 @@ protected:
 private slots:
     void on_newDocumentButton_clicked();
     void on_newFileFromLink_clicked();
+    void on_changeProfileButton_clicked();
     void showWindow();
     void on_fileListWidget_itemDoubleClicked(QListWidgetItem *item);
     void onFilesListRefreshed(QVector<FileInfo *> files);

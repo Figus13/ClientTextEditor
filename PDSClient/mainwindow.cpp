@@ -65,8 +65,8 @@ void MainWindow::on_registrationButton_clicked()
 
     if(username.contains("/") || username.contains("\\") || username.contains(":") ||
        username.contains("*") || username.contains("?") || username.contains("\"") ||
-       username.contains("<") || username.contains(">") || username.contains("|")){
-        QMessageBox::warning(this,"Registrazione","L'username non può contenere i seguenti caratteri: / \\ : * ? \" < > |");
+       username.contains("<") || username.contains(">") || username.contains("|") || username.contains(" ")){
+        QMessageBox::warning(this,"Registrazione","L'username non può contenere i seguenti caratteri: / \\ : * ? \" < > | 'spazio'");
         return;
     }
 

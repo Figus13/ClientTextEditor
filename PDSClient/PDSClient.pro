@@ -9,6 +9,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    changeprofiledialog.cpp \
     client.cpp \
     fileinfo.cpp \
     filesselection.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
     usercursor.cpp
 
 HEADERS += \
+    changeprofiledialog.h \
     client.h \
     fileinfo.h \
     filesselection.h \
@@ -38,6 +40,7 @@ HEADERS += \
     usercursor.h
 
 FORMS += \
+    changeprofiledialog.ui \
     filesselection.ui \
     mainwindow.ui \
     newfiledialog.ui \

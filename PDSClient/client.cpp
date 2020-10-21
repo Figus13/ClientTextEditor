@@ -75,7 +75,17 @@ void Client::onReadyRead(){
             if(status == 0){
                 login_failed();
             }else if(status == 1){
-                in >> this->username >> this->nickname;
+                int op;
+                in >> op;
+                if(op == 1) {
+                    in >> this->username >> this->nickname;
+                }
+                else if(op == 2) {
+                    QImage image;
+                    in >> this->username >> this->nickname >> image;
+                    this->image.convertFromImage(image);
+                    haveImage = true;
+                }
                 /*int numFiles;
                 in >> operation >> status;
                 if(operation == 6 && status ==1){  //riceviamo i file.
@@ -196,24 +206,24 @@ void Client::onReadyRead(){
             emit signal_connection(siteId, nickname, ins);
             break;
         case 9:
-        in >> status;
-        if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
-            QString filename;
-            QString usernameOwner;
-            in >> filename >> usernameOwner;
-            for(FileInfo * f : files){
-                if( f->getFileName() == filename && f->getUsername() == usernameOwner){   
-                    int index = files.indexOf(f);
-                    files.removeOne(f);
-                    file_erased(index);
-                    break;
+            in >> status;
+            if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
+                QString filename;
+                QString usernameOwner;
+                in >> filename >> usernameOwner;
+                for(FileInfo * f : files){
+                    if( f->getFileName() == filename && f->getUsername() == usernameOwner){
+                        int index = files.indexOf(f);
+                        files.removeOne(f);
+                        file_erased(index);
+                        break;
+                    }
                 }
             }
-        }
-        else {
-            erase_file_error();
-        }
-        break;
+            else {
+                erase_file_error();
+            }
+            break;
         case 11:
         {
             int siteIdSender, cursorIndex;
@@ -221,6 +231,7 @@ void Client::onReadyRead(){
             in >> filepath >> cursorIndex >> siteIdSender;
             if(filepath == this->files[this->fileIndexOpened]->getFilePath())
                 remote_cursor_changed(cursorIndex, siteIdSender);
+            break;
         }
         default: break;
         }
@@ -299,6 +310,86 @@ void Client::eraseFile(int fileIndex) {
     out << 9 << file->getFileName() << file->getUsername();
     socket->write(buf);
 }
+
+void Client::profileChanged(QString nickname, QPixmap image) {
+    if(this->nickname != nickname || this->image != image) {
+        this->nickname = nickname;
+        this->image = image;
+        this->haveImage = true;
+        QByteArray buf;
+        QDataStream out(&buf, QIODevice::WriteOnly);
+        QImage img = image.toImage();
+        out << 10 << 1 << username << nickname << img;
+        socket->write(buf);
+    }
+}
+
+void Client::profileChanged(QString nickname) {
+    if(this->nickname != nickname) {
+        this->nickname = nickname;
+        QByteArray buf;
+        QDataStream out(&buf, QIODevice::WriteOnly);
+        out << 10 << 2 << username << nickname;
+    }
+}
+
+
+  //SERVER WRITE
+
+/*void VCameraServer::sendTcpData(const QImage &frame)
+{
+    if (mTcpClient->state() == QTcpSocket::ConnectedState) {
+
+        // initialize stream
+        QByteArray block;
+        QDataStream out(&block, QIODevice::WriteOnly);
+        out.setVersion(QDataStream::Qt_5_11);
+
+        // initialize data
+        QImage image(filePath);
+
+        // serialize
+        out << qint64(0) << image;
+        out.device()->seek(0);
+        out << (qint64)(block.size() - sizeof(qint64));  // the size of the block to be sent
+
+        // send over TCP
+        qint64 written = mTcpClient->write(block);
+        mTcpClient->waitForBytesWritten(-1);
+        qDebug() << "written" << written << "of" << block.size();
+    }
+}
+
+
+ // CLIENT READ
+void VCameraClient::newTcpDataRead()
+{
+    QDataStream in(mTcpSocket);
+    in.setVersion(QDataStream::Qt_5_11);
+
+    // initialize data
+    QImage image;
+    static qint64 imageSize = 0;
+
+    if ( 0 == imageSize ) {
+        if ( mTcpSocket->bytesAvailable() < (int)sizeof(qint64) ) return;
+        in >> imageSize;
+        qDebug() << imageSize;
+    }
+
+    if ( mTcpSocket->bytesAvailable() < imageSize ) return;
+    in >> image;
+
+    // data is complete, do something with it
+    imageSize = 0;
+    if (image.isNull()) qDebug() << "QImage is null!";
+    else {
+        mTcpFrame = image;
+        update();
+    }
+}*/
+
+
 
 /*
  * modificata, ora riceve come argomento l'indice del file del vettore di files
@@ -438,4 +529,12 @@ QString Client::getNickname(){
 
 QString Client::getUsername(){
     return username;
+}
+
+bool Client::getHavePixmap() {
+    return haveImage;
+}
+
+QPixmap Client::getPixmap() {
+    return image;
 }

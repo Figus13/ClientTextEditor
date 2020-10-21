@@ -25,8 +25,12 @@ public:
     void eraseFile(int fileIndex);
     QString getUsername();
     QString getNickname();
+    bool getHavePixmap();
+    QPixmap getPixmap();
     QVector<FileInfo *> getMyFileList();
     void setFileIndex(int index);
+    void profileChanged(QString nickname, QPixmap image);
+    void profileChanged(QString nickname);
 
 signals:
     void login_successful();
@@ -59,6 +63,8 @@ private:
     QString username;
     QString nickname;
     QString password;
+    bool haveImage = false;
+    QPixmap image;
     int siteId;
     int counter;
     int fileIndexOpened;

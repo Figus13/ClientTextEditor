@@ -3,12 +3,18 @@
 #include <QMenu>
 #include <QMessageBox>
 #include "showuridialog.h"
+#include "changeprofiledialog.h"
 
 FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     QMainWindow(parent),
     ui(new Ui::FilesSelection), client(client)
 {
     ui->setupUi(this);
+    ui->nicknameLabel->setText(client->getNickname());
+    ui->nicknameLabel->adjustSize();
+    if(client->getHavePixmap()) {
+        ui->profileImageLabel->setPixmap(client->getPixmap());
+    }
     client->getFiles(); //i file vengono gestiti nella slot onfilesListRefreshed
     connect(client, &Client::files_list_refreshed,
             this, &FilesSelection::onFilesListRefreshed);
@@ -60,9 +66,9 @@ void FilesSelection::on_newDocumentButton_clicked()
 
         if( filename.contains("/") || filename.contains("\\") || filename.contains(":") ||
                 filename.contains("*") || filename.contains("?") || filename.contains("\"") ||
-                filename.contains("<") || filename.contains(">") || filename.contains("|"))
+                filename.contains("<") || filename.contains(">") || filename.contains("|") || filename.contains(" "))
         {
-            QMessageBox::warning(this,"Nuovo Documento","Il nome del file non può contenere i seguenti caratteri: / \\ : * ? \" < > |");
+            QMessageBox::warning(this,"Nuovo Documento","Il nome del file non può contenere i seguenti caratteri: / \\ : * ? \" < > | 'spazio'");
             return;
 
         }else{
@@ -105,8 +111,30 @@ void FilesSelection::on_newFileFromLink_clicked()
         QString uri = dialog.getUri();
         client->getFileFromURI(uri);
     }
+}
 
-
+void FilesSelection::on_changeProfileButton_clicked() {
+    changeProfileDialog dialog;
+    dialog.setModal(true);
+    dialog.setNickname(client->getNickname());
+    if(client->getHavePixmap()) {
+        dialog.setPixmap(client->getPixmap());
+    }
+    if(dialog.exec()){
+        QString nickname = dialog.getNickname();
+        if(dialog.getHavePixmap()) {
+            QPixmap image = dialog.getImagePixmap();
+            client->profileChanged(nickname, image);
+            ui->profileImageLabel->setPixmap(image);
+            ui->nicknameLabel->setText(nickname);
+            ui->nicknameLabel->adjustSize();
+        }
+        else {
+             client->profileChanged(nickname);
+             ui->nicknameLabel->setText(nickname);
+             ui->nicknameLabel->adjustSize();
+        }
+    }
 }
 
 void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
