@@ -72,7 +72,6 @@ private:
     QVector<FileInfo *> files;
     QVector<Symbol*> symbols;
     QMap<int, QString> connectedUsers; //non usata per ora
-    QVector<Message> messagesReady;
 
 };
 
