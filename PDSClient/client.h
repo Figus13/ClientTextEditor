@@ -49,6 +49,7 @@ signals:
     void uri_error(int operation);
     void file_erased(int index);
     void erase_file_error();
+    void refresh_text_edit(QString oldNick, QString newNick);
 
 public slots:
     void onMessageReady(QVector<Message> messages, int fileIndex);

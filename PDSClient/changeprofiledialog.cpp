@@ -29,7 +29,6 @@ void changeProfileDialog::setNickname(QString nick) {
 void changeProfileDialog::setPixmap(QPixmap pixmap) {
     this->imagePixmap = pixmap;
     ui->label_3->setPixmap(imagePixmap);
-    havePixmap = true;
 }
 
 bool changeProfileDialog::getHavePixmap() {

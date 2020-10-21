@@ -122,17 +122,35 @@ void FilesSelection::on_changeProfileButton_clicked() {
     }
     if(dialog.exec()){
         QString nickname = dialog.getNickname();
+        bool flag = false;
+        if( nickname.contains("/") || nickname.contains("\\") || nickname.contains(":") ||
+                nickname.contains("*") || nickname.contains("?") || nickname.contains("\"") ||
+                nickname.contains("<") || nickname.contains(">") || nickname.contains("|") || nickname.contains(" "))
+        {
+            QMessageBox::warning(this,"Modifica profilo","Il nickname non può contenere i seguenti caratteri: / \\ : * ? \" < > | 'spazio'");
+            flag = true;
+        }
         if(dialog.getHavePixmap()) {
-            QPixmap image = dialog.getImagePixmap();
-            client->profileChanged(nickname, image);
-            ui->profileImageLabel->setPixmap(image);
-            ui->nicknameLabel->setText(nickname);
-            ui->nicknameLabel->adjustSize();
+            QPixmap image = dialog.getImagePixmap();      
+            ui->profileImageLabel->setPixmap(image); 
+            if(flag) {
+                client->profileChanged(client->getNickname(), image);
+            }
+            else {
+                client->profileChanged(nickname, image);
+                ui->nicknameLabel->setText(nickname);
+                ui->nicknameLabel->adjustSize();
+            }
         }
         else {
-             client->profileChanged(nickname);
-             ui->nicknameLabel->setText(nickname);
-             ui->nicknameLabel->adjustSize();
+            if(flag) {
+                client->profileChanged(client->getNickname());
+            }
+            else{
+                client->profileChanged(nickname);
+                ui->nicknameLabel->setText(nickname);
+                ui->nicknameLabel->adjustSize();
+            }
         }
     }
 }

@@ -567,8 +567,33 @@ void TextEdit::setupTextActions()
         }
     }
     connect(comboUser, &QComboBox::textActivated, this, &TextEdit::highlightUserText);
-
+    connect(client, &Client::refresh_text_edit, this, &TextEdit::onRefreshTextEdit);
     /*FINE AGGIUNTA DA NOI*/
+}
+
+void TextEdit::onRefreshTextEdit(QString oldNick, QString newNick) {
+    for(std::shared_ptr<User> user : colorableUsers) {
+        if(user->getNickname() == oldNick) {
+            user->setNickname(newNick);
+        }
+    }
+    comboUser->clear();
+    comboUser->addItem("Non evidenziare", -2);
+    comboUser->addItem("Evidenzia tutti", -1);
+    for(int siteId: colorableUsers.keys()){
+        QPixmap px(15,15);
+        px.fill(colorableUsers[siteId]->getColor());
+        QIcon icon(px);
+        if( this->siteId == siteId){
+            comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - (Io)", siteId);
+        }else{
+            if(this->cursorsMap.contains(siteId)){
+                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - connesso", siteId);
+            }else{
+                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - disconnesso", siteId);
+            }
+        }
+    }
 }
 
 void TextEdit::highlightUserText(const QString &str){

@@ -239,6 +239,20 @@ void Client::onReadyRead(){
                 erase_file_error();
             }
             break;
+        case 10:
+        {
+            QString oldNick;
+            QString newNick;
+            in >> oldNick >> newNick;
+            for(FileInfo* file : files) {
+                if(file->getNickname() == oldNick) {
+                    file->setNickname(newNick);
+                }
+            }
+            files_list_refreshed(files);
+            refresh_text_edit(oldNick, newNick);
+            break;
+        }
         case 11:
         {
             int siteIdSender, cursorIndex;
@@ -327,7 +341,7 @@ void Client::eraseFile(int fileIndex) {
 }
 
 void Client::profileChanged(QString nickname, QPixmap image) {
-    if(this->nickname != nickname || this->image != image) {
+    if(this->nickname != nickname || this->image != image) {       
         this->nickname = nickname;
         this->image = image;
         this->haveImage = true;
@@ -345,66 +359,9 @@ void Client::profileChanged(QString nickname) {
         QByteArray buf;
         QDataStream out(&buf, QIODevice::WriteOnly);
         out << 10 << 2 << username << nickname;
+        socket->write(buf);
     }
 }
-
-
-  //SERVER WRITE
-
-/*void VCameraServer::sendTcpData(const QImage &frame)
-{
-    if (mTcpClient->state() == QTcpSocket::ConnectedState) {
-
-        // initialize stream
-        QByteArray block;
-        QDataStream out(&block, QIODevice::WriteOnly);
-        out.setVersion(QDataStream::Qt_5_11);
-
-        // initialize data
-        QImage image(filePath);
-
-        // serialize
-        out << qint64(0) << image;
-        out.device()->seek(0);
-        out << (qint64)(block.size() - sizeof(qint64));  // the size of the block to be sent
-
-        // send over TCP
-        qint64 written = mTcpClient->write(block);
-        mTcpClient->waitForBytesWritten(-1);
-        qDebug() << "written" << written << "of" << block.size();
-    }
-}
-
-
- // CLIENT READ
-void VCameraClient::newTcpDataRead()
-{
-    QDataStream in(mTcpSocket);
-    in.setVersion(QDataStream::Qt_5_11);
-
-    // initialize data
-    QImage image;
-    static qint64 imageSize = 0;
-
-    if ( 0 == imageSize ) {
-        if ( mTcpSocket->bytesAvailable() < (int)sizeof(qint64) ) return;
-        in >> imageSize;
-        qDebug() << imageSize;
-    }
-
-    if ( mTcpSocket->bytesAvailable() < imageSize ) return;
-    in >> image;
-
-    // data is complete, do something with it
-    imageSize = 0;
-    if (image.isNull()) qDebug() << "QImage is null!";
-    else {
-        mTcpFrame = image;
-        update();
-    }
-}*/
-
-
 
 /*
  * modificata, ora riceve come argomento l'indice del file del vettore di files
@@ -576,7 +533,6 @@ QTcpSocket* Client::getSocket(){
 }
 
 void Client::requestURI(int fileIndex){
-    qDebug() << files[fileIndex];
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
 
