@@ -116,25 +116,40 @@ void Client::onReadyRead(){
             break;
             
         case 3:
+        {
+            int siteIdSender=-1;
             qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
             int n_sym;
-            in >> insert >> n_sym;
+            QVector<Message> messages;
+            in >> insert;
+            if(insert==0){
+                in >> siteIdSender;
+            }
+            if(insert==2){ //arrivo ack, richiesta blocco successivo
+                QVector<Message> messages;
+                onMessageReady(messages, fileIndexOpened);
+                break;
+            }
+            in >> n_sym;
             for(int i=0; i<n_sym; i++){
                 in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
                 s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
                 if(insert==1){ //nel caso sia un inserimento
                     if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
                         Message m{'i', s};
-                        message_from_server(m); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                        messages.push_back(m);
+                     //   message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
                     }
                 }else{ //nel caso sia una cancellazione
                     Message m{'d', s};
-                    message_from_server(m);
+                    messages.push_back(m);
+                    //message_from_server(m, siteIdSender);
                 }
             }
+            messages_from_server(messages, siteIdSender);
 
             break;
-            
+        }
         case 4:
             qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
             int fileSize; //1 se inserimento, 0 se cancellazione
@@ -410,6 +425,72 @@ void Client::disconnectFromServer(){
 }
 
 void Client::onMessageReady(QVector<Message> messages, int fileIndex){
+    messagesReady.append(messages);
+    if(messagesReady.size()==0){
+        return;
+    }
+
+    FileInfo * fi = files[fileIndex];
+    QByteArray buf_header;
+    QDataStream out_header(&buf_header, QIODevice::WriteOnly);
+    QByteArray buf_payload;
+    QDataStream out_payload(&buf_payload, QIODevice::WriteOnly);
+    QByteArray tot;
+    int counter = 0;
+    if(messagesReady[0].getAction()=='i'){
+       while(!messagesReady.isEmpty()){
+            if(messagesReady[0].getAction()!='i'){ //non stiamo ancora trattando inserimenti
+                return;
+            }
+            counter++;
+            Symbol *s = messagesReady[0].getSymbol();
+            out_payload << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
+                            << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
+            if(buf_payload.size() > 50000){ //max buff 65532
+                 out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
+                 tot.append(buf_header);
+                 tot.append(buf_payload);
+                 socket->write(tot);
+                 socket->flush();
+                 return;
+            }
+            messagesReady.remove(0);
+       }
+       out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
+       tot.append(buf_header);
+       tot.append(buf_payload);
+       socket->write(tot);
+       socket->flush();
+    }else{
+        if(messages[0].getAction()=='d'){
+            while(!messagesReady.isEmpty()){
+                 if(messagesReady[0].getAction()!='d'){ //non stiamo ancora trattando cancellazioni
+                     return;
+                  }
+                 counter++;
+                 Symbol *s = messagesReady[0].getSymbol();
+                 out_payload << s->getSiteId() << s->getCounter()  << s->getPosition();
+
+                if(buf_payload.size() > 50000){ //max buff 65532
+                    out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
+                    tot.append(buf_header);
+                    tot.append(buf_payload);
+                    socket->write(tot);
+                    socket->flush();
+                    return;
+                }
+                messagesReady.remove(0);
+           }
+           out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
+           tot.append(buf_header);
+           tot.append(buf_payload);
+           socket->write(tot);
+           socket->flush();
+        }
+    }
+}
+
+/*void Client::onMessageReady(QVector<Message> messages, int fileIndex){
     FileInfo * fi = files[fileIndex];
     QByteArray buf_header;
     QDataStream out_header(&buf_header, QIODevice::WriteOnly);
@@ -487,7 +568,7 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
         buf_payload= "";
         tot = "";
     }
-}
+}*/
 
 
 QTcpSocket* Client::getSocket(){

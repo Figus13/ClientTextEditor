@@ -124,7 +124,8 @@ private slots:
     void printPreview(QPrinter *);
     /*---SLOTS AGGIUNTE DA NOI----*/
     void onTextChanged(int pos, int del, int add);
-    void onMessageFromServer(Message m);
+    //void onMessageFromServer(Message m, int siteIdSender);
+    void onMessagesFromServer(QVector<Message> messages, int siteIdSender);
     void onFileReady(QVector<Symbol *> s);
     void onShareURIButtonPressed();
     void onURIReady(QString uri);
@@ -152,7 +153,7 @@ private:
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);
     void remoteInsert(Symbol* sym);
-    void remoteDelete(Symbol* sym);
+    void remoteDelete(Symbol* sym, int siteIdSender);
     int findIndexFromNewPosition(QVector<int> position);
     int findIndexFromExistingPosition(QVector<int> position);
     int findIndexFromPosition(QVector<int> position);
@@ -209,6 +210,7 @@ private:
     QString fileName;
     int fileIndex;
     QTextEdit *textEdit;
+    QStatusBar *bar;
 
     //FLAGS
     bool FLAG_MODIFY_SYMBOL = false;
