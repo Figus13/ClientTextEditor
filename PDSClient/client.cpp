@@ -76,20 +76,6 @@ void Client::onReadyRead(){
                 login_failed();
             }else if(status == 1){
                 in >> this->username >> this->nickname;
-                /*int numFiles;
-                in >> operation >> status;
-                if(operation == 6 && status ==1){  //riceviamo i file.
-                    in >>this->siteId >> numFiles;
-                    files.clear();
-                    for(int i=0; i<numFiles; i++){
-                         QString filename;
-                        in >> filename;
-                        files.append(filename);
-                    }
-                    files_list_refreshed(files);
-                    login_successful();
-                }else{
-                    qDebug() <<  "errore nella funzione per lettura file";*/
                 login_successful();
             }
             break;
@@ -390,7 +376,7 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
                 }
                 messagesReady.remove(0);
            }
-           out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
+           out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
            tot.append(buf_header);
            tot.append(buf_payload);
            socket->write(tot);
