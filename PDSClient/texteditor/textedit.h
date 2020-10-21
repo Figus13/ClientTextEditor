@@ -124,7 +124,8 @@ private slots:
     void printPreview(QPrinter *);
     /*---SLOTS AGGIUNTE DA NOI----*/
     void onTextChanged(int pos, int del, int add);
-    void onMessageFromServer(Message m, int siteIdSender);
+    //void onMessageFromServer(Message m, int siteIdSender);
+    void onMessagesFromServer(QVector<Message> messages, int siteIdSender);
     void onFileReady(QVector<Symbol *> s);
     void onShareURIButtonPressed();
     void onURIReady(QString uri);

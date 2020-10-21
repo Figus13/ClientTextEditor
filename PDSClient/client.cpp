@@ -110,6 +110,7 @@ void Client::onReadyRead(){
             int siteIdSender=-1;
             qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
             int n_sym;
+            QVector<Message> messages;
             in >> insert;
             if(insert==0){
                 in >> siteIdSender;
@@ -121,13 +122,16 @@ void Client::onReadyRead(){
                 if(insert==1){ //nel caso sia un inserimento
                     if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
                         Message m{'i', s};
-                        message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                        messages.push_back(m);
+                     //   message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
                     }
                 }else{ //nel caso sia una cancellazione
                     Message m{'d', s};
-                    message_from_server(m, siteIdSender);
+                    messages.push_back(m);
+                    //message_from_server(m, siteIdSender);
                 }
             }
+            messages_from_server(messages, siteIdSender);
 
             break;
         }

@@ -112,8 +112,8 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIn
     /*------------Aggiunta da noi------*/
     connect(this, &TextEdit::message_ready,
             client, &Client::onMessageReady);
-    connect(client, &Client::message_from_server,
-            this, &TextEdit::onMessageFromServer);
+    connect(client, &Client::messages_from_server,
+            this, &TextEdit::onMessagesFromServer);
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
     connect(client, &Client::file_ready,this,&TextEdit::onFileReady);
@@ -194,7 +194,7 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
     if(ins == 1){
 
         if(colorableUsers.contains(siteId)){
-           // comboUser->setItemText(colorableUsers.keys().indexOf(siteId) + 2,  QString::number(siteId) + " - " + nickname +  "- connesso" );
+            // comboUser->setItemText(colorableUsers.keys().indexOf(siteId) + 2,  QString::number(siteId) + " - " + nickname +  "- connesso" );
             comboUser->setItemText(comboUser->findData(siteId),  QString::number(siteId) + " - " + nickname +  " (connesso)" );
 
 
@@ -1214,46 +1214,46 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
 
     if(cursor.position() == pos){
-         for(int i=0; i<del; i++){
-             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
-             QTextCharFormat plainFormat(cursor.charFormat());
-             fonts.push_back(plainFormat.font());
-         }
-     }else if (cursor.position() == pos + del){
-         for(int i=0; i<del; i++){
-             QTextCharFormat plainFormat(cursor.charFormat());
-             fonts.push_front(plainFormat.font());
-             cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
-         }
-     }
-     //qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
-     //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
-     QVector<Message> messagesDel;
-     for(int i=0; i<del; i++){
-         writingFlag= true;
-         if(pos != this->_symbols.size()){
-             Message mess{'d', this->_symbols[pos]};
-             this->_symbols.erase(this->_symbols.begin() + pos);
-             messagesDel.push_back(mess);
-         }
-     }
-     if(messagesDel.size() != 0){
+        for(int i=0; i<del; i++){
+            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
+            QTextCharFormat plainFormat(cursor.charFormat());
+            fonts.push_back(plainFormat.font());
+        }
+    }else if (cursor.position() == pos + del){
+        for(int i=0; i<del; i++){
+            QTextCharFormat plainFormat(cursor.charFormat());
+            fonts.push_front(plainFormat.font());
+            cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
+        }
+    }
+    //qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
+    //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
+    QVector<Message> messagesDel;
+    for(int i=0; i<del; i++){
+        writingFlag= true;
+        if(pos != this->_symbols.size()){
+            Message mess{'d', this->_symbols[pos]};
+            this->_symbols.erase(this->_symbols.begin() + pos);
+            messagesDel.push_back(mess);
+        }
+    }
+    if(messagesDel.size() != 0){
         message_ready(messagesDel, this->fileIndex);
-     }
-     QVector<Message> messagesAdd;
-     //qDebug() << "Add " << add << " Added.size() " << added.size();
-     for(int i=0; i<add; i++){
-         writingFlag=true;
-         Message mess{};
-         if(added.size() > i){
+    }
+    QVector<Message> messagesAdd;
+    //qDebug() << "Add " << add << " Added.size() " << added.size();
+    for(int i=0; i<add; i++){
+        writingFlag=true;
+        Message mess{};
+        if(added.size() > i){
             if(del > 0){ //controlla se con selezione e incolla funziona
-                 if(fonts.size() != 0 ){
-                     localInsert(pos+i, added[i], &(fonts[i]), mess);
-                 }else{
+                if(fonts.size() != 0 ){
+                    localInsert(pos+i, added[i], &(fonts[i]), mess);
+                }else{
                     localInsert(pos+i, added[i], nullptr, mess);
-                 }
+                }
             }else{
-                  localInsert(pos+i, added[i], nullptr, mess);
+                localInsert(pos+i, added[i], nullptr, mess);
             }
             messagesAdd.push_back(mess);
         }
@@ -1263,17 +1263,44 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     }
 }
 
-void TextEdit::onMessageFromServer(Message m, int siteIdSender){
-
+void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
+    /*
     if(m.getAction()=='i'){
         this->remoteInsert(m.getSymbol());
     }else{
         if(m.getAction()=='d'){
             if(siteIdSender == -1){
-                qDebug() << "Errore, non può esserci un site id -1";   /*** SOLO PER DEBUG*****/
+                qDebug() << "Errore, non può esserci un site id -1";
             }
             this->remoteDelete(m.getSymbol(), siteIdSender);
         }
+    }
+  */
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+               this, &TextEdit::cursorPositionChanged);
+
+    if( messages[0].getAction() == 'i'){
+
+        for( int i = 0 ; i < messages.size(); i++){
+            if(i == messages.size()-1){
+             connect(textEdit, &QTextEdit::cursorPositionChanged,
+                     this, &TextEdit::cursorPositionChanged);
+            }
+            this->remoteInsert(messages[i].getSymbol());
+
+        }
+    }else if(messages[0].getAction()=='d'){
+        if(siteIdSender == -1){
+            qDebug() << "Errore, non può esserci un site id -1";
+        }
+        for( int i = 0 ; i < messages.size(); i++){
+            if(i == messages.size()-1){
+             connect(textEdit, &QTextEdit::cursorPositionChanged,
+                     this, &TextEdit::cursorPositionChanged);
+            }
+            this->remoteDelete(messages[i].getSymbol(), siteIdSender);
+        }
+
     }
 }
 
@@ -1626,8 +1653,6 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     uc->getLabel()->hide();
     uc->getLabel()->move(x, y);
     uc->getLabel()->show();
-
-
 
     uc->getLabel_cur()->setFixedHeight(rt_height);
     uc->getLabel_cur()->setFixedWidth(2);
