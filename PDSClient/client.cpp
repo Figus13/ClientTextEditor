@@ -425,7 +425,41 @@ void Client::disconnectFromServer(){
 }
 
 void Client::onMessageReady(QVector<Message> messages, int fileIndex){
-    messagesReady.append(messages);
+    QByteArray buf;
+    QDataStream out(&buf, QIODevice::WriteOnly);
+    FileInfo * fi = files[fileIndex];
+   // out << 3;
+    if(messages[0].getAction()=='i'){
+        //out << 1 << fi->getFileName() << fi->getUsername() << messages.size();
+        for(int i=0; i< messages.size(); i++){
+            Symbol *s = messages[i].getSymbol();
+            out << 3 << 1 << fi->getFileName() << fi->getUsername() << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
+                << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
+            socket->write(buf);
+            socket->flush();
+            buf="";
+            out.device()->reset();
+        }
+
+    }else{
+        if(messages[0].getAction()=='d'){
+          //out <<  0 << fi->getFileName() << fi->getUsername() << messages.size();
+            for(int i=0; i< messages.size(); i++){
+                Symbol *s = messages[i].getSymbol();
+                out << 3 << 0 << fi->getFileName() << fi->getUsername() << s->getSiteId() << s->getCounter()  << s->getPosition();
+                socket->write(buf);
+                socket->flush();
+                buf="";
+                out.device()->reset();
+            }
+        }
+    }
+    //socket->write(buf);
+    //socket->flush();
+}
+
+
+    /*    messagesReady.append(messages);
     if(messagesReady.size()==0){
         return;
     }
@@ -488,87 +522,9 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
            socket->flush();
         }
     }
-}
-
-/*void Client::onMessageReady(QVector<Message> messages, int fileIndex){
-    FileInfo * fi = files[fileIndex];
-    QByteArray buf_header;
-    QDataStream out_header(&buf_header, QIODevice::WriteOnly);
-    QByteArray buf_payload;
-    QDataStream out_payload(&buf_payload, QIODevice::WriteOnly);
-    QByteArray tot;
-    int counter = 0;
-    if(messages[0].getAction()=='i'){
-
-        for(int i=0; i< messages.size(); i++){
-            counter++;
-            Symbol *s = messages[i].getSymbol();
-            out_payload << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
-                        << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
-            if(buf_payload.size() > 50000){ //max buff 65532
-                out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
-                counter=0;
-                tot.append(buf_header);
-                tot.append(buf_payload);
-                socket->write(tot);
-                socket->flush();
-                out_payload.device()->reset();
-                out_header.device()->reset();
-                buf_header = "";
-                buf_payload= "";
-                tot = "";
-            }
-
-            if(tot.size() > 60000){
-                qDebug() << "Disastro disastroso";
-            }
-
-        }
-
-    }else{
-        if(messages[0].getAction()=='d'){
-            for(int i=0; i< messages.size(); i++){
-                counter++;
-                Symbol *s = messages[i].getSymbol();
-                out_payload << s->getSiteId() << s->getCounter()  << s->getPosition();
-
-                if(buf_payload.size() > 50000){ //max buff 65532
-                    out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
-                    counter=0;
-                    tot.append(buf_header);
-                    tot.append(buf_payload);
-                    socket->write(tot);
-                    socket->flush();
-                    out_payload.device()->reset();
-                    out_header.device()->reset();
-                    buf_header = "";
-                    buf_payload= "";
-                    tot = "";
-                }
-            }
-        }
-    }
-    if(counter!=0){
-
-        if(tot.size() > 60000){
-            qDebug() << "Disastro disastroso";
-        }
-
-
-        if(messages[0].getAction()=='i'){
-            out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
-        }else{
-            out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
-        }
-        tot.append(buf_header);
-        tot.append(buf_payload);
-        socket->write(tot);
-        socket->flush();
-        buf_header = "";
-        buf_payload= "";
-        tot = "";
-    }
 }*/
+
+
 
 
 QTcpSocket* Client::getSocket(){
