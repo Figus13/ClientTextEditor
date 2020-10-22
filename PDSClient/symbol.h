@@ -9,7 +9,7 @@ public:
     Symbol(QVector<int>& position, int counter, int siteId, QChar value, bool bold, bool italic, bool underlined, int alignment,
            int textSize, QColor color, QString font);
     Symbol();
-    Symbol(const Symbol &s);
+    //Symbol(const Symbol &s);
     virtual ~Symbol();
 	QVector<int>& getPosition();
 	void setPosition(QVector<int> position);

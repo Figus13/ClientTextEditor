@@ -115,7 +115,7 @@ void Client::onReadyRead(){
                 registration_successful();
             }
             break;
-            
+
         case 3:
         {
             int siteIdSender=-1;
