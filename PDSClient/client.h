@@ -69,8 +69,8 @@ private:
     int siteId;
     int counter;
     int fileIndexOpened;
+    int counterFail=0;
     QVector<std::shared_ptr<FileInfo>> files;
-    QVector<Symbol*> symbols;
     QVector<std::shared_ptr<Symbol>> sVector;
     QMap<int, QString> connectedUsers; //non usata per ora
     QVector<Message> messagesReady;

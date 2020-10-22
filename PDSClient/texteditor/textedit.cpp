@@ -1331,7 +1331,7 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
                 this->counter = sym->getCounter();
             }
         }
-        qDebug() << "VALUE: " << sym->getValue();
+        //qDebug() << "VALUE: " << sym->getValue();
     }
 
     textEdit->textCursor().endEditBlock();

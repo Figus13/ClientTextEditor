@@ -66,7 +66,6 @@ void Client::onReadyRead(){
         QDataStream in;
         in.setDevice(socket);//setto lo stream per la ricezione
         int operation;
-        int counterFail=0;
         in >> operation;
         switch(operation){
         //ritorno login riuscito o fallito
@@ -152,7 +151,7 @@ void Client::onReadyRead(){
             break;
         }
         case 4:
-            qDebug() << ++counterFail;// "4)Dobbiamo gestire la ricezione di un file già scritto.";
+            qDebug() <<  "4)Dobbiamo gestire la ricezione di un file già scritto.";
             //int fileSize;
             int alreadyConnected;
             int siteId;
@@ -180,6 +179,7 @@ void Client::onReadyRead(){
             emit signal_owners(owners);
             break;
         case 5:
+            qDebug() << ++counterFail;
             int totalSize;
             in  >>insert >> totalSize >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
             s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font));

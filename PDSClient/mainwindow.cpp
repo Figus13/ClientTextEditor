@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
 
     ui->setupUi(this);
-    client = std::make_shared<Client>(new Client());
+    client = std::make_shared<Client>();
     QObject::connect(client.get(),  SIGNAL(login_successful()), this, SLOT(onLoginSuccess()));
     QObject::connect(client.get(),  SIGNAL(login_failed()), this, SLOT(onLoginFailed()));
     QObject::connect(client.get(),  SIGNAL(registration_successful()), this, SLOT(onRegistrationSuccess()));
