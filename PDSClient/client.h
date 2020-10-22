@@ -40,7 +40,7 @@ signals:
     //void message_from_server(Message m, int siteIdSender);
     void messages_from_server(QVector<Message> messages, int siteIdSender);
     void files_list_refreshed(QVector<FileInfo *> files);
-    void file_ready(QVector<Symbol *> s);
+    void file_ready(QVector<std::shared_ptr<Symbol>> s);
     void URI_Ready(QString uri);
     void disconnect_URI();
     void signal_connection(int siteId, QString nickname, int ins);
@@ -71,6 +71,7 @@ private:
     int fileIndexOpened;
     QVector<FileInfo *> files;
     QVector<Symbol*> symbols;
+    QVector<std::shared_ptr<Symbol>> sVector;
     QMap<int, QString> connectedUsers; //non usata per ora
     QVector<Message> messagesReady;
 

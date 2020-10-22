@@ -1304,15 +1304,16 @@ void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender)
     }
 }
 
-void TextEdit::onFileReady(QVector<Symbol*> s){
+void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
                this, &TextEdit::cursorPositionChanged);
+
     this->_symbols = s;
     textEdit->textCursor().beginEditBlock();
     //FLAG_OPEN_FILE = true; sostituita con il disconnect, evitiamo di fare signal->slot
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
-    for(Symbol* sym: s){
+    for(std::shared_ptr<Symbol> sym: s){
         QTextCursor cursor(textEdit->textCursor());
         QTextCharFormat plainFormat(cursor.charFormat());
         QTextCharFormat headingFormat;
@@ -1366,7 +1367,8 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
         return "Errore";
     }
     //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
-    Symbol* symbol = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor().name(), qf.family());
+    Symbol * s3 = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family()); //TODO color.name?
+    std::shared_ptr<Symbol> s4 = std::make_shared<Symbol>(s3);
     //qDebug() << qf.family() <<  qf.family().length();
     /*qDebug() << sizeof(int)*pos.size() << sizeof(this->counter) << sizeof(this->siteId) << sizeof(value) << sizeof(actionTextBold->isChecked()) <<
                 sizeof(actionTextItalic->isChecked()) << sizeof(actionTextUnderline->isChecked()) << sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment()))
@@ -1376,10 +1378,10 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
                              sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment())) +
                              sizeof(qf.pointSize()) + sizeof(textEdit->textColor().name()) + sizeof(char)*qf.family().length();
     qDebug() << max;*/
-    this->_symbols.insert(this->_symbols.begin() + index, symbol);
+    this->_symbols.insert(this->_symbols.begin() + index, s4);
 
     m.setAction('i');
-    m.setSymbol(symbol);
+    m.setSymbol(s4);
 
     return "OK";
 }
@@ -1520,7 +1522,7 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
     return pos;
 }
 
-void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+void TextEdit::remoteInsert(std::shared_ptr<Symbol> sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
     int index = findIndexFromNewPosition(sym->getPosition());
@@ -1552,7 +1554,7 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
             this, &TextEdit::onTextChanged);
 
 }
-void TextEdit::remoteDelete(Symbol* sym, int siteIdSender){
+void TextEdit::remoteDelete(std::shared_ptr<Symbol> sym, int siteIdSender){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
 

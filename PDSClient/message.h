@@ -6,11 +6,11 @@ class Message
 private:
 
     char action;
-    Symbol* s;
+    std::shared_ptr<Symbol> s;
 
 public:
 
-    Message(const char action, Symbol* s);
+    Message(const char action, std::shared_ptr<Symbol> s);
 
     Message();
 
@@ -20,7 +20,7 @@ public:
 
     void setAction(const char action);
 
-    Symbol* getSymbol();
+    std::shared_ptr<Symbol> getSymbol();
 
-    void setSymbol(Symbol* s);
+    void setSymbol(std::shared_ptr<Symbol> s);
 };

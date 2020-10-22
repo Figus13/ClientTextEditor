@@ -1,6 +1,6 @@
 #include "message.h"
 
-Message::Message(const char action, Symbol *s)
+Message::Message(const char action, std::shared_ptr<Symbol> s)
 {
     this->action = action;
     this->s = s;
@@ -19,7 +19,7 @@ char Message::getAction()
     return this->action;
 }
 
-Symbol* Message::getSymbol()
+std::shared_ptr<Symbol> Message::getSymbol()
 {
     return this->s;
 }
@@ -29,7 +29,7 @@ void Message::setAction(const char action)
     this->action=action;
 }
 
-void Message::setSymbol(Symbol* s)
+void Message::setSymbol(std::shared_ptr<Symbol> s)
 {
     this->s = s;
 }

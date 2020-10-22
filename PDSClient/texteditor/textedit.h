@@ -126,7 +126,7 @@ private slots:
     void onTextChanged(int pos, int del, int add);
     //void onMessageFromServer(Message m, int siteIdSender);
     void onMessagesFromServer(QVector<Message> messages, int siteIdSender);
-    void onFileReady(QVector<Symbol *> s);
+    void onFileReady(QVector<std::shared_ptr<Symbol>> s);
     void onShareURIButtonPressed();
     void onURIReady(QString uri);
     void onFileClosed();
@@ -141,7 +141,7 @@ private:
     int colorId;
     bool flag_all_highlighted = false;
     int flag_one_highlighted = -1;
-    QVector<Symbol*> _symbols;
+    QVector<std::shared_ptr<Symbol>> _symbols;
     int counter; //Inizializzato sempre a zero nel costruttore
     int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
     bool uriRequest = false;
@@ -152,8 +152,8 @@ private:
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);
-    void remoteInsert(Symbol* sym);
-    void remoteDelete(Symbol* sym, int siteIdSender);
+    void remoteInsert(std::shared_ptr<Symbol> sym);
+    void remoteDelete(std::shared_ptr<Symbol> sym, int siteIdSender);
     int findIndexFromNewPosition(QVector<int> position);
     int findIndexFromExistingPosition(QVector<int> position);
     int findIndexFromPosition(QVector<int> position);

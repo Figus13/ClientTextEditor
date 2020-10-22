@@ -70,7 +70,7 @@ QString& Symbol::getFont()
 {
     return font;
 }
-bool Symbol::equals(Symbol* s)
+bool Symbol::equals(std::shared_ptr<Symbol> s)
 {
     bool tmp = ((s->siteId == siteId) && (s->counter == counter) && (s->bold == bold) && (s->color == color) && (s->italic == italic) && (s->underlined == underlined)
                 && (s->alignment == alignment) && (s->textSize == textSize) && (s->font == font));
@@ -81,4 +81,19 @@ bool Symbol::equals(Symbol* s)
         }
     }
     return equal && tmp;
+}
+
+Symbol::Symbol(const Symbol& s)
+{
+    position = s.position;
+    siteId = s.siteId;
+    value = s.value;
+    bold = s.bold;
+    italic = s.italic;
+    underlined = s.underlined;
+    alignment = s.alignment;
+    textSize  = s.textSize;
+    color = s.color;
+    font = s.font;
+    counter = s.counter;
 }

@@ -52,14 +52,14 @@ int Client::getSiteId(){
 }
 
 void Client::onReadyRead(){
-    while (socket->bytesAvailable() != 0) {
+        while (socket->bytesAvailable() != 0) {
         QVector<int> position;
         int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
         QString color, font, text, nickname;
         QChar value;
-        QVector<Symbol*> sVector;
+        //QVector<Symbol*> sVector;
         bool isBold, isItalic, isUnderlined;
-        Symbol *s;
+        std::shared_ptr<Symbol> s;
         QMap<int, QString> owners;
         if (socket->state() != QAbstractSocket::ConnectedState)	return;
 
@@ -133,7 +133,7 @@ void Client::onReadyRead(){
             //in >> n_sym;
             //for(int i=0; i<n_sym; i++){
             in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
+            s = std::make_shared<Symbol>(new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font));
             if(insert==1){ //nel caso sia un inserimento
                 if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
                     Message m{'i', s};
@@ -152,19 +152,20 @@ void Client::onReadyRead(){
         }
         case 4:
             qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
-            int fileSize; //1 se inserimento, 0 se cancellazione
+            //int fileSize;
             int alreadyConnected;
             int siteId;
             int otherOwners;
-            in >> fileSize;
-            for(int i = 0 ; i<fileSize ; i++){
-                in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-                s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font);
-                sVector.push_back(s);
+            /*in >> fileSize;
+            for(int j=0; j<fileSize;){
+                if(socket->bytesAvailable() != 0){
+
+                    j++;
+                }
             }
             if(fileSize!=0){
                 emit file_ready(sVector);
-            }
+            }*/
             in >> alreadyConnected;
             for(int i = 0; i<alreadyConnected; i++){
                 in >> siteId >> nickname;
@@ -177,7 +178,16 @@ void Client::onReadyRead(){
             }
             emit signal_owners(owners);
             break;
-
+        case 5:
+            int totalSize;
+            in  >>insert >> totalSize >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+            s = std::make_shared<Symbol>(new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font));
+            sVector.push_back(s);
+            if(totalSize == sVector.size()){
+                emit file_ready(sVector);
+            }
+            sVector.clear();
+            break;
         case 6:
             int numFiles;
             in >> status;
@@ -432,7 +442,7 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
     if(messages[0].getAction()=='i'){
         //out << 1 << fi->getFileName() << fi->getUsername() << messages.size();
         for(int i=0; i< messages.size(); i++){
-            Symbol *s = messages[i].getSymbol();
+            std::shared_ptr<Symbol> s = messages[i].getSymbol();
             out << 3 << 1 << fi->getFileName() << fi->getUsername() << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
                 << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
             socket->write(buf);
@@ -445,7 +455,7 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
         if(messages[0].getAction()=='d'){
           //out <<  0 << fi->getFileName() << fi->getUsername() << messages.size();
             for(int i=0; i< messages.size(); i++){
-                Symbol *s = messages[i].getSymbol();
+                std::shared_ptr<Symbol> s = messages[i].getSymbol();
                 out << 3 << 0 << fi->getFileName() << fi->getUsername() << s->getSiteId() << s->getCounter()  << s->getPosition();
                 socket->write(buf);
                 socket->flush();
