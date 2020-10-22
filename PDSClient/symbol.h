@@ -8,6 +8,7 @@ class Symbol
 public:
     Symbol(QVector<int>& position, int counter, int siteId, QChar value, bool bold, bool italic, bool underlined, int alignment,
            int textSize, QColor color, QString font);
+    Symbol(QVector<int>& position, int counter, int siteId);
     Symbol();
     virtual ~Symbol();
 	QVector<int>& getPosition();

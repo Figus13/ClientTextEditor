@@ -5,6 +5,9 @@ Symbol::Symbol(QVector<int>& position, int counter, int siteId, QChar value, boo
     italic(italic), underlined(underlined), alignment(alignment), textSize(textSize), color(color), font(font)
 {
 }
+Symbol::Symbol(QVector<int>& position, int counter, int siteId): position(position), counter(counter), siteId(siteId){
+
+}
 Symbol::Symbol(){}
 
 Symbol::~Symbol()

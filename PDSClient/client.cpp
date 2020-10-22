@@ -93,37 +93,53 @@ void Client::onReadyRead(){
             
         case 3:
         {
-            int siteIdSender=-1;
+
             qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
+
+            int siteIdSender=-1;
             int n_sym;
+            QString filename;
+            QString creatore;
+            QColor color2;
             QVector<Message> messages;
             in >> insert;
             if(insert==0){
-                in >> siteIdSender;
+                in >> siteIdSender >> insert >> filename >> creatore;
+            }
+            if(insert == 1){
+                in >> filename >> creatore;
             }
             if(insert==2){ //arrivo ack, richiesta blocco successivo
                 QVector<Message> messages;
                 onMessageReady(messages, fileIndexOpened);
                 break;
             }
+
             in >> n_sym;
+
             for(int i=0; i<n_sym; i++){
-                in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-                s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
+
+
                 if(insert==1){ //nel caso sia un inserimento
+                    in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color2 >> font;
+                    s = new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font);
+
                     if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
                         Message m{'i', s};
                         messages.push_back(m);
-                     //   message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                        //   message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
                     }
                 }else{ //nel caso sia una cancellazione
+                    in >> recSiteId >> counter >> position ;
+                    s = new Symbol(position, counter, recSiteId);
                     Message m{'d', s};
                     messages.push_back(m);
-                    //message_from_server(m, siteIdSender);
+
                 }
             }
-            messages_from_server(messages, siteIdSender);
-
+            if(messages.size() > 0){
+                messages_from_server(messages, siteIdSender);
+            }
             break;
         }
         case 4:
@@ -197,24 +213,24 @@ void Client::onReadyRead(){
             emit signal_connection(siteId, nickname, ins);
             break;
         case 9:
-        in >> status;
-        if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
-            QString filename;
-            QString usernameOwner;
-            in >> filename >> usernameOwner;
-            for(FileInfo * f : files){
-                if( f->getFileName() == filename && f->getUsername() == usernameOwner){   
-                    int index = files.indexOf(f);
-                    files.removeOne(f);
-                    file_erased(index);
-                    break;
+            in >> status;
+            if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
+                QString filename;
+                QString usernameOwner;
+                in >> filename >> usernameOwner;
+                for(FileInfo * f : files){
+                    if( f->getFileName() == filename && f->getUsername() == usernameOwner){
+                        int index = files.indexOf(f);
+                        files.removeOne(f);
+                        file_erased(index);
+                        break;
+                    }
                 }
             }
-        }
-        else {
-            erase_file_error();
-        }
-        break;
+            else {
+                erase_file_error();
+            }
+            break;
         case 11:
         {
             int siteIdSender, cursorIndex;
@@ -333,38 +349,38 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
     QByteArray tot;
     int counter = 0;
     if(messagesReady[0].getAction()=='i'){
-       while(!messagesReady.isEmpty()){
+        while(!messagesReady.isEmpty()){
             if(messagesReady[0].getAction()!='i'){ //non stiamo ancora trattando inserimenti
                 return;
             }
             counter++;
             Symbol *s = messagesReady[0].getSymbol();
             out_payload << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
-                            << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
+                        << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
             if(buf_payload.size() > 50000){ //max buff 65532
-                 out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
-                 tot.append(buf_header);
-                 tot.append(buf_payload);
-                 socket->write(tot);
-                 socket->flush();
-                 return;
+                out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
+                tot.append(buf_header);
+                tot.append(buf_payload);
+                socket->write(tot);
+                socket->flush();
+                return;
             }
             messagesReady.remove(0);
-       }
-       out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
-       tot.append(buf_header);
-       tot.append(buf_payload);
-       socket->write(tot);
-       socket->flush();
+        }
+        out_header << 3 << 1 << fi->getFileName() << fi->getUsername() << counter;
+        tot.append(buf_header);
+        tot.append(buf_payload);
+        socket->write(tot);
+        socket->flush();
     }else{
         if(messages[0].getAction()=='d'){
             while(!messagesReady.isEmpty()){
-                 if(messagesReady[0].getAction()!='d'){ //non stiamo ancora trattando cancellazioni
-                     return;
-                  }
-                 counter++;
-                 Symbol *s = messagesReady[0].getSymbol();
-                 out_payload << s->getSiteId() << s->getCounter()  << s->getPosition();
+                if(messagesReady[0].getAction()!='d'){ //non stiamo ancora trattando cancellazioni
+                    return;
+                }
+                counter++;
+                Symbol *s = messagesReady[0].getSymbol();
+                out_payload << s->getSiteId() << s->getCounter()  << s->getPosition();
 
                 if(buf_payload.size() > 50000){ //max buff 65532
                     out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
@@ -375,12 +391,12 @@ void Client::onMessageReady(QVector<Message> messages, int fileIndex){
                     return;
                 }
                 messagesReady.remove(0);
-           }
-           out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
-           tot.append(buf_header);
-           tot.append(buf_payload);
-           socket->write(tot);
-           socket->flush();
+            }
+            out_header << 3 << 0 << fi->getFileName() << fi->getUsername() << counter;
+            tot.append(buf_header);
+            tot.append(buf_payload);
+            socket->write(tot);
+            socket->flush();
         }
     }
 }

@@ -45,6 +45,7 @@ signals:
     void uri_error(int operation);
     void file_erased(int index);
     void erase_file_error();
+    void delete_from_server(int recSiteId, int counter, QVector<int> position);
 
 public slots:
     void onMessageReady(QVector<Message> messages, int fileIndex);
