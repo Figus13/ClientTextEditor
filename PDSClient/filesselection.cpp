@@ -5,30 +5,30 @@
 #include "showuridialog.h"
 #include "changeprofiledialog.h"
 
-FilesSelection::FilesSelection(QWidget *parent, Client* client) :
+FilesSelection::FilesSelection(QWidget *parent, std::shared_ptr<Client> client) :
     QMainWindow(parent),
     ui(new Ui::FilesSelection), client(client)
 {
     ui->setupUi(this);
-    ui->nicknameLabel->setText(client->getNickname());
+    ui->nicknameLabel->setText(client.get()->getNickname());
     ui->nicknameLabel->adjustSize();
-    if(client->getHavePixmap()) {
-        ui->profileImageLabel->setPixmap(client->getPixmap());
+    if(client.get()->getHavePixmap()) {
+        ui->profileImageLabel->setPixmap(client.get()->getPixmap());
     }
-    client->getFiles(); //i file vengono gestiti nella slot onfilesListRefreshed
-    connect(client, &Client::files_list_refreshed,
+    client.get()->getFiles(); //i file vengono gestiti nella slot onfilesListRefreshed
+    connect(client.get(), &Client::files_list_refreshed,
             this, &FilesSelection::onFilesListRefreshed);
     /*QVector<QString> files = client->getFiles();
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
     }*/
-    QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
+    QObject::connect(this,  SIGNAL(closing()), client.get(), SLOT(disconnectFromServer()));
     ui->fileListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->fileListWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
-    connect(client, &Client::URI_Ready, this, &FilesSelection::onURIReady);
-    connect(client, &Client::uri_error, this, &FilesSelection::onUriError);
-    connect(client, &Client::file_erased, this, &FilesSelection::onFileErased);
-    connect(client, &Client::erase_file_error, this, &FilesSelection::onEraseFileError);
+    connect(client.get(), &Client::URI_Ready, this, &FilesSelection::onURIReady);
+    connect(client.get(), &Client::uri_error, this, &FilesSelection::onUriError);
+    connect(client.get(), &Client::file_erased, this, &FilesSelection::onFileErased);
+    connect(client.get(), &Client::erase_file_error, this, &FilesSelection::onEraseFileError);
 
 }
 
@@ -41,7 +41,7 @@ void FilesSelection::setUriRequest(bool status) {
     this->uriRequest = status;
 }
 
-void FilesSelection::onFilesListRefreshed(QVector<FileInfo *> files)
+void FilesSelection::onFilesListRefreshed(QVector<std::shared_ptr<FileInfo>> files)
 {
     ui->fileListWidget->clear();
     for(int i=0; i<files.size(); i++){
@@ -52,7 +52,7 @@ void FilesSelection::onFilesListRefreshed(QVector<FileInfo *> files)
          * Eliminazione dell'estensione
          */
 
-        ui->fileListWidget->addItem(files[i]->getFileName().remove(nameLength,4) + " (" + files[i]->getNickname() + ")");
+        ui->fileListWidget->addItem(files[i].get()->getFileName().remove(nameLength,4) + " (" + files[i].get()->getNickname() + ")");
     }
 }
 
@@ -73,9 +73,9 @@ void FilesSelection::on_newDocumentButton_clicked()
 
         }else{
             bool flag = false;
-            FileInfo * file = new FileInfo(filename + ".txt",client->getUsername(),client->getNickname());
-            for(FileInfo * f : client->getMyFileList()){
-                if( f->getFileName() == filename + ".txt" && f->getUsername() == client->getUsername()){
+            std::shared_ptr<FileInfo> file (new FileInfo(filename + ".txt",client.get()->getUsername(), client.get()->getNickname()));
+            for(std::shared_ptr<FileInfo> f : client.get()->getMyFileList()){
+                if( f.get()->getFileName() == filename + ".txt" && f.get()->getUsername() == client.get()->getUsername()){
                   flag = true;
                   break;
                 }
@@ -85,7 +85,7 @@ void FilesSelection::on_newDocumentButton_clicked()
                 return;
             }else{
 
-                ui->fileListWidget->addItem(filename + " ("+client->getNickname()+")");
+                ui->fileListWidget->addItem(filename + " ("+client.get()->getNickname()+")");
                 int fileIndex =  ui->fileListWidget->count()-1;
 
                 TextEdit* mw = new TextEdit{0, client, filename, fileIndex};
@@ -97,7 +97,7 @@ void FilesSelection::on_newDocumentButton_clicked()
                 hide();
                 mw->show();
                 QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
-                client->addFile(file);
+                client.get()->addFile(file);
             }
         }
     }
@@ -141,7 +141,7 @@ void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
 {
     QString filename = item->text().split(" ")[0];
     int fileIndex = ui->fileListWidget->currentRow();
-    client->getFile(fileIndex);
+    client.get()->getFile(fileIndex);
     TextEdit* mw = new TextEdit{0, client, filename, fileIndex};
     hide();
     const QRect availableGeometry = mw->screen()->availableGeometry();
@@ -162,7 +162,7 @@ void FilesSelection::showContextMenu(const QPoint &pos)
         QMenu menu;
 
         int fileIndex = ui->fileListWidget->currentRow();
-        if(client->getMyFileList()[fileIndex]->getUsername() == client->getUsername()) {
+        if(client.get()->getMyFileList()[fileIndex]->getUsername() == client.get()->getUsername()) {
             menu.addAction(tr("&Elimina file"), this, &FilesSelection::onEraseFileButtonPressed);
         }
 
@@ -176,12 +176,12 @@ void FilesSelection::showContextMenu(const QPoint &pos)
 void FilesSelection::onShareURIButtonPressed(){
     setUriRequest(true);
     int fileIndex = ui->fileListWidget->currentRow();
-    client->requestURI(fileIndex);
+    client.get()->requestURI(fileIndex);
 }
 
 void FilesSelection::onEraseFileButtonPressed() {
     int fileIndex = ui->fileListWidget->currentRow();
-    client->eraseFile(fileIndex);
+    client.get()->eraseFile(fileIndex);
 }
 
 void FilesSelection::onURIReady(QString uri) {
@@ -195,7 +195,7 @@ void FilesSelection::onURIReady(QString uri) {
 }
 
 void FilesSelection::onFileErased(int index) {
-    onFilesListRefreshed(client->getMyFileList());
+    onFilesListRefreshed(client.get()->getMyFileList());
 }
 
 void FilesSelection::onUriError(int operation) {
@@ -214,7 +214,7 @@ void FilesSelection::onEraseFileError() {
 void FilesSelection::showWindow(){
 
     ui->fileListWidget->clear();
-    client->getFiles();  //i file vengono gestiti nella slot onfilesListRefreshed
+    client.get()->getFiles();  //i file vengono gestiti nella slot onfilesListRefreshed
     /*QVector<QString> files = client->getFiles();
     for(int i=0; i<files.size(); i++){
         ui->fileListWidget->addItem(files[i]);
@@ -225,7 +225,7 @@ void FilesSelection::showWindow(){
 
 void FilesSelection::closeEvent(QCloseEvent *e)
 {
-    client->getSocket()->disconnect();
+    client.get()->getSocket()->disconnect();
     e->accept();
 }
 

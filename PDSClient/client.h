@@ -21,13 +21,13 @@ public:
     QTcpSocket* getSocket();
     void requestURI(int fileIndex);
     void getFileFromURI(QString uri);
-    void addFile(FileInfo * file);
+    void addFile(std::shared_ptr<FileInfo> file);
     void eraseFile(int fileIndex);
     QString getUsername();
     QString getNickname();
     bool getHavePixmap();
     QPixmap getPixmap();
-    QVector<FileInfo *> getMyFileList();
+    QVector<std::shared_ptr<FileInfo>> getMyFileList();
     void setFileIndex(int index);
     void profileChanged(QString nickname, QPixmap image);
     void profileChanged(QString nickname);
@@ -39,7 +39,7 @@ signals:
     void registration_failed(int status);
     //void message_from_server(Message m, int siteIdSender);
     void messages_from_server(QVector<Message> messages, int siteIdSender);
-    void files_list_refreshed(QVector<FileInfo *> files);
+    void files_list_refreshed(QVector<std::shared_ptr<FileInfo>> files);
     void file_ready(QVector<std::shared_ptr<Symbol>> s);
     void URI_Ready(QString uri);
     void disconnect_URI();
@@ -69,7 +69,7 @@ private:
     int siteId;
     int counter;
     int fileIndexOpened;
-    QVector<FileInfo *> files;
+    QVector<std::shared_ptr<FileInfo>> files;
     QVector<Symbol*> symbols;
     QVector<std::shared_ptr<Symbol>> sVector;
     QMap<int, QString> connectedUsers; //non usata per ora

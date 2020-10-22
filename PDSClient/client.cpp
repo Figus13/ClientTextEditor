@@ -66,6 +66,7 @@ void Client::onReadyRead(){
         QDataStream in;
         in.setDevice(socket);//setto lo stream per la ricezione
         int operation;
+        int counterFail=0;
         in >> operation;
         switch(operation){
         //ritorno login riuscito o fallito
@@ -133,7 +134,7 @@ void Client::onReadyRead(){
             //in >> n_sym;
             //for(int i=0; i<n_sym; i++){
             in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = std::make_shared<Symbol>(new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font));
+            s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font));
             if(insert==1){ //nel caso sia un inserimento
                 if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
                     Message m{'i', s};
@@ -151,7 +152,7 @@ void Client::onReadyRead(){
             break;
         }
         case 4:
-            qDebug() << "4)Dobbiamo gestire la ricezione di un file già scritto.";
+            qDebug() << ++counterFail;// "4)Dobbiamo gestire la ricezione di un file già scritto.";
             //int fileSize;
             int alreadyConnected;
             int siteId;
@@ -181,12 +182,12 @@ void Client::onReadyRead(){
         case 5:
             int totalSize;
             in  >>insert >> totalSize >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = std::make_shared<Symbol>(new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font));
+            s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font));
             sVector.push_back(s);
             if(totalSize == sVector.size()){
                 emit file_ready(sVector);
+                sVector.clear();
             }
-            sVector.clear();
             break;
         case 6:
             int numFiles;
@@ -199,7 +200,7 @@ void Client::onReadyRead(){
                     QString usernameOwner; //riceve lo username del creatore
                     QString nicknameOwner;
                     in >> filename >> usernameOwner >> nicknameOwner;
-                    FileInfo * file = new FileInfo(filename, usernameOwner, nicknameOwner);
+                    std::shared_ptr<FileInfo> file (new FileInfo(filename, usernameOwner, nicknameOwner));
                     files.append(file);
                 }
                 files_list_refreshed(files);
@@ -213,7 +214,7 @@ void Client::onReadyRead(){
                 QString usernameOwner; //riceve lo username del creatore
                 QString nicknameOwner;
                 in >> filename >> usernameOwner >> nicknameOwner;
-                FileInfo * file = new FileInfo(filename, usernameOwner, nicknameOwner);
+                std::shared_ptr<FileInfo> file (new FileInfo(filename, usernameOwner, nicknameOwner));
                 files.append(file);
                 files_list_refreshed(files);
             }  else if(operation == 2){
@@ -236,8 +237,8 @@ void Client::onReadyRead(){
                 QString filename;
                 QString usernameOwner;
                 in >> filename >> usernameOwner;
-                for(FileInfo * f : files){
-                    if( f->getFileName() == filename && f->getUsername() == usernameOwner){
+                for(std::shared_ptr<FileInfo> f : files){
+                    if( f.get()->getFileName() == filename && f.get()->getUsername() == usernameOwner){
                         int index = files.indexOf(f);
                         files.removeOne(f);
                         file_erased(index);
@@ -267,8 +268,7 @@ void Client::onReadyRead(){
 void Client::closeFile(int fileIndex){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    FileInfo * fi = files[fileIndex];
-    out << 5 /*# operazione*/ << fi->getFileName() << fi->getUsername();
+    out << 5 /*# operazione*/ << files[fileIndex].get()->getFileName() << files[fileIndex].get()->getUsername();
     socket->write(buf);
     socket->flush();
     fileIndexOpened = -1;
@@ -309,7 +309,7 @@ void Client::getFiles(){
     return; // i file vengono inviati dalla signal list_files_refreshed
 }
 
-QVector<FileInfo *> Client::getMyFileList(){
+QVector<std::shared_ptr<FileInfo>> Client::getMyFileList(){
     return this->files;
 }
 
@@ -318,7 +318,7 @@ QVector<FileInfo *> Client::getMyFileList(){
  * La addFile aggiunge alla lista di files un nuovo file e
  *  richiama la funzione per la ricezione di un file dal server
  */
-void Client::addFile(FileInfo * file){
+void Client::addFile(std::shared_ptr<FileInfo> file){
     files.append(file);
     int size = files.size() - 1;
     getFile(size);
@@ -331,8 +331,8 @@ void Client::setFileIndex(int index){
 void Client::eraseFile(int fileIndex) {
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    FileInfo * file = files[fileIndex];
-    out << 9 << file->getFileName() << file->getUsername();
+    std::shared_ptr<FileInfo> file = files[fileIndex];
+    out << 9 << file.get()->getFileName() << file.get()->getUsername();
     socket->write(buf);
 }
 
@@ -423,7 +423,7 @@ void Client::getFile(int fileIndex){
 
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    FileInfo * file = files[fileIndex];
+    std::shared_ptr<FileInfo> file = files[fileIndex];
     out << 4 << file->getFileName() << file->getUsername() << siteId;
     fileIndexOpened = fileIndex;
     socket->write(buf);
@@ -437,7 +437,7 @@ void Client::disconnectFromServer(){
 void Client::onMessageReady(QVector<Message> messages, int fileIndex){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-    FileInfo * fi = files[fileIndex];
+    std::shared_ptr<FileInfo> fi = files[fileIndex];
    // out << 3;
     if(messages[0].getAction()=='i'){
         //out << 1 << fi->getFileName() << fi->getUsername() << messages.size();
@@ -542,7 +542,7 @@ QTcpSocket* Client::getSocket(){
 }
 
 void Client::requestURI(int fileIndex){
-    qDebug() << files[fileIndex];
+    qDebug() << files[fileIndex].get();
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
 

@@ -18,7 +18,7 @@ class FilesSelection : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit FilesSelection(QWidget *parent = nullptr, Client* client=nullptr);
+    explicit FilesSelection(QWidget *parent = nullptr, std::shared_ptr<Client> client=nullptr);
     ~FilesSelection();
 
 signals:
@@ -33,7 +33,7 @@ private slots:
     void on_changeProfileButton_clicked();
     void showWindow();
     void on_fileListWidget_itemDoubleClicked(QListWidgetItem *item);
-    void onFilesListRefreshed(QVector<FileInfo *> files);
+    void onFilesListRefreshed(QVector<std::shared_ptr<FileInfo>> files);
     void showContextMenu(const QPoint&);
     void onShareURIButtonPressed();
     void onEraseFileButtonPressed();
@@ -44,7 +44,7 @@ private slots:
 
 private:
     Ui::FilesSelection *ui;
-    Client* client;
+    std::shared_ptr<Client> client;
     bool uriRequest = false;
 
     void setUriRequest(bool status);

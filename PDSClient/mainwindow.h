@@ -32,7 +32,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Client* client;
+    std::shared_ptr<Client> client;
 
     void closeEvent(QCloseEvent *event);
 };

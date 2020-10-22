@@ -95,11 +95,11 @@ const QString rsrcPath = ":/images/mac";
 const QString rsrcPath = ":/images/win";
 #endif
 
-TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIndex)
+TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString filename, int fileIndex)
     : QMainWindow(parent), client(client), fileName(filename), fileIndex(fileIndex)
 {
     counter=0;
-    siteId=client->getSiteId();
+    siteId=client.get()->getSiteId();
 #ifdef Q_OS_OSX
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
@@ -111,21 +111,21 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIn
             this, &TextEdit::cursorPositionChanged);
     /*------------Aggiunta da noi------*/
     connect(this, &TextEdit::message_ready,
-            client, &Client::onMessageReady);
-    connect(client, &Client::messages_from_server,
+            client.get(), &Client::onMessageReady);
+    connect(client.get(), &Client::messages_from_server,
             this, &TextEdit::onMessagesFromServer);
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
-    connect(client, &Client::file_ready,this,&TextEdit::onFileReady);
-    connect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
-    connect(client, &Client::disconnect_URI, this, &TextEdit::onFileClosed);
-    connect(client, &Client::signal_connection, this, &TextEdit::onSignalConnection);
-    connect(client, &Client::signal_owners, this, &TextEdit::onSignalOwners);
+    connect(client.get(), &Client::file_ready,this,&TextEdit::onFileReady);
+    connect(client.get(), &Client::URI_Ready, this, &TextEdit::onURIReady);
+    connect(client.get(), &Client::disconnect_URI, this, &TextEdit::onFileClosed);
+    connect(client.get(), &Client::signal_connection, this, &TextEdit::onSignalConnection);
+    connect(client.get(), &Client::signal_owners, this, &TextEdit::onSignalOwners);
     connect(this, &TextEdit::my_cursor_position_changed,
-            client, &Client::onMyCursorPositionChanged);
-    connect(client, &Client::remote_cursor_changed,
+            client.get(), &Client::onMyCursorPositionChanged);
+    connect(client.get(), &Client::remote_cursor_changed,
             this, &TextEdit::onRemoteCursorChanged);
-    connect(client, &Client::file_erased, this, &TextEdit::onFileErased);
+    connect(client.get(), &Client::file_erased, this, &TextEdit::onFileErased);
     colorId=0;
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -258,9 +258,9 @@ void TextEdit::closeEvent(QCloseEvent *e)
     /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
 
     /*aggiunta*/
-    client->closeFile(this->fileIndex);
+    client.get()->closeFile(this->fileIndex);
     emit closeWindow();
-    disconnect(this, &TextEdit::message_ready, client, &Client::onMessageReady);
+    disconnect(this, &TextEdit::message_ready, client.get(), &Client::onMessageReady);
     /*fine aggiunta*/
     hide();
     /*if (maybeSave())
@@ -273,7 +273,7 @@ void TextEdit::onFileErased(int index) {
     if(this->fileIndex == index && !this->isHidden()) {
         QMessageBox::information(this,"OPS!","Il creatore ha eliminato il file.");
         emit closeWindow();
-        disconnect(this, &TextEdit::message_ready, client, &Client::onMessageReady);
+        disconnect(this, &TextEdit::message_ready, client.get(), &Client::onMessageReady);
         hide();
     }
 }
@@ -1345,7 +1345,7 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
 }
 
 void TextEdit::onFileClosed() {
-    disconnect(client, &Client::URI_Ready, this, &TextEdit::onURIReady);
+    disconnect(client.get(), &Client::URI_Ready, this, &TextEdit::onURIReady);
 }
 
 std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& m)
@@ -1367,8 +1367,8 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
         return "Errore";
     }
     //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
-    Symbol * s3 = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family()); //TODO color.name?
-    std::shared_ptr<Symbol> s4 = std::make_shared<Symbol>(s3);
+    //Symbol * s3 = ; //TODO color.name?
+    std::shared_ptr<Symbol> s2 (new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family()));
     //qDebug() << qf.family() <<  qf.family().length();
     /*qDebug() << sizeof(int)*pos.size() << sizeof(this->counter) << sizeof(this->siteId) << sizeof(value) << sizeof(actionTextBold->isChecked()) <<
                 sizeof(actionTextItalic->isChecked()) << sizeof(actionTextUnderline->isChecked()) << sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment()))
@@ -1378,10 +1378,10 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
                              sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment())) +
                              sizeof(qf.pointSize()) + sizeof(textEdit->textColor().name()) + sizeof(char)*qf.family().length();
     qDebug() << max;*/
-    this->_symbols.insert(this->_symbols.begin() + index, s4);
+    this->_symbols.insert(this->_symbols.begin() + index, s2);
 
     m.setAction('i');
-    m.setSymbol(s4);
+    m.setSymbol(s2);
 
     return "OK";
 }
@@ -1626,7 +1626,7 @@ void TextEdit::onURIReady(QString uri) {
 void TextEdit::onShareURIButtonPressed(){
 
     setUriRequest(true);
-    client->requestURI(this->fileIndex);
+    client.get()->requestURI(this->fileIndex);
 }
 
 void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {

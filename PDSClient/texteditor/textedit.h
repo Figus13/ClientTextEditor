@@ -78,7 +78,7 @@ class TextEdit : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent = 0, Client *client=nullptr, QString filename="", int fileIndex = -1);
+    TextEdit(QWidget *parent = 0, std::shared_ptr<Client> client=nullptr, QString filename="", int fileIndex = -1);
 
     bool load(const QString &f);
 
@@ -136,7 +136,7 @@ private slots:
 
 private:
     /*----AGGIUNTE DA NOI -----*/
-    Client *client;
+    std::shared_ptr<Client> client;
     QMap<int, std::shared_ptr<UserCursor>> cursorsMap;
     int colorId;
     bool flag_all_highlighted = false;

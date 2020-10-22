@@ -8,12 +8,12 @@ MainWindow::MainWindow(QWidget *parent)
 {
 
     ui->setupUi(this);
-    client = new Client();
-    QObject::connect(client,  SIGNAL(login_successful()), this, SLOT(onLoginSuccess()));
-    QObject::connect(client,  SIGNAL(login_failed()), this, SLOT(onLoginFailed()));
-    QObject::connect(client,  SIGNAL(registration_successful()), this, SLOT(onRegistrationSuccess()));
-    QObject::connect(client,  SIGNAL(registration_failed()), this, SLOT(onRegistrationFailed()));
-    QObject::connect(this,  SIGNAL(closing()), client, SLOT(disconnectFromServer()));
+    client = std::make_shared<Client>(new Client());
+    QObject::connect(client.get(),  SIGNAL(login_successful()), this, SLOT(onLoginSuccess()));
+    QObject::connect(client.get(),  SIGNAL(login_failed()), this, SLOT(onLoginFailed()));
+    QObject::connect(client.get(),  SIGNAL(registration_successful()), this, SLOT(onRegistrationSuccess()));
+    QObject::connect(client.get(),  SIGNAL(registration_failed()), this, SLOT(onRegistrationFailed()));
+    QObject::connect(this,  SIGNAL(closing()), client.get(), SLOT(disconnectFromServer()));
 
 }
 
@@ -31,7 +31,7 @@ void MainWindow::on_loginButton_clicked()
         QMessageBox::information(this,"Login","tutti i campi del form devono essere compilati");
         return;
     }
-    client->login(username, password);
+    client.get()->login(username, password);
 
 }
 
