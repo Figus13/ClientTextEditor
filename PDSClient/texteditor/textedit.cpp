@@ -1367,8 +1367,8 @@ std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& 
         return "Errore";
     }
     //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
-    Symbol * s3 = new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family()); //TODO color.name?
-    std::shared_ptr<Symbol> s4 = std::make_shared<Symbol>(s3);
+    auto s4 = std::make_shared<Symbol>(Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family())); //TODO color.name?
+
     //qDebug() << qf.family() <<  qf.family().length();
     /*qDebug() << sizeof(int)*pos.size() << sizeof(this->counter) << sizeof(this->siteId) << sizeof(value) << sizeof(actionTextBold->isChecked()) <<
                 sizeof(actionTextItalic->isChecked()) << sizeof(actionTextUnderline->isChecked()) << sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment()))

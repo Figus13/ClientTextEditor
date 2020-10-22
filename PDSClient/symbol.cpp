@@ -83,6 +83,7 @@ bool Symbol::equals(std::shared_ptr<Symbol> s)
     return equal && tmp;
 }
 
+/*
 Symbol::Symbol(const Symbol& s)
 {
     position = s.position;
@@ -97,3 +98,4 @@ Symbol::Symbol(const Symbol& s)
     font = s.font;
     counter = s.counter;
 }
+*/

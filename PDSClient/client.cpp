@@ -114,7 +114,7 @@ void Client::onReadyRead(){
                 registration_successful();
             }
             break;
-            
+
         case 3:
         {
             int siteIdSender=-1;
@@ -133,7 +133,7 @@ void Client::onReadyRead(){
             //in >> n_sym;
             //for(int i=0; i<n_sym; i++){
             in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = std::make_shared<Symbol>(new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font));
+            s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font));
             if(insert==1){ //nel caso sia un inserimento
                 if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
                     Message m{'i', s};
@@ -181,12 +181,13 @@ void Client::onReadyRead(){
         case 5:
             int totalSize;
             in  >>insert >> totalSize >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = std::make_shared<Symbol>(new Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font));
+            s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font));
             sVector.push_back(s);
             if(totalSize == sVector.size()){
                 emit file_ready(sVector);
+                sVector.clear();
             }
-            sVector.clear();
+
             break;
         case 6:
             int numFiles;
