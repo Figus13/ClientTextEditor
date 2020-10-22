@@ -245,7 +245,7 @@ void Client::onReadyRead(){
             QString newNick;
             in >> oldNick >> newNick;
             for(FileInfo* file : files) {
-                if(file->getNickname() == oldNick) {
+                if(file->getNickname() == oldNick && file->getUsername() == this->username) {
                     file->setNickname(newNick);
                 }
             }
