@@ -55,6 +55,7 @@ public slots:
     void onMessageReady(QVector<Message> messages, int fileIndex);
     void onMyCursorPositionChanged(int index);
     void disconnectFromServer();
+    void onSendAck(int fileIndex);
 
 private slots:
     void onConnected();
@@ -74,6 +75,7 @@ private:
     QVector<Symbol*> symbols;
     QMap<int, QString> connectedUsers; //non usata per ora
     QVector<Message> messagesReady;
+    QVector<Symbol*> fileBuffer;
 
 };
 

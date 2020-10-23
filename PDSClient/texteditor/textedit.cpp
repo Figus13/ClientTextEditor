@@ -125,6 +125,8 @@ TextEdit::TextEdit(QWidget *parent, Client *client, QString filename, int fileIn
             client, &Client::onMyCursorPositionChanged);
     connect(client, &Client::remote_cursor_changed,
             this, &TextEdit::onRemoteCursorChanged);
+    connect(this, &TextEdit::send_ack,
+            client, &Client::onSendAck);
     connect(client, &Client::file_erased, this, &TextEdit::onFileErased);
     colorId=0;
     /*------------Fine aggiunta--------*/
@@ -1289,18 +1291,6 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 }
 
 void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
-    /*
-    if(m.getAction()=='i'){
-        this->remoteInsert(m.getSymbol());
-    }else{
-        if(m.getAction()=='d'){
-            if(siteIdSender == -1){
-                qDebug() << "Errore, non può esserci un site id -1";
-            }
-            this->remoteDelete(m.getSymbol(), siteIdSender);
-        }
-    }
-  */
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
                this, &TextEdit::cursorPositionChanged);
 
@@ -1327,7 +1317,46 @@ void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender)
         }
 
     }
+    send_ack(this->fileIndex);
 }
+
+/*void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
+
+    if( messages[0].getAction() == 'i'){
+        this->remoteInsert(messages);
+
+    }else if(messages[0].getAction()=='d'){
+        this->remoteDelete(messages, siteIdSender);
+
+    }
+    send_ack(this->fileIndex);
+    /*disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+               this, &TextEdit::cursorPositionChanged);
+
+    if( messages[0].getAction() == 'i'){
+
+        for( int i = 0 ; i < messages.size(); i++){
+            if(i == messages.size()-1){
+             connect(textEdit, &QTextEdit::cursorPositionChanged,
+                     this, &TextEdit::cursorPositionChanged);
+            }
+            this->remoteInsert(messages[i].getSymbol());
+
+        }
+    }else if(messages[0].getAction()=='d'){
+        if(siteIdSender == -1){
+            qDebug() << "Errore, non può esserci un site id -1";
+        }
+        for( int i = 0 ; i < messages.size(); i++){
+            if(i == messages.size()-1){
+             connect(textEdit, &QTextEdit::cursorPositionChanged,
+                     this, &TextEdit::cursorPositionChanged);
+            }
+            this->remoteDelete(messages[i].getSymbol(), siteIdSender);
+        }
+    }
+    send_ack(this->fileIndex);
+}*/
 
 void TextEdit::onFileReady(QVector<Symbol*> s){
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
@@ -1355,7 +1384,7 @@ void TextEdit::onFileReady(QVector<Symbol*> s){
                 this->counter = sym->getCounter();
             }
         }
-        qDebug() << "VALUE: " << sym->getValue();
+        //qDebug() << "VALUE: " << sym->getValue();
     }
 
     textEdit->textCursor().endEditBlock();
@@ -1436,7 +1465,7 @@ Qt::Alignment TextEdit::intToAlign(int val){
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;
     int i;
-    qDebug() << index;
+    //qDebug() << index;
     if ((index > (this->_symbols.size())) || index < 0) {
         return pos;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
     }
@@ -1545,6 +1574,74 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
     return pos;
 }
 
+/*void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+               this, &TextEdit::onTextChanged);
+    QString buffer;
+    int startBufferIndex;
+    QTextCharFormat headingFormat;
+    int index;
+    QTextCursor cursor = textEdit->textCursor();
+    for(int i=0; i<messages.size(); i++){
+        Symbol* sym = messages[i].getSymbol();
+        index = findIndexFromNewPosition(sym->getPosition());
+        this->_symbols.insert(this->_symbols.begin() + index, sym);
+
+        if(i != 0 && styleIsEqual(sym, messages[i-1].getSymbol())){
+                buffer.append(sym->getValue());
+        }else{
+            if(buffer.size()==0){                
+                startBufferIndex = findIndexFromNewPosition(sym->getPosition());
+                cursor.setPosition(startBufferIndex, QTextCursor::MoveAnchor);
+                QTextCharFormat plainFormat(cursor.charFormat());
+                headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
+                headingFormat.setFontItalic(sym->isItalic());
+                headingFormat.setFontUnderline(sym->isUnderlined());
+                headingFormat.setForeground(sym->getColor());
+                headingFormat.setFontPointSize(sym->getTextSize());
+                headingFormat.setFontFamily(sym->getFont());
+               if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
+                    headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
+               }else{
+                    headingFormat.setBackground(Qt::white);
+               }
+               Qt::Alignment intAlign = intToAlign(sym->getAlignment());
+               textEdit->setAlignment(intAlign);
+               buffer.append(sym->getValue());
+            }else{
+                cursor.setPosition(startBufferIndex + buffer.size(), QTextCursor::KeepAnchor);
+
+                cursor.insertText(buffer, headingFormat);
+                buffer="";
+                buffer.append(sym->getValue());
+            }
+        }
+    }
+    cursor.insertText(buffer, headingFormat);
+    remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
+
+}
+
+void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+               this, &TextEdit::onTextChanged);
+    for(int i=0; i<messages.size(); i++){
+        Symbol* sym = messages[i].getSymbol();
+        int index = findIndexFromExistingPosition(sym->getPosition());
+        if(index!=-1){
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.setPosition(index, QTextCursor::MoveAnchor);
+            cursor.deleteChar();
+            this->_symbols.erase(this->_symbols.begin() + index);
+            remoteCursorChangePosition(index, siteIdSender);
+        }
+    }
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
+}*/
+
 void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
@@ -1561,7 +1658,7 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
     headingFormat.setForeground(sym->getColor());
     headingFormat.setFontPointSize(sym->getTextSize());
     headingFormat.setFontFamily(sym->getFont());
-    if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
+   if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
         headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
     }else{
         headingFormat.setBackground(Qt::white);
@@ -1692,4 +1789,10 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
 
 void TextEdit::onRemoteCursorChanged(int cursorIndex, int siteIdSender){ //forse è un ERRORE: ci vuole il vettore delle pos non
     remoteCursorChangePosition(cursorIndex, siteIdSender);                    // l'indice (cursorIndex);
+}
+
+bool TextEdit::styleIsEqual(Symbol* s1, Symbol* s2){
+    return ((s1->getAlignment()==s2->getAlignment()) && (s1->isBold()==s2->isBold()) && (s1->isItalic()==s2->isItalic()) &&
+            (s1->isUnderlined()==s2->isUnderlined()) && (s1->getTextSize()==s2->getTextSize()) &&
+            (s1->getColor().name().compare(s2->getColor().name())==0) && (s1->getFont().compare(s2->getFont())==0));
 }

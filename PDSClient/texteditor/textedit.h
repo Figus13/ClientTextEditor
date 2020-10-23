@@ -92,6 +92,7 @@ signals:
     void message_ready(QVector<Message> messages, int fileIndex);
     void closeWindow();
     void my_cursor_position_changed(int index);
+    void send_ack(int fileIndex);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -154,7 +155,9 @@ private:
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);
     void remoteInsert(Symbol* sym);
+    //void remoteInsert(QVector<Message> messages);
     void remoteDelete(Symbol* sym, int siteIdSender);
+    //void remoteDelete(QVector<Message> messages, int siteIdSender);
     int findIndexFromNewPosition(QVector<int> position);
     int findIndexFromExistingPosition(QVector<int> position);
     int findIndexFromPosition(QVector<int> position);
@@ -165,6 +168,7 @@ private:
     void highlightUserText(const QString &str);
     void onSignalOwners(QMap<int,QString> owners);
     void remoteCursorChangePosition(int cursorPos, int siteId);
+    bool styleIsEqual(Symbol* s1, Symbol* s2);
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();
