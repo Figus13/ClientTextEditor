@@ -17,9 +17,11 @@ public:
     QString getFilename();
 
 private slots:
-    void on_buttonBox_accepted();
+    //void on_pushButton_accepted();
+    //void on_pushButton_rejected();
 
-    void on_buttonBox_rejected();
+    void on_Ok_clicked();
+    void on_Cancel_clicked();
 
 private:
     Ui::NewFileDialog *ui;
