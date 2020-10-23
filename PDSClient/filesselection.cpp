@@ -29,6 +29,7 @@ FilesSelection::FilesSelection(QWidget *parent, Client* client) :
     connect(client, &Client::uri_error, this, &FilesSelection::onUriError);
     connect(client, &Client::file_erased, this, &FilesSelection::onFileErased);
     connect(client, &Client::erase_file_error, this, &FilesSelection::onEraseFileError);
+    connect(client, &Client::nickname_error, this, &FilesSelection::onNicknameError);
 
 }
 
@@ -227,6 +228,12 @@ void FilesSelection::onUriError(int operation) {
 
 void FilesSelection::onEraseFileError() {
     QMessageBox::information(this,"Elimina documento","Errore: impossibile eliminare il file.");
+}
+
+void FilesSelection::onNicknameError(QString oldNick) {
+    ui->nicknameLabel->setText(oldNick);
+    ui->nicknameLabel->adjustSize();
+    QMessageBox::information(this,"Modifica profilo","Nickname già esistente");
 }
 
 void FilesSelection::showWindow(){

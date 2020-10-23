@@ -241,16 +241,26 @@ void Client::onReadyRead(){
             break;
         case 10:
         {
+            int op;
             QString oldNick;
-            QString newNick;
-            in >> oldNick >> newNick;
-            for(FileInfo* file : files) {
-                if(file->getNickname() == oldNick && file->getUsername() == this->username) {
-                    file->setNickname(newNick);
+            in >> op >> oldNick;
+            if(op == 1) {
+                QString newNick;
+                in >> newNick;
+                for(FileInfo* file : files) {
+                    if(file->getNickname() == oldNick) {
+                        file->setNickname(newNick);
+                    }
                 }
+                if(this->nickname == oldNick) {
+                    this->nickname = newNick;
+                }
+                files_list_refreshed(files);
+                refresh_text_edit(oldNick, newNick);
             }
-            files_list_refreshed(files);
-            refresh_text_edit(oldNick, newNick);
+            else if(op == 2) {
+                nickname_error(oldNick);
+            }
             break;
         }
         case 11:
@@ -342,7 +352,6 @@ void Client::eraseFile(int fileIndex) {
 
 void Client::profileChanged(QString nickname, QPixmap image) {
     if(this->nickname != nickname || this->image != image) {       
-        this->nickname = nickname;
         this->image = image;
         this->haveImage = true;
         QByteArray buf;
@@ -355,7 +364,6 @@ void Client::profileChanged(QString nickname, QPixmap image) {
 
 void Client::profileChanged(QString nickname) {
     if(this->nickname != nickname) {
-        this->nickname = nickname;
         QByteArray buf;
         QDataStream out(&buf, QIODevice::WriteOnly);
         out << 10 << 2 << username << nickname;

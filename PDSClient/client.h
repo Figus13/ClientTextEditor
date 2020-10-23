@@ -50,6 +50,7 @@ signals:
     void file_erased(int index);
     void erase_file_error();
     void refresh_text_edit(QString oldNick, QString newNick);
+    void nickname_error(QString oldNick);
 
 public slots:
     void onMessageReady(QVector<Message> messages, int fileIndex);
