@@ -6,6 +6,7 @@ NewFileDialog::NewFileDialog(QWidget *parent) :
     ui(new Ui::NewFileDialog)
 {
     ui->setupUi(this);
+
 }
 
 NewFileDialog::~NewFileDialog()
@@ -17,13 +18,14 @@ QString NewFileDialog::getFilename(){
     return filename;
 }
 
-void NewFileDialog::on_buttonBox_accepted()
+void NewFileDialog::on_Ok_clicked()
 {
-    filename = ui->filenameEdit->toPlainText();
+    filename = ui->filenameEdit->text();
     this->close();
 }
 
-void NewFileDialog::on_buttonBox_rejected()
+void NewFileDialog::on_Cancel_clicked()
 {
     this->close();
 }
+

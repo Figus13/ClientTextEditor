@@ -14,7 +14,7 @@
    <enum>Qt::DefaultContextMenu</enum>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Modifica Profilo</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">

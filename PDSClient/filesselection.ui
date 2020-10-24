@@ -254,7 +254,7 @@ font:bold;
               <string notr="true"/>
              </property>
              <property name="text">
-              <string>Aggiungi File da link</string>
+              <string>Aggiungi File da Uri</string>
              </property>
             </widget>
            </item>
