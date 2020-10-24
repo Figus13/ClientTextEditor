@@ -1264,6 +1264,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     if(messagesAdd.size() != 0){
         message_ready(messagesAdd, this->fileIndex);
     }
+    writingFlag=false;
 }
 
 void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
