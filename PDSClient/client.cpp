@@ -128,6 +128,7 @@ void Client::onReadyRead(){
             if(insert==2){ //arrivo ack, richiesta blocco successivo
                 QVector<Message> messages;
                 onMessageReady(messages, fileIndexOpened);
+
                 break;
             }
             in >> n_sym;
@@ -236,7 +237,7 @@ void Client::onReadyRead(){
             QString newNick;
             in >> oldNick >> newNick;
             for(FileInfo* file : files) {
-                if(file->getNickname() == oldNick && file->getUsername() == this->username) {
+                if(file->getNickname() == oldNick) {
                         file->setNickname(newNick);
                 }
             }
@@ -271,6 +272,7 @@ void Client::onReadyRead(){
         }
         case 160:
         {
+            qDebug() << "Fine comunicazione. Da ora scrivo il file sull'editor.";
             emit file_ready(this->fileBuffer);
             QByteArray buf;
             QDataStream out(&buf, QIODevice::WriteOnly);

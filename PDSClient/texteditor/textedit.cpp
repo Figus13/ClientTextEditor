@@ -1288,6 +1288,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     if(messagesAdd.size() != 0){
         message_ready(messagesAdd, this->fileIndex);
     }
+    writingFlag=false;
 }
 
 void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
@@ -1368,7 +1369,10 @@ void TextEdit::onFileReady(QVector<Symbol*> s){
                this, &TextEdit::onTextChanged);
     for(Symbol* sym: s){
         QTextCursor cursor(textEdit->textCursor());
-        QTextCharFormat plainFormat(cursor.charFormat());
+
+        cursor.insertText((const QString)sym->getValue()); //********DA CANCELLARE*******//
+
+        /*QTextCharFormat plainFormat(cursor.charFormat());
         QTextCharFormat headingFormat;
         headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
         headingFormat.setFontItalic(sym->isItalic());
@@ -1378,7 +1382,7 @@ void TextEdit::onFileReady(QVector<Symbol*> s){
         headingFormat.setFontFamily(sym->getFont());
         Qt::Alignment x = intToAlign(sym->getAlignment());
         textEdit->setAlignment(x);
-        cursor.insertText((const QString)sym->getValue(), headingFormat);
+        cursor.insertText((const QString)sym->getValue(), headingFormat);          DA RIMETTERE*/
         if(sym->getSiteId() == this->siteId){
             if(this->counter < sym->getCounter()){
                 this->counter = sym->getCounter();
@@ -1649,8 +1653,8 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
     QTextCursor cursor = textEdit->textCursor();
     cursor.setPosition(index, QTextCursor::MoveAnchor);
     //QFont x = comboFont->currentFont();
-
-    QTextCharFormat plainFormat(cursor.charFormat());
+    cursor.insertText((const QString)sym->getValue()); // DA CANCELLARE
+    /*QTextCharFormat plainFormat(cursor.charFormat());
     QTextCharFormat headingFormat;
     headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
     headingFormat.setFontItalic(sym->isItalic());
@@ -1665,7 +1669,7 @@ void TextEdit::remoteInsert(Symbol* sym){ //per ora gestito solo il caso in cui 
     }
     Qt::Alignment intAlign = intToAlign(sym->getAlignment());
     textEdit->setAlignment(intAlign);
-    cursor.insertText((const QString)sym->getValue(), headingFormat);
+    cursor.insertText((const QString)sym->getValue(), headingFormat);                      DA RIMETTERE*/
 
     this->_symbols.insert(this->_symbols.begin() + index, sym);
 
