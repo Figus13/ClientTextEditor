@@ -167,6 +167,7 @@ void Client::onReadyRead(){
     }
     case 4:
         qDebug() <<  "4)Dobbiamo gestire la ricezione di un file già scritto.";
+        sVector.clear();
         int fileSize;
         int alreadyConnected;
         int siteId;
