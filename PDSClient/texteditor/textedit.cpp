@@ -148,8 +148,7 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
     colorChanged(textEdit->textColor());
     alignmentChanged(textEdit->alignment());
 
-    /*connect(textEdit->document(), &QTextDocument::modificationChanged,
-            actionSave, &QAction::setEnabled);*/
+    connect(textEdit->document(), &QTextDocument::modificationChanged, actionSave, &QAction::setEnabled);        //capire crush: da commentare.
     connect(textEdit->document(), &QTextDocument::modificationChanged,
             this, &QWidget::setWindowModified);
     connect(textEdit->document(), &QTextDocument::undoAvailable,
@@ -158,7 +157,7 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
             actionRedo, &QAction::setEnabled);
 
     setWindowModified(textEdit->document()->isModified());
-    //actionSave->setEnabled(textEdit->document()->isModified());
+    actionSave->setEnabled(textEdit->document()->isModified()); //capire crush: da commentare
     actionUndo->setEnabled(textEdit->document()->isUndoAvailable());
     actionRedo->setEnabled(textEdit->document()->isRedoAvailable());
 
@@ -283,7 +282,7 @@ void TextEdit::setupFileActions()
     QToolBar *tb = addToolBar(tr("File Actions"));
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
-    /*const QIcon newIcon = QIcon::fromTheme("document-new", QIcon(rsrcPath + "/filenew.png"));
+    const QIcon newIcon = QIcon::fromTheme("document-new", QIcon(rsrcPath + "/filenew.png"));//capire crush: da commentare INIZIO COMMENTO
     QAction *a = menu->addAction(newIcon,  tr("&New"), this, &TextEdit::fileNew);
     tb->addAction(a);
     a->setPriority(QAction::LowPriority);
@@ -304,20 +303,22 @@ void TextEdit::setupFileActions()
 
     a = menu->addAction(tr("Save &As..."), this, &TextEdit::fileSaveAs);
     a->setPriority(QAction::LowPriority);
-    menu->addSeparator();
-    */
+    menu->addSeparator();                                                                       //capire crush: da commentare FINE COMMENTO
+
     /*
      *
      */
-    const QIcon newIcon = QIcon::fromTheme("document-share", QIcon(rsrcPath + "/share.png"));
-    QAction *a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::onShareURIButtonPressed);
+    a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::onShareURIButtonPressed);  //capire crush: da commentare
+    //const QIcon newIcon = QIcon::fromTheme("document-share", QIcon(rsrcPath + "/share.png"));   //capire crush: togliere commento
+    //QAction *a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::onShareURIButtonPressed);  //capire crush: togliere commento
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
-/*    a = menu->addAction( tr("&Stampa in PDF"), this, &TextEdit::onPrintOnPDF);
+/*      capire crush: INIZIO DA COMMENTARE */
+  a = menu->addAction( tr("&Stampa in PDF"), this, &TextEdit::onPrintOnPDF);
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
-*/
+/*      capire crush:fine commento*/
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
     const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
     a = menu->addAction(printIcon, tr("&Print..."), this, &TextEdit::filePrint);
@@ -455,14 +456,17 @@ void TextEdit::setupTextActions()
     actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
     actionAlignJustify->setCheckable(true);
     actionAlignJustify->setPriority(QAction::LowPriority);
-    /*const QIcon indentMoreIcon = QIcon::fromTheme("format-indent-more", QIcon(rsrcPath + "/format-indent-more.png"));
+    //capire crush: INIZIO DA COMMENTARE
+    const QIcon indentMoreIcon = QIcon::fromTheme("format-indent-more", QIcon(rsrcPath + "/format-indent-more.png"));
     actionIndentMore = menu->addAction(indentMoreIcon, tr("&Indent"), this, &TextEdit::indent);
     actionIndentMore->setShortcut(Qt::CTRL + Qt::Key_BracketRight);
     actionIndentMore->setPriority(QAction::LowPriority);
     const QIcon indentLessIcon = QIcon::fromTheme("format-indent-less", QIcon(rsrcPath + "/format-indent-less.png"));
     actionIndentLess = menu->addAction(indentLessIcon, tr("&Unindent"), this, &TextEdit::unindent);
     actionIndentLess->setShortcut(Qt::CTRL + Qt::Key_BracketLeft);
-    actionIndentLess->setPriority(QAction::LowPriority);*/
+    actionIndentLess->setPriority(QAction::LowPriority);
+    //capire crush: FINE DA commentare
+
 
     // Make sure the alignLeft  is always left of the alignRight
     QActionGroup *alignGroup = new QActionGroup(this);
@@ -481,10 +485,13 @@ void TextEdit::setupTextActions()
 
     tb->addActions(alignGroup->actions());
     menu->addActions(alignGroup->actions());
-    /*tb->addAction(actionIndentMore);
+    // capire crush: INIZIO DA COMMENTARE
+    tb->addAction(actionIndentMore);
     tb->addAction(actionIndentLess);
     menu->addAction(actionIndentMore);
-    menu->addAction(actionIndentLess);*/
+    menu->addAction(actionIndentLess);
+    // capire crush: FINE DA COMMENTARE
+
 
     menu->addSeparator();
 
@@ -495,19 +502,23 @@ void TextEdit::setupTextActions()
 
     menu->addSeparator();
 
-    /*const QIcon checkboxIcon = QIcon::fromTheme("status-checkbox-checked", QIcon(rsrcPath + "/checkbox-checked.png"));
+    // capire crush: INIZIO DA COMMENTARE
+    const QIcon checkboxIcon = QIcon::fromTheme("status-checkbox-checked", QIcon(rsrcPath + "/checkbox-checked.png"));
     actionToggleCheckState = menu->addAction(checkboxIcon, tr("Chec&ked"), this, &TextEdit::setChecked);
     actionToggleCheckState->setShortcut(Qt::CTRL + Qt::Key_K);
     actionToggleCheckState->setCheckable(true);
     actionToggleCheckState->setPriority(QAction::LowPriority);
     tb->addAction(actionToggleCheckState);
-*/
+   // capire crush: FINE DA COMMENTARE
+
+
     tb = addToolBar(tr("Format Actions"));
     tb->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
     addToolBarBreak(Qt::TopToolBarArea);
     addToolBar(tb);
 
-    /*comboStyle = new QComboBox(tb);
+    // capire crush: inizio DA COMMENTARE
+    comboStyle = new QComboBox(tb);
     tb->addWidget(comboStyle);
     comboStyle->addItem("Standard");
     comboStyle->addItem("Bullet List (Disc)");
@@ -528,7 +539,7 @@ void TextEdit::setupTextActions()
     comboStyle->addItem("Heading 6");
 
     connect(comboStyle, QOverload<int>::of(&QComboBox::activated), this, &TextEdit::textStyle);
-*/
+    // capire crush: FINE DA COMMENTARE
     comboFont = new QFontComboBox(tb);
     tb->addWidget(comboFont);
     connect(comboFont, &QComboBox::textActivated, this, &TextEdit::textFamily);
@@ -545,8 +556,8 @@ void TextEdit::setupTextActions()
 
     connect(comboSize, &QComboBox::textActivated, this, &TextEdit::textSize);
     /*AGGIUNTA DA NOI */
-    tb->addSeparator();
-    menu->addSeparator();
+    //tb->addSeparator(); // CAPIRE CRUSH: ELIMINARE COMMENTO
+    //menu->addSeparator(); // CAPIRE CRUSH: ELIMINARE COMMENTO
 
     comboUser = new QComboBox(tb);
     comboUser->setObjectName("comboUser");

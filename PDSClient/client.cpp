@@ -53,220 +53,220 @@ int Client::getSiteId(){
 
 void Client::onReadyRead(){
     while (socket->bytesAvailable() != 0) {
-    QVector<int> position;
-    int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
-    QString color, font, text, nickname;
-    QChar value;
-    //QVector<Symbol*> sVector;
-    bool isBold, isItalic, isUnderlined;
-    std::shared_ptr<Symbol> s;
-    QMap<int, QString> owners;
-    if (socket->state() != QAbstractSocket::ConnectedState)	return;
-    int operation, dim;
-    QByteArray in_buf;
-    QDataStream in(&in_buf, QIODevice::ReadOnly);
-    QByteArray bufOut;
-    QDataStream out(&bufOut, QIODevice::WriteOnly);//stream per la trasmissione
-    int byteReceived = 0;
+        QVector<int> position;
+        int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
+        QString color, font, text, nickname;
+        QChar value;
+        //QVector<Symbol*> sVector;
+        bool isBold, isItalic, isUnderlined;
+        std::shared_ptr<Symbol> s;
+        QMap<int, QString> owners;
+        if (socket->state() != QAbstractSocket::ConnectedState)	return;
+        int operation, dim;
+        QByteArray in_buf;
+        QDataStream in(&in_buf, QIODevice::ReadOnly);
+        QByteArray bufOut;
+        QDataStream out(&bufOut, QIODevice::WriteOnly);//stream per la trasmissione
+        int byteReceived = 0;
 
-    if (socket->bytesAvailable() < (qint64)sizeof(int)) {
-        socket->waitForReadyRead();
-    }
-
-    in_buf = socket->read((qint64)sizeof(int));
-    in >> dim;
-    while (byteReceived < dim) {
-        if (!socket->bytesAvailable()) {
+        if (socket->bytesAvailable() < (qint64)sizeof(int)) {
             socket->waitForReadyRead();
         }
-        in_buf.append(socket->read((qint64)dim - (qint64)byteReceived));
-        byteReceived = in_buf.size() - sizeof(int);
-    }
-    in >> operation;
-    switch(operation){
-    //ritorno login riuscito o fallito
-    case 0:
-        int status;
-        in >> status;
-        if(status == 0){
-            login_failed();
-        }else if(status == 1){
-            int op;
-            in >> op;
-            if(op == 1) {
-                in >> this->username >> this->nickname;
+
+        in_buf = socket->read((qint64)sizeof(int));
+        in >> dim;
+        while (byteReceived < dim) {
+            if (!socket->bytesAvailable()) {
+                socket->waitForReadyRead();
             }
-            else if(op == 2) {
-                QImage image;
-                in >> this->username >> this->nickname >> image;
-                this->image.convertFromImage(image);
-                haveImage = true;
+            in_buf.append(socket->read((qint64)dim - (qint64)byteReceived));
+            byteReceived = in_buf.size() - sizeof(int);
+        }
+        in >> operation;
+        switch(operation){
+        //ritorno login riuscito o fallito
+        case 0:
+            int status;
+            in >> status;
+            if(status == 0){
+                login_failed();
+            }else if(status == 1){
+                int op;
+                in >> op;
+                if(op == 1) {
+                    in >> this->username >> this->nickname;
+                }
+                else if(op == 2) {
+                    QImage image;
+                    in >> this->username >> this->nickname >> image;
+                    this->image.convertFromImage(image);
+                    haveImage = true;
+                }
+                /*int numFiles;
+                in >> operation >> status;
+                if(operation == 6 && status ==1){  //riceviamo i file.
+                    in >>this->siteId >> numFiles;
+                    files.clear();
+                    for(int i=0; i<numFiles; i++){
+                         QString filename;
+                        in >> filename;
+                        files.append(filename);
+                    }
+                    files_list_refreshed(files);
+                    login_successful();
+                }else{
+                    qDebug() <<  "errore nella funzione per lettura file";*/
+                login_successful();
             }
-            /*int numFiles;
-            in >> operation >> status;
-            if(operation == 6 && status ==1){  //riceviamo i file.
+            break;
+        case 1:
+            std::cout<< "registration\n";
+            int statusReg;
+            in >> statusReg;
+            if(statusReg!=1){
+                registration_failed(statusReg);
+            }else{
+                in >> this->siteId >> this->username >> this->nickname;
+                registration_successful();
+            }
+            break;
+
+        case 3:
+        {
+            int siteIdSender=-1;
+            qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
+            int n_sym;
+            QVector<Message> messages;
+            in >> insert;
+            if(insert==0){
+                in >> siteIdSender;
+            }
+            /*if(insert==2){ //arrivo ack, richiesta blocco successivo
+                QVector<Message> messages;
+                onMessageReady(messages, fileIndexOpened);
+                break;
+            }*/
+            in >> n_sym;
+            for(int i=0; i<n_sym; i++){
+                in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+                s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font));
+                if(insert==1){ //nel caso sia un inserimento
+                    if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
+                        Message m{'i', s};
+                        messages.push_back(m);
+                     //   message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
+                    }
+                }else{ //nel caso sia una cancellazione
+                    Message m{'d', s};
+                    messages.push_back(m);
+                    //message_from_server(m, siteIdSender);
+                }
+            }
+            messages_from_server(messages, siteIdSender);
+
+            break;
+        }
+        case 4:
+            qDebug() <<  "4)Dobbiamo gestire la ricezione di un file già scritto.";
+            sVector.clear();
+            int fileSize;
+            int alreadyConnected;
+            int siteId;
+            int otherOwners;
+            in >> fileSize;
+            for(int i=0; i<fileSize; i++){
+                in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+                s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font));
+                sVector.push_back(s);
+            }
+            if(fileSize!=0){
+                emit file_ready(sVector);
+            }
+            in >> alreadyConnected;
+            for(int i = 0; i<alreadyConnected; i++){
+                in >> siteId >> nickname;
+                emit signal_connection(siteId, nickname, 1);
+            }
+            in >> otherOwners;
+            for(int i=0; i<otherOwners; i++){
+                in >> siteId >> nickname;
+                owners.insert(siteId, nickname);
+            }
+            emit signal_owners(owners);
+            break;
+        case 6:
+            int numFiles;
+            in >> status;
+            if(status == 1){  //riceviamo i file.
                 in >>this->siteId >> numFiles;
                 files.clear();
                 for(int i=0; i<numFiles; i++){
-                     QString filename;
-                    in >> filename;
-                    files.append(filename);
+                    QString filename;
+                    QString usernameOwner; //riceve lo username del creatore
+                    QString nicknameOwner;
+                    in >> filename >> usernameOwner >> nicknameOwner;
+                    std::shared_ptr<FileInfo> file (new FileInfo(filename, usernameOwner, nicknameOwner));
+                    files.append(file);
                 }
                 files_list_refreshed(files);
-                login_successful();
-            }else{
-                qDebug() <<  "errore nella funzione per lettura file";*/
-            login_successful();
-        }
-        break;
-    case 1:
-        std::cout<< "registration\n";
-        int statusReg;
-        in >> statusReg;
-        if(statusReg!=1){
-            registration_failed(statusReg);
-        }else{
-            in >> this->siteId >> this->username >> this->nickname;
-            registration_successful();
-        }
-        break;
-
-    case 3:
-    {
-        int siteIdSender=-1;
-        qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
-        int n_sym;
-        QVector<Message> messages;
-        in >> insert;
-        if(insert==0){
-            in >> siteIdSender;
-        }
-        /*if(insert==2){ //arrivo ack, richiesta blocco successivo
-            QVector<Message> messages;
-            onMessageReady(messages, fileIndexOpened);
-            break;
-        }*/
-        in >> n_sym;
-        for(int i=0; i<n_sym; i++){
-            in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font));
-            if(insert==1){ //nel caso sia un inserimento
-                if( recSiteId != this->siteId){ //il simbolo non l'ho aggiunto io.
-                    Message m{'i', s};
-                    messages.push_back(m);
-                 //   message_from_server(m, siteIdSender); // ****FORSE QUI SAREBBE MEGLIO AGGIUNGERE IL FILENAME PER ESSERE SICURI DELL'INSERIMENTO*****
-                }
-            }else{ //nel caso sia una cancellazione
-                Message m{'d', s};
-                messages.push_back(m);
-                //message_from_server(m, siteIdSender);
             }
-        }
-        messages_from_server(messages, siteIdSender);
-
-        break;
-    }
-    case 4:
-        qDebug() <<  "4)Dobbiamo gestire la ricezione di un file già scritto.";
-        sVector.clear();
-        int fileSize;
-        int alreadyConnected;
-        int siteId;
-        int otherOwners;
-        in >> fileSize;
-        for(int i=0; i<fileSize; i++){
-            in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
-            s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font));
-            sVector.push_back(s);
-        }
-        if(fileSize!=0){
-            emit file_ready(sVector);
-        }
-        in >> alreadyConnected;
-        for(int i = 0; i<alreadyConnected; i++){
-            in >> siteId >> nickname;
-            emit signal_connection(siteId, nickname, 1);
-        }
-        in >> otherOwners;
-        for(int i=0; i<otherOwners; i++){
-            in >> siteId >> nickname;
-            owners.insert(siteId, nickname);
-        }
-        emit signal_owners(owners);
-        break;
-    case 6:
-        int numFiles;
-        in >> status;
-        if(status == 1){  //riceviamo i file.
-            in >>this->siteId >> numFiles;
-            files.clear();
-            for(int i=0; i<numFiles; i++){
+            break;
+        case 7:
+            int operation;
+            in >> operation;
+            if(operation == 1){  //La condivisione è andata a buon fine, quindi aggiungo il nuovo file alla lista
                 QString filename;
                 QString usernameOwner; //riceve lo username del creatore
                 QString nicknameOwner;
                 in >> filename >> usernameOwner >> nicknameOwner;
                 std::shared_ptr<FileInfo> file (new FileInfo(filename, usernameOwner, nicknameOwner));
                 files.append(file);
+                files_list_refreshed(files);
+            }  else if(operation == 2){
+                QString uri;
+                in >> uri;
+                URI_Ready(uri);
             }
-            files_list_refreshed(files);
-        }
-        break;
-    case 7:
-        int operation;
-        in >> operation;
-        if(operation == 1){  //La condivisione è andata a buon fine, quindi aggiungo il nuovo file alla lista
-            QString filename;
-            QString usernameOwner; //riceve lo username del creatore
-            QString nicknameOwner;
-            in >> filename >> usernameOwner >> nicknameOwner;
-            std::shared_ptr<FileInfo> file (new FileInfo(filename, usernameOwner, nicknameOwner));
-            files.append(file);
-            files_list_refreshed(files);
-        }  else if(operation == 2){
-            QString uri;
-            in >> uri;
-            URI_Ready(uri);
-        }
-        else if (operation == 3 || operation == 4) {
-            uri_error(operation);
-        }
-        break;
-    case 8:
-        int ins;
-        in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
-        emit signal_connection(siteId, nickname, ins);
-        break;
-    case 9:
-        in >> status;
-        if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
-            QString filename;
-            QString usernameOwner;
-            in >> filename >> usernameOwner;
-            for(std::shared_ptr<FileInfo> f : files){
-                if( f.get()->getFileName() == filename && f.get()->getUsername() == usernameOwner){
-                    int index = files.indexOf(f);
-                    files.removeOne(f);
-                    file_erased(index);
-                    break;
+            else if (operation == 3 || operation == 4) {
+                uri_error(operation);
+            }
+            break;
+        case 8:
+            int ins;
+            in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
+            emit signal_connection(siteId, nickname, ins);
+            break;
+        case 9:
+            in >> status;
+            if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
+                QString filename;
+                QString usernameOwner;
+                in >> filename >> usernameOwner;
+                for(std::shared_ptr<FileInfo> f : files){
+                    if( f.get()->getFileName() == filename && f.get()->getUsername() == usernameOwner){
+                        int index = files.indexOf(f);
+                        files.removeOne(f);
+                        file_erased(index);
+                        break;
+                    }
                 }
             }
+            else {
+                erase_file_error();
+            }
+            break;
+        case 11:
+        {
+            int siteIdSender, cursorIndex;
+            QString filepath;
+            in >> filepath >> cursorIndex >> siteIdSender;
+            if(filepath == this->files[this->fileIndexOpened]->getFilePath())
+                remote_cursor_changed(cursorIndex, siteIdSender);
+            break;
         }
-        else {
-            erase_file_error();
+        default: break;
         }
-        break;
-    case 11:
-    {
-        int siteIdSender, cursorIndex;
-        QString filepath;
-        in >> filepath >> cursorIndex >> siteIdSender;
-        if(filepath == this->files[this->fileIndexOpened]->getFilePath())
-            remote_cursor_changed(cursorIndex, siteIdSender);
-        break;
     }
-    default: break;
-    }
-}
 
 }
 
