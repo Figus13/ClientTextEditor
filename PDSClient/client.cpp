@@ -52,6 +52,7 @@ int Client::getSiteId(){
 }
 
 void Client::onReadyRead(){
+    while (socket->bytesAvailable() != 0) {
     QVector<int> position;
     int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
     QString color, font, text, nickname;
@@ -265,7 +266,7 @@ void Client::onReadyRead(){
     }
     default: break;
     }
-
+}
 
 }
 
