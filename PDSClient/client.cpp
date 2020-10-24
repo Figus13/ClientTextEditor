@@ -52,86 +52,101 @@ int Client::getSiteId(){
 }
 
 void Client::onReadyRead(){
-        while (socket->bytesAvailable() != 0) {
-        QVector<int> position;
-        int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
-        QString color, font, text, nickname;
-        QChar value;
-        //QVector<Symbol*> sVector;
-        bool isBold, isItalic, isUnderlined;
-        std::shared_ptr<Symbol> s;
-        QMap<int, QString> owners;
-        if (socket->state() != QAbstractSocket::ConnectedState)	return;
+    QVector<int> position;
+    int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
+    QString color, font, text, nickname;
+    QChar value;
+    //QVector<Symbol*> sVector;
+    bool isBold, isItalic, isUnderlined;
+    std::shared_ptr<Symbol> s;
+    QMap<int, QString> owners;
+    if (socket->state() != QAbstractSocket::ConnectedState)	return;
+    int operation, dim;
+    QByteArray in_buf;
+    QDataStream in(&in_buf, QIODevice::ReadOnly);
+    QByteArray bufOut;
+    QDataStream out(&bufOut, QIODevice::WriteOnly);//stream per la trasmissione
+    int byteReceived = 0;
 
-        QDataStream in;
-        in.setDevice(socket);//setto lo stream per la ricezione
-        int operation;
-        in >> operation;
-        switch(operation){
-        //ritorno login riuscito o fallito
-        case 0:
-            int status;
-            in >> status;
-            if(status == 0){
-                login_failed();
-            }else if(status == 1){
-                int op;
-                in >> op;
-                if(op == 1) {
-                    in >> this->username >> this->nickname;
+    if (socket->bytesAvailable() < (qint64)sizeof(int)) {
+        socket->waitForReadyRead();
+    }
+
+    in_buf = socket->read((qint64)sizeof(int));
+    in >> dim;
+    while (byteReceived < dim) {
+        if (!socket->bytesAvailable()) {
+            socket->waitForReadyRead();
+        }
+        in_buf.append(socket->read((qint64)dim - (qint64)byteReceived));
+        byteReceived = in_buf.size() - sizeof(int);
+    }
+    in >> operation;
+    switch(operation){
+    //ritorno login riuscito o fallito
+    case 0:
+        int status;
+        in >> status;
+        if(status == 0){
+            login_failed();
+        }else if(status == 1){
+            int op;
+            in >> op;
+            if(op == 1) {
+                in >> this->username >> this->nickname;
+            }
+            else if(op == 2) {
+                QImage image;
+                in >> this->username >> this->nickname >> image;
+                this->image.convertFromImage(image);
+                haveImage = true;
+            }
+            /*int numFiles;
+            in >> operation >> status;
+            if(operation == 6 && status ==1){  //riceviamo i file.
+                in >>this->siteId >> numFiles;
+                files.clear();
+                for(int i=0; i<numFiles; i++){
+                     QString filename;
+                    in >> filename;
+                    files.append(filename);
                 }
-                else if(op == 2) {
-                    QImage image;
-                    in >> this->username >> this->nickname >> image;
-                    this->image.convertFromImage(image);
-                    haveImage = true;
-                }
-                /*int numFiles;
-                in >> operation >> status;
-                if(operation == 6 && status ==1){  //riceviamo i file.
-                    in >>this->siteId >> numFiles;
-                    files.clear();
-                    for(int i=0; i<numFiles; i++){
-                         QString filename;
-                        in >> filename;
-                        files.append(filename);
-                    }
-                    files_list_refreshed(files);
-                    login_successful();
-                }else{
-                    qDebug() <<  "errore nella funzione per lettura file";*/
+                files_list_refreshed(files);
                 login_successful();
-            }
-            break;
-        case 1:
-            std::cout<< "registration\n";
-            int statusReg;
-            in >> statusReg;
-            if(statusReg!=1){
-                registration_failed(statusReg);
             }else{
-                in >> this->siteId >> this->username >> this->nickname;
-                registration_successful();
-            }
-            break;
+                qDebug() <<  "errore nella funzione per lettura file";*/
+            login_successful();
+        }
+        break;
+    case 1:
+        std::cout<< "registration\n";
+        int statusReg;
+        in >> statusReg;
+        if(statusReg!=1){
+            registration_failed(statusReg);
+        }else{
+            in >> this->siteId >> this->username >> this->nickname;
+            registration_successful();
+        }
+        break;
 
-        case 3:
-        {
-            int siteIdSender=-1;
-            qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
-            //int n_sym;
+    case 3:
+    {
+        int siteIdSender=-1;
+        qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
+        int n_sym;
+        QVector<Message> messages;
+        in >> insert;
+        if(insert==0){
+            in >> siteIdSender;
+        }
+        /*if(insert==2){ //arrivo ack, richiesta blocco successivo
             QVector<Message> messages;
-            in >> insert;
-            if(insert==0){
-                in >> siteIdSender;
-            }
-            /*if(insert==2){ //arrivo ack, richiesta blocco successivo
-                QVector<Message> messages;
-                onMessageReady(messages, fileIndexOpened);
-                break;
-            }*/
-            //in >> n_sym;
-            //for(int i=0; i<n_sym; i++){
+            onMessageReady(messages, fileIndexOpened);
+            break;
+        }*/
+        in >> n_sym;
+        for(int i=0; i<n_sym; i++){
             in >> recSiteId >> counter >> position >> value >>  isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
             s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize, color, font));
             if(insert==1){ //nel caso sia un inserimento
@@ -145,131 +160,122 @@ void Client::onReadyRead(){
                 messages.push_back(m);
                 //message_from_server(m, siteIdSender);
             }
-            //}
-            messages_from_server(messages, siteIdSender);
-
-            break;
         }
-        case 4:
-            qDebug() <<  "4)Dobbiamo gestire la ricezione di un file già scritto.";
-            //int fileSize;
-            int alreadyConnected;
-            int siteId;
-            int otherOwners;
-            /*in >> fileSize;
-            for(int j=0; j<fileSize;){
-                if(socket->bytesAvailable() != 0){
+        messages_from_server(messages, siteIdSender);
 
-                    j++;
-                }
-            }
-            if(fileSize!=0){
-                emit file_ready(sVector);
-            }*/
-            in >> alreadyConnected;
-            for(int i = 0; i<alreadyConnected; i++){
-                in >> siteId >> nickname;
-                emit signal_connection(siteId, nickname, 1);
-            }
-            in >> otherOwners;
-            for(int i=0; i<otherOwners; i++){
-                in >> siteId >> nickname;
-                owners.insert(siteId, nickname);
-            }
-            emit signal_owners(owners);
-            break;
-        case 5:
-            qDebug() << ++counterFail;
-            int totalSize;
-            in  >>insert >> totalSize >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
+        break;
+    }
+    case 4:
+        qDebug() <<  "4)Dobbiamo gestire la ricezione di un file già scritto.";
+        int fileSize;
+        int alreadyConnected;
+        int siteId;
+        int otherOwners;
+        in >> fileSize;
+        for(int i=0; i<fileSize; i++){
+            in  >>insert >> position >> counter >> recSiteId >> value >> isBold >> isItalic >> isUnderlined >> alignment >> textSize >> color >> font;
             s = std::make_shared<Symbol>(Symbol(position, counter, recSiteId, value, isBold, isItalic, isUnderlined, alignment, textSize,color, font));
             sVector.push_back(s);
-            if(totalSize == sVector.size()){
-                emit file_ready(sVector);
-                sVector.clear();
-            }
-            break;
-        case 6:
-            int numFiles;
-            in >> status;
-            if(status == 1){  //riceviamo i file.
-                in >>this->siteId >> numFiles;
-                files.clear();
-                for(int i=0; i<numFiles; i++){
-                    QString filename;
-                    QString usernameOwner; //riceve lo username del creatore
-                    QString nicknameOwner;
-                    in >> filename >> usernameOwner >> nicknameOwner;
-                    std::shared_ptr<FileInfo> file (new FileInfo(filename, usernameOwner, nicknameOwner));
-                    files.append(file);
-                }
-                files_list_refreshed(files);
-            }
-            break;
-        case 7:
-            int operation;
-            in >> operation;
-            if(operation == 1){  //La condivisione è andata a buon fine, quindi aggiungo il nuovo file alla lista
+        }
+        if(fileSize!=0){
+            emit file_ready(sVector);
+        }
+        in >> alreadyConnected;
+        for(int i = 0; i<alreadyConnected; i++){
+            in >> siteId >> nickname;
+            emit signal_connection(siteId, nickname, 1);
+        }
+        in >> otherOwners;
+        for(int i=0; i<otherOwners; i++){
+            in >> siteId >> nickname;
+            owners.insert(siteId, nickname);
+        }
+        emit signal_owners(owners);
+        break;
+    case 6:
+        int numFiles;
+        in >> status;
+        if(status == 1){  //riceviamo i file.
+            in >>this->siteId >> numFiles;
+            files.clear();
+            for(int i=0; i<numFiles; i++){
                 QString filename;
                 QString usernameOwner; //riceve lo username del creatore
                 QString nicknameOwner;
                 in >> filename >> usernameOwner >> nicknameOwner;
                 std::shared_ptr<FileInfo> file (new FileInfo(filename, usernameOwner, nicknameOwner));
                 files.append(file);
-                files_list_refreshed(files);
-            }  else if(operation == 2){
-                QString uri;
-                in >> uri;
-                URI_Ready(uri);
             }
-            else if (operation == 3 || operation == 4) {
-                uri_error(operation);
-            }
-            break;
-        case 8:
-            int ins;
-            in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
-            emit signal_connection(siteId, nickname, ins);
-            break;
-        case 9:
-            in >> status;
-            if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
-                QString filename;
-                QString usernameOwner;
-                in >> filename >> usernameOwner;
-                for(std::shared_ptr<FileInfo> f : files){
-                    if( f.get()->getFileName() == filename && f.get()->getUsername() == usernameOwner){
-                        int index = files.indexOf(f);
-                        files.removeOne(f);
-                        file_erased(index);
-                        break;
-                    }
+            files_list_refreshed(files);
+        }
+        break;
+    case 7:
+        int operation;
+        in >> operation;
+        if(operation == 1){  //La condivisione è andata a buon fine, quindi aggiungo il nuovo file alla lista
+            QString filename;
+            QString usernameOwner; //riceve lo username del creatore
+            QString nicknameOwner;
+            in >> filename >> usernameOwner >> nicknameOwner;
+            std::shared_ptr<FileInfo> file (new FileInfo(filename, usernameOwner, nicknameOwner));
+            files.append(file);
+            files_list_refreshed(files);
+        }  else if(operation == 2){
+            QString uri;
+            in >> uri;
+            URI_Ready(uri);
+        }
+        else if (operation == 3 || operation == 4) {
+            uri_error(operation);
+        }
+        break;
+    case 8:
+        int ins;
+        in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
+        emit signal_connection(siteId, nickname, ins);
+        break;
+    case 9:
+        in >> status;
+        if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
+            QString filename;
+            QString usernameOwner;
+            in >> filename >> usernameOwner;
+            for(std::shared_ptr<FileInfo> f : files){
+                if( f.get()->getFileName() == filename && f.get()->getUsername() == usernameOwner){
+                    int index = files.indexOf(f);
+                    files.removeOne(f);
+                    file_erased(index);
+                    break;
                 }
             }
-            else {
-                erase_file_error();
-            }
-            break;
-        case 11:
-        {
-            int siteIdSender, cursorIndex;
-            QString filepath;
-            in >> filepath >> cursorIndex >> siteIdSender;
-            if(filepath == this->files[this->fileIndexOpened]->getFilePath())
-                remote_cursor_changed(cursorIndex, siteIdSender);
-            break;
         }
-        default: break;
+        else {
+            erase_file_error();
         }
+        break;
+    case 11:
+    {
+        int siteIdSender, cursorIndex;
+        QString filepath;
+        in >> filepath >> cursorIndex >> siteIdSender;
+        if(filepath == this->files[this->fileIndexOpened]->getFilePath())
+            remote_cursor_changed(cursorIndex, siteIdSender);
+        break;
     }
+    default: break;
+    }
+
 
 }
 
 void Client::closeFile(int fileIndex){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
     out << 5 /*# operazione*/ << files[fileIndex].get()->getFileName() << files[fileIndex].get()->getUsername();
-    socket->write(buf);
+    out_stream << buf;
+    socket->write(bufOut);
     socket->flush();
     fileIndexOpened = -1;
     files_list_refreshed(files);
@@ -283,28 +289,33 @@ Client::~Client(){
 void Client::login(QString username, QString password){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
-
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
     out << 0 << username << password;
-
-    socket->write(buf);
+    out_stream << buf;
+    socket->write(bufOut);
     socket->flush();
 }
 
 void Client::registration(QString username, QString password, QString nickName){
-
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
     out << 1 << username << password << nickName;
-
-    socket->write(buf);
+    out_stream << buf;
+    socket->write(bufOut);
     socket->flush();
 }
 
 void Client::getFiles(){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
     out << 6;
-    socket->write(buf);
+    out_stream << buf;
+    socket->write(bufOut);
     socket->flush();
     return; // i file vengono inviati dalla signal list_files_refreshed
 }
@@ -331,9 +342,12 @@ void Client::setFileIndex(int index){
 void Client::eraseFile(int fileIndex) {
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
     std::shared_ptr<FileInfo> file = files[fileIndex];
     out << 9 << file.get()->getFileName() << file.get()->getUsername();
-    socket->write(buf);
+    out_stream << buf;
+    socket->write(bufOut);
 }
 
 void Client::profileChanged(QString nickname, QPixmap image) {
@@ -343,9 +357,12 @@ void Client::profileChanged(QString nickname, QPixmap image) {
         this->haveImage = true;
         QByteArray buf;
         QDataStream out(&buf, QIODevice::WriteOnly);
+        QByteArray bufOut;
+        QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
         QImage img = image.toImage();
         out << 10 << 1 << username << nickname << img;
-        socket->write(buf);
+        out_stream << buf;
+        socket->write(bufOut);
     }
 }
 
@@ -354,7 +371,11 @@ void Client::profileChanged(QString nickname) {
         this->nickname = nickname;
         QByteArray buf;
         QDataStream out(&buf, QIODevice::WriteOnly);
+        QByteArray bufOut;
+        QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
         out << 10 << 2 << username << nickname;
+        out_stream << buf;
+        //TODO write?
     }
 }
 
@@ -423,10 +444,13 @@ void Client::getFile(int fileIndex){
 
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
     std::shared_ptr<FileInfo> file = files[fileIndex];
     out << 4 << file->getFileName() << file->getUsername() << siteId;
+    out_stream << buf;
     fileIndexOpened = fileIndex;
-    socket->write(buf);
+    socket->write(bufOut);
 }
 
 void Client::disconnectFromServer(){
@@ -437,35 +461,29 @@ void Client::disconnectFromServer(){
 void Client::onMessageReady(QVector<Message> messages, int fileIndex){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
     std::shared_ptr<FileInfo> fi = files[fileIndex];
-   // out << 3;
+    out << 3;
     if(messages[0].getAction()=='i'){
-        //out << 1 << fi->getFileName() << fi->getUsername() << messages.size();
+        out << 1 << fi->getFileName() << fi->getUsername() << messages.size();
         for(int i=0; i< messages.size(); i++){
             std::shared_ptr<Symbol> s = messages[i].getSymbol();
-            out << 3 << 1 << fi->getFileName() << fi->getUsername() << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
+            out << s ->getSiteId() << s->getCounter() << s->getPosition() << s->getValue() << s->isBold()
                 << s->isItalic() << s->isUnderlined() << s->getAlignment() << s->getTextSize() << s->getColor() << s->getFont();
-            socket->write(buf);
-            socket->flush();
-            buf="";
-            out.device()->reset();
         }
-
     }else{
         if(messages[0].getAction()=='d'){
-          //out <<  0 << fi->getFileName() << fi->getUsername() << messages.size();
+          out <<  0 << fi->getFileName() << fi->getUsername() << messages.size();
             for(int i=0; i< messages.size(); i++){
                 std::shared_ptr<Symbol> s = messages[i].getSymbol();
-                out << 3 << 0 << fi->getFileName() << fi->getUsername() << s->getSiteId() << s->getCounter()  << s->getPosition();
-                socket->write(buf);
-                socket->flush();
-                buf="";
-                out.device()->reset();
+                out << s->getSiteId() << s->getCounter()  << s->getPosition();
             }
         }
     }
-    //socket->write(buf);
-    //socket->flush();
+    out_stream << buf;
+    socket->write(bufOut);
+    socket->flush();
 }
 
 
@@ -545,29 +563,35 @@ void Client::requestURI(int fileIndex){
     qDebug() << files[fileIndex].get();
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
 
     out << 7 << 2 << files[fileIndex]->getFileName() <<files[fileIndex]->getUsername();
-
-    socket->write(buf);
+    out_stream << buf;
+    socket->write(bufOut);
     socket->flush();
 }
 
 void Client::onMyCursorPositionChanged(int index){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
 
     out << 11 << index;
-
-    socket->write(buf);
+    out_stream << buf;
+    socket->write(bufOut);
     socket->flush();
 }
 
 void Client::getFileFromURI(QString uri) {
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
+    QByteArray bufOut;
+    QDataStream out_stream(&bufOut, QIODevice::WriteOnly);
     out << 7 << 1 << uri;
-
-    socket->write(buf);
+    out_stream << buf;
+    socket->write(bufOut);
 }
 
 QString Client::getNickname(){
