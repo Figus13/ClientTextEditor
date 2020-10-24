@@ -8,7 +8,7 @@ class UserCursor: public User
 public:
     UserCursor(int siteId, QString nickname, int colorId, QWidget* text);
     UserCursor(User user);
-    QLabel* getLabel();
+    //QLabel* getLabel();
     int getPos();
     void setPos(int pos);
     void setLabelColor(int colorId);

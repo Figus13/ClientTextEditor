@@ -1647,17 +1647,18 @@ void TextEdit::onShareURIButtonPressed(){
 void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
 
     QTextCursor cursor(textEdit->textCursor());
-    int pos_entry = cursor.position();//DEBUG
+    //int pos_entry = cursor.position();//DEBUG
     cursor.setPosition(cursorPos);//setto la posizione per poter prendere le coordinate
     QTextCharFormat plainFormat(cursor.charFormat());
     QRect editor = textEdit->rect();
 
     int editor_height = editor.height();//altezza editor;
-    int editor_width = editor.width();//larghezza editor;
+   // int editor_width = editor.width();//larghezza editor;
     QRect rt = textEdit->cursorRect(cursor);
     int rt_height = rt.height();
+    std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
     //label con il nome utente
-    int label_width = cursorsMap[siteId]->getLabel()->width();//larghezza label da aggiornare/inserire
+    /*int label_width = cursorsMap[siteId]->getLabel()->width();//larghezza label da aggiornare/inserire
     int x = rt.x() + 7;
     int y = rt.y() - 8;
     if (editor_width - x < label_width) {//se sono infondo a destra non si vedrà, allora la posto più a sinistra
@@ -1669,7 +1670,7 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
     uc->getLabel()->hide();
     uc->getLabel()->move(x, y);
-    uc->getLabel()->show();
+    uc->getLabel()->show();*/
 
     uc->getLabel_cur()->setFixedHeight(rt_height);
     uc->getLabel_cur()->setFixedWidth(2);

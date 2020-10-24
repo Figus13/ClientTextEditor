@@ -102,20 +102,6 @@ void Client::onReadyRead(){
                     this->image.convertFromImage(image);
                     haveImage = true;
                 }
-                /*int numFiles;
-                in >> operation >> status;
-                if(operation == 6 && status ==1){  //riceviamo i file.
-                    in >>this->siteId >> numFiles;
-                    files.clear();
-                    for(int i=0; i<numFiles; i++){
-                         QString filename;
-                        in >> filename;
-                        files.append(filename);
-                    }
-                    files_list_refreshed(files);
-                    login_successful();
-                }else{
-                    qDebug() <<  "errore nella funzione per lettura file";*/
                 login_successful();
             }
             break;
