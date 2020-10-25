@@ -164,6 +164,7 @@ private:
     void highlightUserText(const QString &str);
     void onSignalOwners(QMap<int,QString> owners);
     void remoteCursorChangePosition(int cursorPos, int siteId);
+    bool styleIsEqual(std::shared_ptr<Symbol> s1, std::shared_ptr<Symbol> s2);
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();

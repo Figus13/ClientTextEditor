@@ -1328,6 +1328,71 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
     //FLAG_OPEN_FILE = true; sostituita con il disconnect, evitiamo di fare signal->slot
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
+    int flag=0;
+    QString buffer;
+    QTextCharFormat headingFormat;
+    QTextCursor cursor(textEdit->textCursor());
+    QTextCharFormat plainFormat(cursor.charFormat());
+    for(int i=0; i< s.size(); i++){
+        std::shared_ptr<Symbol> sym = s[i];
+        if(sym->getSiteId() == this->siteId){
+            if(this->counter < sym->getCounter()){
+                this->counter = sym->getCounter();
+            }
+        }
+
+        if(flag==0){
+            flag=1;
+            cursor.setPosition(i);
+            headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
+            headingFormat.setFontItalic(sym->isItalic());
+            headingFormat.setFontUnderline(sym->isUnderlined());
+            headingFormat.setForeground(sym->getColor());
+            headingFormat.setFontPointSize(sym->getTextSize());
+            headingFormat.setFontFamily(sym->getFont());
+            Qt::Alignment x = intToAlign(sym->getAlignment());
+            textEdit->setAlignment(x);
+            buffer.clear();
+            buffer.append(sym->getValue());
+        }
+        if(i==(s.size()-1)){ //ultimo carattere devo scrivere tutto quello che ho nel buffer
+            cursor.insertText(buffer, headingFormat);
+        }else{
+            if(styleIsEqual(sym, s[i+1])){//il prossimo simbolo ha lo stesso font, appendo al buffer.
+                buffer.append(sym->getValue());
+            }else{
+                flag=0;
+                cursor.insertText(buffer, headingFormat);
+            }
+        }
+    }
+
+    textEdit->textCursor().endEditBlock();
+    //FLAG_OPEN_FILE = false;
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
+    //textEdit->setPlainText(text);
+    textEdit->textCursor();
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
+}
+
+bool TextEdit::styleIsEqual(std::shared_ptr<Symbol> s1, std::shared_ptr<Symbol> s2){
+    return ((s1->getAlignment()==s2->getAlignment()) && (s1->isBold()==s2->isBold()) && (s1->isItalic()==s2->isItalic()) &&
+            (s1->isUnderlined()==s2->isUnderlined()) && (s1->getTextSize()==s2->getTextSize()) &&
+            (s1->getColor().name().compare(s2->getColor().name())==0) && (s1->getFont().compare(s2->getFont())==0));
+}
+
+/* VECCHIA VERSIONE DELLA OnFileReady
+ * void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+               this, &TextEdit::cursorPositionChanged);
+
+    this->_symbols = s;
+    textEdit->textCursor().beginEditBlock();
+    //FLAG_OPEN_FILE = true; sostituita con il disconnect, evitiamo di fare signal->slot
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+               this, &TextEdit::onTextChanged);
     for(std::shared_ptr<Symbol> sym: s){
         QTextCursor cursor(textEdit->textCursor());
         QTextCharFormat plainFormat(cursor.charFormat());
@@ -1357,7 +1422,7 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
     textEdit->textCursor();
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &TextEdit::cursorPositionChanged);
-}
+}*/
 
 void TextEdit::onFileClosed() {
     disconnect(client.get(), &Client::URI_Ready, this, &TextEdit::onURIReady);
@@ -1584,6 +1649,70 @@ void TextEdit::remoteDelete(std::shared_ptr<Symbol> sym, int siteIdSender){
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
 }
+
+/*void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+               this, &TextEdit::onTextChanged);
+    QString buffer;
+    int startBufferIndex;
+    QTextCharFormat headingFormat;
+    int index;
+    QTextCursor cursor = textEdit->textCursor();
+    for(int i=0; i<messages.size(); i++){
+        Symbol* sym = messages[i].getSymbol();
+        index = findIndexFromNewPosition(sym->getPosition());
+        this->_symbols.insert(this->_symbols.begin() + index, sym);
+        if(i != 0 && styleIsEqual(sym, messages[i-1].getSymbol())){
+                buffer.append(sym->getValue());
+        }else{
+            if(buffer.size()==0){
+                startBufferIndex = findIndexFromNewPosition(sym->getPosition());
+                cursor.setPosition(startBufferIndex, QTextCursor::MoveAnchor);
+                QTextCharFormat plainFormat(cursor.charFormat());
+                headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
+                headingFormat.setFontItalic(sym->isItalic());
+                headingFormat.setFontUnderline(sym->isUnderlined());
+                headingFormat.setForeground(sym->getColor());
+                headingFormat.setFontPointSize(sym->getTextSize());
+                headingFormat.setFontFamily(sym->getFont());
+               if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
+                    headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
+               }else{
+                    headingFormat.setBackground(Qt::white);
+               }
+               Qt::Alignment intAlign = intToAlign(sym->getAlignment());
+               textEdit->setAlignment(intAlign);
+               buffer.append(sym->getValue());
+            }else{
+                cursor.setPosition(startBufferIndex + buffer.size(), QTextCursor::KeepAnchor);
+                cursor.insertText(buffer, headingFormat);
+                buffer="";
+                buffer.append(sym->getValue());
+            }
+        }
+    }
+    cursor.insertText(buffer, headingFormat);
+    remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
+}
+void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+               this, &TextEdit::onTextChanged);
+    for(int i=0; i<messages.size(); i++){
+        Symbol* sym = messages[i].getSymbol();
+        int index = findIndexFromExistingPosition(sym->getPosition());
+        if(index!=-1){
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.setPosition(index, QTextCursor::MoveAnchor);
+            cursor.deleteChar();
+            this->_symbols.erase(this->_symbols.begin() + index);
+            remoteCursorChangePosition(index, siteIdSender);
+        }
+    }
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
+}*/
 
 
 int TextEdit::findIndexFromNewPosition(QVector<int> position){
