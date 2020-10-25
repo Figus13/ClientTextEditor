@@ -41,6 +41,7 @@ private slots:
     void onUriError(int operation);
     void onFileErased(int index);
     void onEraseFileError();
+    void onNicknameError(QString oldNick);
 
 private:
     Ui::FilesSelection *ui;
