@@ -413,7 +413,6 @@ void TextEdit::setupEditActions()
 
 void TextEdit::paste(){
 
-    flag_copy = true;
    // disconnect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
     qDebug() << "copia copia copia";
@@ -435,7 +434,6 @@ void TextEdit::paste(){
  //   connect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
     connect(textEdit, &QTextEdit::cursorPositionChanged, this, &TextEdit::cursorPositionChanged);
   //  emit textEdit->document()->contentsChange(position,fine-inizio, str.size());
-    flag_copy = false;
     emit textEdit->document()->contentsChange(position,fine-inizio, str.size());
 
 }
@@ -715,17 +713,36 @@ void TextEdit::highlightUserText(const QString &str){
     }else if(str.contains("Modifica testo")){
         int pos = str.split(" - ")[1].toInt();
         int add = str.split(" - ")[2].toInt();
-        const QSignalBlocker blocker(textEdit);
-        QTextCursor cursor = textEdit->textCursor();
-        cursor.setPosition(pos, QTextCursor::MoveAnchor); //per selezionare un carattere
-        cursor.setPosition(pos + add, QTextCursor::KeepAnchor);
-        QTextCharFormat plainFormat(cursor.charFormat());
-        if(flag_all_highlighted || flag_one_highlighted == siteId){
-            plainFormat.setBackground(colorableUsers[siteId]->getColor());
-        }else{
-            plainFormat.setBackground(Qt::white);
+
+        for(int i=pos, j=0; i<pos+add; i++){
+            for(j=1; j<pos+add-i; j++){
+                if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
+                    break;
+                }else if(_symbols[i+j]->isBold() != _symbols[i]->isBold()){
+                    break;
+                }else if(_symbols[i+j]->isUnderlined() != _symbols[i]->isUnderlined()){
+                    break;
+                }else if(_symbols[i+j]->isItalic() != _symbols[i]->isItalic()){
+                    break;
+                }else if(_symbols[i+j]->getTextSize() != _symbols[i]->getTextSize()){
+                    break;
+                }else if(_symbols[i+j]->getColor() != _symbols[i]->getColor()){
+                    break;
+                }
+            }
+            const QSignalBlocker blocker(textEdit);
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+            cursor.setPosition(i + j, QTextCursor::KeepAnchor);
+            QTextCharFormat plainFormat(cursor.charFormat());
+            if(flag_all_highlighted || flag_one_highlighted == siteId){
+                plainFormat.setBackground(colorableUsers[siteId]->getColor());
+            }else{
+                plainFormat.setBackground(Qt::white);
+            }
+            cursor.setCharFormat(plainFormat);
+            i = i+j-1;
         }
-        cursor.setCharFormat(plainFormat);
     }else{
         flag_all_highlighted = false;
         int siteIdTmp = str.split(" - ")[0].toInt();
@@ -1351,14 +1368,10 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 /*-----FATTE DA NOI-----*/
 void TextEdit::onTextChanged(int pos, int del, int add){
     qDebug() << "Quando entra qui";
-    if(!flag_copy){
-        return;
-    }
     QString added = textEdit->toPlainText().mid(pos, add);
 
     QTextCursor cursor(textEdit->textCursor());
     QVector<QFont> fonts;
-    highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
 
     if(cursor.position() == pos){
         for(int i=0; i<del; i++){
@@ -1414,6 +1427,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         message_ready(messagesAdd, this->fileIndex);
     }
     writingFlag=false;
+    highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
 }
 
 void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){

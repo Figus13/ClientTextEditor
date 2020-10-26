@@ -154,7 +154,6 @@ private:
     QMap<int, std::shared_ptr<User>> colorableUsers;
     bool writingFlag; //Questo flag permette di non mandare la modifica del puntatore aggiornato nel caso si
                               //stia scrivendo, verrà dedotto dal fatto che si sta scrivendo in una determinata posizione.
-    bool flag_copy = false;
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);
