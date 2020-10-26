@@ -1268,7 +1268,6 @@ void TextEdit::onTextChanged(int pos, int del, int add){
             cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
         }
     }
-    //qDebug() << "pos " << pos << "; del " << del << "; add " << add << "; added" << added;
     //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
     QVector<Message> messagesDel;
     for(int i=0; i<del; i++){
@@ -1307,18 +1306,16 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 }
 
 void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
-    /*
-    if(m.getAction()=='i'){
-        this->remoteInsert(m.getSymbol());
-    }else{
-        if(m.getAction()=='d'){
-            if(siteIdSender == -1){
-                qDebug() << "Errore, non può esserci un site id -1";
-            }
-            this->remoteDelete(m.getSymbol(), siteIdSender);
-        }
+    if( messages[0].getAction() == 'i'){
+            this->remoteInsert(messages);
+    }else if(messages[0].getAction()=='d'){
+       this->remoteDelete(messages, siteIdSender);
     }
-  */
+}
+
+
+/*void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
+
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
                this, &TextEdit::cursorPositionChanged);
 
@@ -1345,7 +1342,7 @@ void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender)
         }
 
     }
-}
+}*/
 
 void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
@@ -1363,7 +1360,6 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
     QTextCharFormat plainFormat(cursor.charFormat());
     for(int i=0; i< s.size(); i++){
         std::shared_ptr<Symbol> sym = s[i];
-        qDebug() << s[i]->getValue();
         if(sym->getSiteId() == this->siteId){
             if(this->counter < sym->getCounter()){
                 this->counter = sym->getCounter();
@@ -1525,7 +1521,7 @@ Qt::Alignment TextEdit::intToAlign(int val){
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;
     int i;
-    qDebug() << index;
+   // qDebug() << index;
     if ((index > (this->_symbols.size())) || index < 0) {
         return pos;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
     }
@@ -1634,7 +1630,96 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
     return pos;
 }
 
-void TextEdit::remoteInsert(std::shared_ptr<Symbol> sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+               this, &TextEdit::onTextChanged);
+    QString buffer;
+    int startBufferIndex, index, nextIndex, flag=0;
+    QTextCharFormat headingFormat;
+    QTextCursor cursor = textEdit->textCursor();
+    for(int i=0; i<messages.size(); i++){
+        std::shared_ptr<Symbol> sym = messages[i].getSymbol();
+        index = findIndexFromNewPosition(sym->getPosition());
+        this->_symbols.insert(this->_symbols.begin() + index, sym);
+        if(flag==0){
+                flag=1;
+                startBufferIndex = index;
+                cursor.setPosition(startBufferIndex);
+                QTextCharFormat plainFormat(cursor.charFormat());
+                headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
+                headingFormat.setFontItalic(sym->isItalic());
+                headingFormat.setFontUnderline(sym->isUnderlined());
+                headingFormat.setForeground(sym->getColor());
+                headingFormat.setFontPointSize(sym->getTextSize());
+                headingFormat.setFontFamily(sym->getFont());
+                /*In un inserimento non si possono avere messaggi da diversi client*/
+               if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
+                    headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
+               }else{
+                    headingFormat.setBackground(Qt::white);
+               }
+               Qt::Alignment intAlign = intToAlign(sym->getAlignment());
+               textEdit->setAlignment(intAlign);
+            }
+        if(i==(messages.size()-1)){ //ultimo carattere devo scrivere tutto quello che ho nel buffer
+            buffer.append(sym->getValue());
+            cursor.insertText(buffer, headingFormat);
+        }else{
+            nextIndex=findIndexFromNewPosition(messages[i+1].getSymbol()->getPosition());
+            if(nextIndex-1 == index && styleIsEqual(sym, messages[i+1].getSymbol())){//il prossimo simbolo ha lo stesso font, appendo al buffer.
+                buffer.append(sym->getValue());
+            }else{
+                flag=0;
+                buffer.append(sym->getValue());
+                cursor.insertText(buffer, headingFormat);
+                buffer.clear();
+            }
+        }
+    }
+    remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
+}
+
+void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+               this, &TextEdit::onTextChanged);
+    int index, nextIndex, counter=1, startRemove;
+    QTextCursor cursor = textEdit->textCursor();
+    for(int i=0; i<messages.size(); i++){
+        std::shared_ptr<Symbol> sym = messages[i].getSymbol();
+        if(i==0){
+            index = findIndexFromExistingPosition(sym->getPosition());
+            startRemove=index;
+            cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
+        }else{
+            index = nextIndex;
+        }
+        if(i!=(messages.size()-1)){
+            nextIndex=findIndexFromExistingPosition(messages[i+1].getSymbol()->getPosition());
+        }
+
+        if(i!=(messages.size()-1) && index==nextIndex-1){//sono di fila, posso cancellarli con una operazione
+            counter++;
+        }else{
+
+            cursor.setPosition(index+1, QTextCursor::KeepAnchor);
+            //cursor.setPosition(index);
+            cursor.selectedText();
+            cursor.removeSelectedText();
+            //cursor.deleteChar();            //ATTENZIONE BISOGNA CANCELLARNE PIù DI UNO
+            this->_symbols.remove(startRemove, counter);
+            counter=1;
+            startRemove=nextIndex;
+            cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
+        }
+    }
+    remoteCursorChangePosition(index, siteIdSender);
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
+}
+
+/*void TextEdit::remoteInsert(std::shared_ptr<Symbol> sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
     int index = findIndexFromNewPosition(sym->getPosition());
@@ -1680,7 +1765,7 @@ void TextEdit::remoteDelete(std::shared_ptr<Symbol> sym, int siteIdSender){
     }
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
-}
+}*/
 
 /*void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,

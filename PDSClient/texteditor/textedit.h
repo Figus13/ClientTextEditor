@@ -152,8 +152,8 @@ private:
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);
-    void remoteInsert(std::shared_ptr<Symbol> sym);
-    void remoteDelete(std::shared_ptr<Symbol> sym, int siteIdSender);
+    void remoteInsert(QVector<Message> messages);
+    void remoteDelete(QVector<Message> messages, int siteIdSender);
     int findIndexFromNewPosition(QVector<int> position);
     int findIndexFromExistingPosition(QVector<int> position);
     int findIndexFromPosition(QVector<int> position);
