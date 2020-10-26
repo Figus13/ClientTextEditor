@@ -96,11 +96,12 @@ const QString rsrcPath = ":/images/win";
 #endif
 
 TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString filename, int fileIndex)
-    : QMainWindow(parent), client(client), fileName(filename), fileIndex(fileIndex)
+    : QMainWindow(parent), client(client), fileName(filename), fileIndex(fileIndex) , m_Paste1(*(new QShortcut(QKeySequence(QKeySequence::Paste), this, 0, 0, Qt::WidgetShortcut)))
 {
     counter=0;
     siteId=client.get()->getSiteId();
     writingFlag = false;
+
 #ifdef Q_OS_OSX
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
@@ -128,7 +129,7 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
             this, &TextEdit::onRemoteCursorChanged);
     connect(client.get(), &Client::file_erased, this, &TextEdit::onFileErased);
     connect(client.get(), &Client::refresh_text_edit, this, &TextEdit::onRefreshTextEdit);
-
+    connect(&m_Paste1, SIGNAL(activated()), this, SLOT(paste()));
     colorId=0;
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -342,11 +343,11 @@ void TextEdit::setupFileActions()
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
-/*      capire crush: INIZIO DA COMMENTARE */
- /* a = menu->addAction( tr("&Stampa in PDF"), this, &TextEdit::onPrintOnPDF);
+    /*      capire crush: INIZIO DA COMMENTARE */
+    /* a = menu->addAction( tr("&Stampa in PDF"), this, &TextEdit::onPrintOnPDF);
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();*/
-/*      capire crush:fine commento*/
+    /*      capire crush:fine commento*/
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
     const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
     a = menu->addAction(printIcon, tr("&Print..."), this, &TextEdit::filePrint);
@@ -401,14 +402,44 @@ void TextEdit::setupEditActions()
     tb->addAction(actionCopy);
 
     const QIcon pasteIcon = QIcon::fromTheme("edit-paste", QIcon(rsrcPath + "/editpaste.png"));
-    actionPaste = menu->addAction(pasteIcon, tr("&Paste"), textEdit, &QTextEdit::paste);
-    actionPaste->setPriority(QAction::LowPriority);
-    actionPaste->setShortcut(QKeySequence::Paste);
-    tb->addAction(actionPaste);
+    newActionPaste = menu->addAction(pasteIcon, tr("&Paste"), this, &TextEdit::paste);
+    newActionPaste->setPriority(QAction::LowPriority);
+    newActionPaste->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_T));
+    tb->addAction(newActionPaste);
     if (const QMimeData *md = QApplication::clipboard()->mimeData())
-        actionPaste->setEnabled(md->hasText());
+        newActionPaste->setEnabled(md->hasText());
 #endif
 }
+
+void TextEdit::paste(){
+
+    flag_copy = true;
+   // disconnect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
+    qDebug() << "copia copia copia";
+    const QMimeData *md = QApplication::clipboard()->mimeData();
+
+    QTextCursor cursor = textEdit->textCursor();
+    int position = cursor.position();
+    int inizio = cursor.selectionStart();
+    int fine = cursor.selectionEnd();
+
+    QString str = md->text();
+
+    for( int i=0; i< str.size(); i++){
+
+         cursor.insertText(QString(str[i]), charsFormat[i]);
+         cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,1);
+    }
+
+ //   connect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
+    connect(textEdit, &QTextEdit::cursorPositionChanged, this, &TextEdit::cursorPositionChanged);
+  //  emit textEdit->document()->contentsChange(position,fine-inizio, str.size());
+    flag_copy = false;
+    emit textEdit->document()->contentsChange(position,fine-inizio, str.size());
+
+}
+
 
 void TextEdit::onPrintOnPDF(){
     QFileDialog fileDialog(this, tr("Export PDF"));
@@ -537,7 +568,7 @@ void TextEdit::setupTextActions()
     actionToggleCheckState->setCheckable(true);
     actionToggleCheckState->setPriority(QAction::LowPriority);
     tb->addAction(actionToggleCheckState);*/
-   // capire crush: FINE DA COMMENTARE
+    // capire crush: FINE DA COMMENTARE
 
 
     tb = addToolBar(tr("Format Actions"));
@@ -1191,8 +1222,25 @@ void TextEdit::cursorPositionChanged()
 void TextEdit::clipboardDataChanged()
 {
 #ifndef QT_NO_CLIPBOARD
-    if (const QMimeData *md = QApplication::clipboard()->mimeData())
-        actionPaste->setEnabled(md->hasText());
+    if (const QMimeData *md = QApplication::clipboard()->mimeData()){
+        newActionPaste->setEnabled(md->hasText());
+        QTextCursor cursor = textEdit->textCursor();
+        if(textEdit->textCursor().hasSelection()){
+            charsFormat.clear();
+            qDebug() << cursor.selectionStart() << " " << cursor.selectionEnd();
+            int inizio = cursor.selectionStart();
+            int fine = cursor.selectionEnd();
+            cursor.setPosition(cursor.selectionStart());
+            for(int i = inizio ; i < fine; i++){
+
+                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,1);
+                QTextCharFormat textFormat(cursor.charFormat());
+                charsFormat.push_back(textFormat);
+            }
+        }
+    }
+
+
 #endif
 }
 
@@ -1248,7 +1296,10 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 
 /*-----FATTE DA NOI-----*/
 void TextEdit::onTextChanged(int pos, int del, int add){
-
+    qDebug() << "Quando entra qui";
+    if(!flag_copy){
+        return;
+    }
     QString added = textEdit->toPlainText().mid(pos, add);
 
     QTextCursor cursor(textEdit->textCursor());
@@ -1288,6 +1339,11 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         writingFlag=true;
         Message mess{};
         if(added.size() > i){
+
+           /* if( del != add && del > 0 && add > 1){
+                localInsert(pos + i, added[i], i, true , mess);
+            }*/
+
             if(del > 0){ //controlla se con selezione e incolla funziona
                 if(fonts.size() != 0 ){
                     localInsert(pos+i, added[i], &(fonts[i]), mess);
@@ -1295,6 +1351,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
                     localInsert(pos+i, added[i], nullptr, mess);
                 }
             }else{
+
                 localInsert(pos+i, added[i], nullptr, mess);
             }
             messagesAdd.push_back(mess);
@@ -1326,8 +1383,8 @@ void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender)
 
         for( int i = 0 ; i < messages.size(); i++){
             if(i == messages.size()-1){
-             connect(textEdit, &QTextEdit::cursorPositionChanged,
-                     this, &TextEdit::cursorPositionChanged);
+                connect(textEdit, &QTextEdit::cursorPositionChanged,
+                        this, &TextEdit::cursorPositionChanged);
             }
             this->remoteInsert(messages[i].getSymbol());
 
@@ -1338,8 +1395,8 @@ void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender)
         }
         for( int i = 0 ; i < messages.size(); i++){
             if(i == messages.size()-1){
-             connect(textEdit, &QTextEdit::cursorPositionChanged,
-                     this, &TextEdit::cursorPositionChanged);
+                connect(textEdit, &QTextEdit::cursorPositionChanged,
+                        this, &TextEdit::cursorPositionChanged);
             }
             this->remoteDelete(messages[i].getSymbol(), siteIdSender);
         }
@@ -1814,7 +1871,7 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     QRect editor = textEdit->rect();
 
     int editor_height = editor.height();//altezza editor;
-   // int editor_width = editor.width();//larghezza editor;
+    // int editor_width = editor.width();//larghezza editor;
     QRect rt = textEdit->cursorRect(cursor);
     int rt_height = rt.height();
     std::shared_ptr<UserCursor> uc = cursorsMap[siteId];

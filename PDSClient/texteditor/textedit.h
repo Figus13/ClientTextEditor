@@ -64,6 +64,9 @@
 #include "message.h"
 #include "usercursor.h"
 #include <QPrinter>
+#include <QShortcut>
+#include <QTextEdit>
+
 QT_BEGIN_NAMESPACE
 class QAction;
 class QComboBox;
@@ -81,6 +84,8 @@ public:
     TextEdit(QWidget *parent = 0, std::shared_ptr<Client> client=nullptr, QString filename="", int fileIndex = -1);
 
     bool load(const QString &f);
+
+
 
 public slots:
     void fileNew();
@@ -118,7 +123,6 @@ private slots:
 
     void currentCharFormatChanged(const QTextCharFormat &format);
     void cursorPositionChanged();
-
     void clipboardDataChanged();
     void about();
     void printPreview(QPrinter *);
@@ -133,9 +137,11 @@ private slots:
     void onSignalConnection(int siteId, QString nickname, int ins);
     void onPrintOnPDF();
     void onRefreshTextEdit(QString oldNick, QString newNick);
+    void paste();
 
 private:
     /*----AGGIUNTE DA NOI -----*/
+    QVector<QTextCharFormat> charsFormat;
     std::shared_ptr<Client> client;
     QMap<int, std::shared_ptr<UserCursor>> cursorsMap;
     int colorId;
@@ -148,7 +154,7 @@ private:
     QMap<int, std::shared_ptr<User>> colorableUsers;
     bool writingFlag; //Questo flag permette di non mandare la modifica del puntatore aggiornato nel caso si
                               //stia scrivendo, verrà dedotto dal fatto che si sta scrivendo in una determinata posizione.
-
+    bool flag_copy = false;
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     std::string localInsert(int index, QChar value, QFont* font, Message& m);
@@ -199,6 +205,7 @@ private:
     QAction *actionCut;
     QAction *actionCopy;
     QAction *actionPaste;
+    QAction *newActionPaste;
 #endif
 
     QComboBox *comboStyle;
@@ -206,12 +213,14 @@ private:
     QComboBox *comboSize;
     /*AGGIUNTO DA NOI*/
     QComboBox *comboUser;
+    QShortcut &m_Paste1;
     /*FINE AGGIUNTA DA NOI*/
     QToolBar *tb;
     QString fileName;
     int fileIndex;
     QTextEdit *textEdit;
     QStatusBar *bar;
+
 
     //FLAGS
     bool FLAG_MODIFY_SYMBOL = false;
