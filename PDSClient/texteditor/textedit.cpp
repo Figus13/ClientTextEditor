@@ -624,6 +624,18 @@ void TextEdit::highlightUserText(const QString &str){
             for(j=1; j<textEdit->toPlainText().size()-i; j++){
                 if(_symbols[i+j]->getSiteId() != siteIdTmp){
                     break;
+                }else if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
+                    break;
+                }else if(_symbols[i+j]->isBold() != _symbols[i]->isBold()){
+                    break;
+                }else if(_symbols[i+j]->isUnderlined() != _symbols[i]->isUnderlined()){
+                    break;
+                }else if(_symbols[i+j]->isItalic() != _symbols[i]->isItalic()){
+                    break;
+                }else if(_symbols[i+j]->getTextSize() != _symbols[i]->getTextSize()){
+                    break;
+                }else if(_symbols[i+j]->getColor() != _symbols[i]->getColor()){
+                    break;
                 }
             }
             qDebug() << i << " " << j << " " << siteIdTmp;
@@ -636,19 +648,38 @@ void TextEdit::highlightUserText(const QString &str){
                 plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
                 cursor.setCharFormat(plainFormat);
             }
-            QTextCharFormat plainFormat(cursor.charFormat());
             i = i+j-1;
         }
     }else if(str == "Non evidenziare"){
-        flag_all_highlighted = false;
-        flag_one_highlighted = -1;
-        const QSignalBlocker blocker(textEdit);
-        QTextCursor cursor = textEdit->textCursor();
-        cursor.setPosition(0, QTextCursor::MoveAnchor); //per selezionare un carattere
-        cursor.setPosition(textEdit->toPlainText().size(), QTextCursor::KeepAnchor);
-        QTextCharFormat plainFormat(cursor.charFormat());
-        plainFormat.setBackground(Qt::white); //bianco
-        cursor.setCharFormat(plainFormat);
+        for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
+            int siteIdTmp = _symbols[i]->getSiteId();
+            for(j=1; j<textEdit->toPlainText().size()-i; j++){
+                if(_symbols[i+j]->getSiteId() != siteIdTmp){
+                    break;
+                }else if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
+                    break;
+                }else if(_symbols[i+j]->isBold() != _symbols[i]->isBold()){
+                    break;
+                }else if(_symbols[i+j]->isUnderlined() != _symbols[i]->isUnderlined()){
+                    break;
+                }else if(_symbols[i+j]->isItalic() != _symbols[i]->isItalic()){
+                    break;
+                }else if(_symbols[i+j]->getTextSize() != _symbols[i]->getTextSize()){
+                    break;
+                }else if(_symbols[i+j]->getColor() != _symbols[i]->getColor()){
+                    break;
+                }
+            }
+            flag_all_highlighted = false;
+            flag_one_highlighted = -1;
+            const QSignalBlocker blocker(textEdit);
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+            cursor.setPosition(i+j, QTextCursor::KeepAnchor);
+            QTextCharFormat plainFormat(cursor.charFormat());
+            plainFormat.setBackground(Qt::white); //bianco
+            cursor.setCharFormat(plainFormat);
+        }
 
     }else if(str.contains("Modifica testo")){
         int pos = str.split(" - ")[1].toInt();
@@ -673,6 +704,18 @@ void TextEdit::highlightUserText(const QString &str){
                 for(j=1; j<textEdit->toPlainText().size()-i; j++){
                     if(_symbols[i+j]->getSiteId() != siteIdTmp){
                         break;
+                    }else if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
+                        break;
+                    }else if(_symbols[i+j]->isBold() != _symbols[i]->isBold()){
+                        break;
+                    }else if(_symbols[i+j]->isUnderlined() != _symbols[i]->isUnderlined()){
+                        break;
+                    }else if(_symbols[i+j]->isItalic() != _symbols[i]->isItalic()){
+                        break;
+                    }else if(_symbols[i+j]->getTextSize() != _symbols[i]->getTextSize()){
+                        break;
+                    }else if(_symbols[i+j]->getColor() != _symbols[i]->getColor()){
+                        break;
                     }
                 }
                 qDebug() << i << " " << j << " " << siteIdTmp;
@@ -685,11 +728,22 @@ void TextEdit::highlightUserText(const QString &str){
                     plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
                     cursor.setCharFormat(plainFormat);
                 }
-                QTextCharFormat plainFormat(cursor.charFormat());
                 i = i+j-1;
             }else{
                 for(j=1; j<textEdit->toPlainText().size()-i; j++){
-                    if(_symbols[i+j]->getSiteId() == siteIdTmp){
+                    if(_symbols[i+j]->getSiteId() != siteIdTmp){
+                        break;
+                    }else if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
+                        break;
+                    }else if(_symbols[i+j]->isBold() != _symbols[i]->isBold()){
+                        break;
+                    }else if(_symbols[i+j]->isUnderlined() != _symbols[i]->isUnderlined()){
+                        break;
+                    }else if(_symbols[i+j]->isItalic() != _symbols[i]->isItalic()){
+                        break;
+                    }else if(_symbols[i+j]->getTextSize() != _symbols[i]->getTextSize()){
+                        break;
+                    }else if(_symbols[i+j]->getColor() != _symbols[i]->getColor()){
                         break;
                     }
                 }
