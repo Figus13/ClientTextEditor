@@ -342,11 +342,11 @@ void TextEdit::setupFileActions()
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
-/*      capire crush: INIZIO DA COMMENTARE */
- /* a = menu->addAction( tr("&Stampa in PDF"), this, &TextEdit::onPrintOnPDF);
+    /*      capire crush: INIZIO DA COMMENTARE */
+    /* a = menu->addAction( tr("&Stampa in PDF"), this, &TextEdit::onPrintOnPDF);
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();*/
-/*      capire crush:fine commento*/
+    /*      capire crush:fine commento*/
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
     const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
     a = menu->addAction(printIcon, tr("&Print..."), this, &TextEdit::filePrint);
@@ -537,7 +537,7 @@ void TextEdit::setupTextActions()
     actionToggleCheckState->setCheckable(true);
     actionToggleCheckState->setPriority(QAction::LowPriority);
     tb->addAction(actionToggleCheckState);*/
-   // capire crush: FINE DA COMMENTARE
+    // capire crush: FINE DA COMMENTARE
 
 
     tb = addToolBar(tr("Format Actions"));
@@ -619,10 +619,51 @@ void TextEdit::highlightUserText(const QString &str){
     if(str == "Evidenzia tutti"){
         flag_all_highlighted = true;
         flag_one_highlighted = -1;
+        int i = 0;
+        int j = 0;
+        int siteIdTmp = _symbols[0]->getSiteId();
+        while(i < textEdit->toPlainText().size()){
+            j++;
+            if(i+j == textEdit->toPlainText().size() ){
+                QTextCursor cursor = textEdit->textCursor();
+                cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+                cursor.setPosition(i + j, QTextCursor::KeepAnchor);
+                if (colorableUsers.contains(siteIdTmp)) {
+                    QTextCharFormat fmt;
+                    fmt.setBackground(colorableUsers[siteIdTmp]->getColor());
+                    cursor.mergeCharFormat(fmt);
+
+                }
+
+                break;
+
+            }
+
+            if(_symbols[i+j]->getSiteId() != siteIdTmp){
+
+                QTextCursor cursor = textEdit->textCursor();
+                cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
+                cursor.setPosition(i + j, QTextCursor::KeepAnchor);
+                if (colorableUsers.contains(siteIdTmp)) {
+                    QTextCharFormat fmt;
+                    fmt.setBackground(colorableUsers[siteIdTmp]->getColor());
+                    cursor.mergeCharFormat(fmt);
+
+                }
+                i = i+j;
+                siteIdTmp = _symbols[i]->getSiteId();
+                j=0;
+
+            }
+            qDebug() << i << " " << j;
+        }
+        /*
         for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
             int siteIdTmp = _symbols[i]->getSiteId();
             for(j=1; j<textEdit->toPlainText().size()-i; j++){
-                if(_symbols[i+j]->getSiteId() != siteIdTmp){
+                if(_symbols[i+1]->getSiteId() != siteIdTmp){
+                    j++;
+
                     break;
                 }else if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
                     break;
@@ -644,13 +685,25 @@ void TextEdit::highlightUserText(const QString &str){
             cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
             cursor.setPosition(i + j, QTextCursor::KeepAnchor);
             if (colorableUsers.contains(siteIdTmp)) {
+                QTextCharFormat fmt;
+                fmt.setBackground(colorableUsers[siteIdTmp]->getColor());
                 QTextCharFormat plainFormat(cursor.charFormat());
-                plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
-                cursor.setCharFormat(plainFormat);
+                cursor.mergeCharFormat(fmt);
+
             }
             i = i+j-1;
-        }
+            */
+
     }else if(str == "Non evidenziare"){
+
+        QTextCharFormat fmt;
+        fmt.setBackground(Qt::white);
+        QTextCursor cursor = textEdit->textCursor();
+        cursor.select(QTextCursor::Document);
+        cursor.mergeCharFormat(fmt);
+
+        /*
+
         for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
             int siteIdTmp = _symbols[i]->getSiteId();
             for(j=1; j<textEdit->toPlainText().size()-i; j++){
@@ -678,28 +731,79 @@ void TextEdit::highlightUserText(const QString &str){
             cursor.setPosition(i+j, QTextCursor::KeepAnchor);
             QTextCharFormat plainFormat(cursor.charFormat());
             plainFormat.setBackground(Qt::white); //bianco
-            cursor.setCharFormat(plainFormat);
-        }
+            cursor.setCharFormat(plainFormat);*/
+
+
 
     }else if(str.contains("Modifica testo")){
         int pos = str.split(" - ")[1].toInt();
         int add = str.split(" - ")[2].toInt();
-        const QSignalBlocker blocker(textEdit);
+        //const QSignalBlocker blocker(textEdit);
         QTextCursor cursor = textEdit->textCursor();
         cursor.setPosition(pos, QTextCursor::MoveAnchor); //per selezionare un carattere
         cursor.setPosition(pos + add, QTextCursor::KeepAnchor);
-        QTextCharFormat plainFormat(cursor.charFormat());
+        //QTextCharFormat plainFormat(cursor.charFormat());
+        QTextCharFormat fmt;
         if(flag_all_highlighted || flag_one_highlighted == siteId){
-            plainFormat.setBackground(colorableUsers[siteId]->getColor());
+
+            fmt.setBackground(colorableUsers[siteId]->getColor());
+            cursor.setPosition(pos,QTextCursor::MoveAnchor);
+            cursor.setPosition(pos+add,QTextCursor::KeepAnchor);
+            cursor.mergeCharFormat(fmt);
         }else{
-            plainFormat.setBackground(Qt::white);
+            fmt.setBackground(Qt::white);
+            cursor.mergeCharFormat(fmt);
         }
-        cursor.setCharFormat(plainFormat);
+        // cursor.setCharFormat(plainFormat);
     }else{
         flag_all_highlighted = false;
-        int siteIdTmp = str.split(" - ")[0].toInt();
-        flag_one_highlighted = siteIdTmp;
-        for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
+        int highlightedUserSiteId = str.split(" - ")[0].toInt();
+        flag_one_highlighted = highlightedUserSiteId;
+
+        QTextCharFormat fmt;
+        fmt.setBackground(Qt::white);
+        QTextCursor cursor = textEdit->textCursor();
+        cursor.select(QTextCursor::Document);
+        cursor.mergeCharFormat(fmt);
+
+
+        int i = 0;
+        int j = 0;
+
+
+        while(i < textEdit->toPlainText().size() ){
+
+
+            if( i != textEdit->toPlainText().size()-1 && _symbols[i]->getSiteId() == highlightedUserSiteId ){
+                j++;
+            }else{
+
+                if(j!=0){
+                    QTextCursor cursor = textEdit->textCursor();
+                    cursor.setPosition(i-j, QTextCursor::MoveAnchor); //per selezionare un carattere
+                    if( i == textEdit->toPlainText().size()-1){ i++ ; }
+                    cursor.setPosition(i, QTextCursor::KeepAnchor);
+                    if (colorableUsers.contains(highlightedUserSiteId)) {
+                        QTextCharFormat fmt;
+                        fmt.setBackground(colorableUsers[highlightedUserSiteId]->getColor());
+                        cursor.mergeCharFormat(fmt);
+
+                    }
+                    j=0;
+                }
+
+            }
+
+            i++;
+        }
+
+
+    }
+
+
+
+
+    /*for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
             if(_symbols[i]->getSiteId() == siteIdTmp){
                 for(j=1; j<textEdit->toPlainText().size()-i; j++){
                     if(_symbols[i+j]->getSiteId() != siteIdTmp){
@@ -748,7 +852,7 @@ void TextEdit::highlightUserText(const QString &str){
                     }
                 }
                 qDebug() << i << " " << j << " " << siteIdTmp;
-                const QSignalBlocker blocker(textEdit);
+                //const QSignalBlocker blocker(textEdit);
                 QTextCursor cursor = textEdit->textCursor();
                 cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
                 cursor.setPosition(i + j, QTextCursor::KeepAnchor);
@@ -756,9 +860,10 @@ void TextEdit::highlightUserText(const QString &str){
                 plainFormat.setBackground(Qt::white);
                 cursor.setCharFormat(plainFormat);
                 i = i+j-1;
+
             }
         }
-    }
+}*/
     connect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
 
 
@@ -1361,9 +1466,9 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 
 void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
     if( messages[0].getAction() == 'i'){
-            this->remoteInsert(messages);
+        this->remoteInsert(messages);
     }else if(messages[0].getAction()=='d'){
-       this->remoteDelete(messages, siteIdSender);
+        this->remoteDelete(messages, siteIdSender);
     }
 }
 
@@ -1575,7 +1680,7 @@ Qt::Alignment TextEdit::intToAlign(int val){
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;
     int i;
-   // qDebug() << index;
+    // qDebug() << index;
     if ((index > (this->_symbols.size())) || index < 0) {
         return pos;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
     }
@@ -1696,25 +1801,25 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
         index = findIndexFromNewPosition(sym->getPosition());
         this->_symbols.insert(this->_symbols.begin() + index, sym);
         if(flag==0){
-                flag=1;
-                startBufferIndex = index;
-                cursor.setPosition(startBufferIndex);
-                QTextCharFormat plainFormat(cursor.charFormat());
-                headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
-                headingFormat.setFontItalic(sym->isItalic());
-                headingFormat.setFontUnderline(sym->isUnderlined());
-                headingFormat.setForeground(sym->getColor());
-                headingFormat.setFontPointSize(sym->getTextSize());
-                headingFormat.setFontFamily(sym->getFont());
-                /*In un inserimento non si possono avere messaggi da diversi client*/
-               if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
-                    headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
-               }else{
-                    headingFormat.setBackground(Qt::white);
-               }
-               Qt::Alignment intAlign = intToAlign(sym->getAlignment());
-               textEdit->setAlignment(intAlign);
+            flag=1;
+            startBufferIndex = index;
+            cursor.setPosition(startBufferIndex);
+            QTextCharFormat plainFormat(cursor.charFormat());
+            headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
+            headingFormat.setFontItalic(sym->isItalic());
+            headingFormat.setFontUnderline(sym->isUnderlined());
+            headingFormat.setForeground(sym->getColor());
+            headingFormat.setFontPointSize(sym->getTextSize());
+            headingFormat.setFontFamily(sym->getFont());
+            /*In un inserimento non si possono avere messaggi da diversi client*/
+            if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
+                headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
+            }else{
+                headingFormat.setBackground(Qt::white);
             }
+            Qt::Alignment intAlign = intToAlign(sym->getAlignment());
+            textEdit->setAlignment(intAlign);
+        }
         if(i==(messages.size()-1)){ //ultimo carattere devo scrivere tutto quello che ho nel buffer
             buffer.append(sym->getValue());
             cursor.insertText(buffer, headingFormat);
@@ -2045,7 +2150,7 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     QRect editor = textEdit->rect();
 
     int editor_height = editor.height();//altezza editor;
-   // int editor_width = editor.width();//larghezza editor;
+    // int editor_width = editor.width();//larghezza editor;
     QRect rt = textEdit->cursorRect(cursor);
     int rt_height = rt.height();
     std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
