@@ -1363,6 +1363,7 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
     QTextCharFormat plainFormat(cursor.charFormat());
     for(int i=0; i< s.size(); i++){
         std::shared_ptr<Symbol> sym = s[i];
+        qDebug() << s[i]->getValue();
         if(sym->getSiteId() == this->siteId){
             if(this->counter < sym->getCounter()){
                 this->counter = sym->getCounter();
@@ -1380,17 +1381,20 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
             headingFormat.setFontFamily(sym->getFont());
             Qt::Alignment x = intToAlign(sym->getAlignment());
             textEdit->setAlignment(x);
-            buffer.clear();
-            buffer.append(sym->getValue());
+            /*buffer.clear();
+            buffer.append(sym->getValue());*/
         }
         if(i==(s.size()-1)){ //ultimo carattere devo scrivere tutto quello che ho nel buffer
+            buffer.append(sym->getValue());
             cursor.insertText(buffer, headingFormat);
         }else{
             if(styleIsEqual(sym, s[i+1])){//il prossimo simbolo ha lo stesso font, appendo al buffer.
                 buffer.append(sym->getValue());
             }else{
                 flag=0;
+                buffer.append(sym->getValue());
                 cursor.insertText(buffer, headingFormat);
+                buffer.clear();
             }
         }
     }
