@@ -132,7 +132,7 @@ private slots:
     void onFileClosed();
     void onSignalConnection(int siteId, QString nickname, int ins);
     void onPrintOnPDF();
-
+    void onRefreshTextEdit(QString oldNick, QString newNick);
 
 private:
     /*----AGGIUNTE DA NOI -----*/

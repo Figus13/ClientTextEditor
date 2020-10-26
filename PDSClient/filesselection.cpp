@@ -29,6 +29,7 @@ FilesSelection::FilesSelection(QWidget *parent, std::shared_ptr<Client> client) 
     connect(client.get(), &Client::uri_error, this, &FilesSelection::onUriError);
     connect(client.get(), &Client::file_erased, this, &FilesSelection::onFileErased);
     connect(client.get(), &Client::erase_file_error, this, &FilesSelection::onEraseFileError);
+    connect(client.get(), &Client::nickname_error, this, &FilesSelection::onNicknameError);
 
 }
 
@@ -109,30 +110,48 @@ void FilesSelection::on_newFileFromLink_clicked()
     dialog.setModal(true);
     if(dialog.exec()){
         QString uri = dialog.getUri();
-        client->getFileFromURI(uri);
+        client.get()->getFileFromURI(uri);
     }
 }
 
 void FilesSelection::on_changeProfileButton_clicked() {
     changeProfileDialog dialog;
     dialog.setModal(true);
-    dialog.setNickname(client->getNickname());
-    if(client->getHavePixmap()) {
-        dialog.setPixmap(client->getPixmap());
+    dialog.setNickname(client.get()->getNickname());
+    if(client.get()->getHavePixmap()) {
+        dialog.setPixmap(client.get()->getPixmap());
     }
     if(dialog.exec()){
         QString nickname = dialog.getNickname();
+        bool flag = false;
+        if( nickname.contains("/") || nickname.contains("\\") || nickname.contains(":") ||
+                nickname.contains("*") || nickname.contains("?") || nickname.contains("\"") ||
+                nickname.contains("<") || nickname.contains(">") || nickname.contains("|") || nickname.contains(" "))
+        {
+            QMessageBox::warning(this,"Modifica profilo","Il nickname non può contenere i seguenti caratteri: / \\ : * ? \" < > | 'spazio'");
+            flag = true;
+        }
         if(dialog.getHavePixmap()) {
             QPixmap image = dialog.getImagePixmap();
-            client->profileChanged(nickname, image);
             ui->profileImageLabel->setPixmap(image);
-            ui->nicknameLabel->setText(nickname);
-            ui->nicknameLabel->adjustSize();
+            if(flag) {
+                client.get()->profileChanged(client.get()->getNickname(), image);
+            }
+            else {
+                client.get()->profileChanged(nickname, image);
+                ui->nicknameLabel->setText(nickname);
+                ui->nicknameLabel->adjustSize();
+            }
         }
         else {
-             client->profileChanged(nickname);
-             ui->nicknameLabel->setText(nickname);
-             ui->nicknameLabel->adjustSize();
+            if(flag) {
+                client.get()->profileChanged(client.get()->getNickname());
+            }
+            else{
+                client.get()->profileChanged(nickname);
+                ui->nicknameLabel->setText(nickname);
+                ui->nicknameLabel->adjustSize();
+            }
         }
     }
 }
@@ -209,6 +228,12 @@ void FilesSelection::onUriError(int operation) {
 
 void FilesSelection::onEraseFileError() {
     QMessageBox::information(this,"Elimina documento","Errore: impossibile eliminare il file.");
+}
+
+void FilesSelection::onNicknameError(QString oldNick) {
+    ui->nicknameLabel->setText(oldNick);
+    ui->nicknameLabel->adjustSize();
+    QMessageBox::information(this,"Modifica profilo","Nickname già esistente");
 }
 
 void FilesSelection::showWindow(){

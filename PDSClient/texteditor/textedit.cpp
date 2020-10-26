@@ -127,6 +127,8 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
     connect(client.get(), &Client::remote_cursor_changed,
             this, &TextEdit::onRemoteCursorChanged);
     connect(client.get(), &Client::file_erased, this, &TextEdit::onFileErased);
+    connect(client.get(), &Client::refresh_text_edit, this, &TextEdit::onRefreshTextEdit);
+
     colorId=0;
     /*------------Fine aggiunta--------*/
     setCentralWidget(textEdit);
@@ -275,6 +277,31 @@ void TextEdit::onFileErased(int index) {
         emit closeWindow();
         disconnect(this, &TextEdit::message_ready, client.get(), &Client::onMessageReady);
         hide();
+    }
+}
+
+void TextEdit::onRefreshTextEdit(QString oldNick, QString newNick) {
+    for(std::shared_ptr<User> user : colorableUsers) {
+        if(user->getNickname() == oldNick) {
+            user->setNickname(newNick);
+        }
+    }
+    comboUser->clear();
+    comboUser->addItem("Non evidenziare", -2);
+    comboUser->addItem("Evidenzia tutti", -1);
+    for(int siteId: colorableUsers.keys()){
+        QPixmap px(15,15);
+        px.fill(colorableUsers[siteId]->getColor());
+        QIcon icon(px);
+        if( this->siteId == siteId){
+            comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - (Io)", siteId);
+        }else{
+            if(this->cursorsMap.contains(siteId)){
+                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - connesso", siteId);
+            }else{
+                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - disconnesso", siteId);
+            }
+        }
     }
 }
 
@@ -1390,6 +1417,7 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
     QTextCharFormat plainFormat(cursor.charFormat());
     for(int i=0; i< s.size(); i++){
         std::shared_ptr<Symbol> sym = s[i];
+        qDebug() << s[i]->getValue();
         if(sym->getSiteId() == this->siteId){
             if(this->counter < sym->getCounter()){
                 this->counter = sym->getCounter();
@@ -1407,17 +1435,20 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
             headingFormat.setFontFamily(sym->getFont());
             Qt::Alignment x = intToAlign(sym->getAlignment());
             textEdit->setAlignment(x);
-            buffer.clear();
-            buffer.append(sym->getValue());
+            /*buffer.clear();
+            buffer.append(sym->getValue());*/
         }
         if(i==(s.size()-1)){ //ultimo carattere devo scrivere tutto quello che ho nel buffer
+            buffer.append(sym->getValue());
             cursor.insertText(buffer, headingFormat);
         }else{
             if(styleIsEqual(sym, s[i+1])){//il prossimo simbolo ha lo stesso font, appendo al buffer.
                 buffer.append(sym->getValue());
             }else{
                 flag=0;
+                buffer.append(sym->getValue());
                 cursor.insertText(buffer, headingFormat);
+                buffer.clear();
             }
         }
     }

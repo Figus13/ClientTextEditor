@@ -30,7 +30,7 @@ public:
     QVector<std::shared_ptr<FileInfo>> getMyFileList();
     void setFileIndex(int index);
     void profileChanged(QString nickname, QPixmap image);
-    void profileChanged(QString nickname);
+    void profileChanged(QString nickname);  
 
 signals:
     void login_successful();
@@ -49,6 +49,8 @@ signals:
     void uri_error(int operation);
     void file_erased(int index);
     void erase_file_error();
+    void nickname_error(QString oldNick);
+    void refresh_text_edit(QString oldNick, QString newNick);
 
 public slots:
     void onMessageReady(QVector<Message> messages, int fileIndex);
