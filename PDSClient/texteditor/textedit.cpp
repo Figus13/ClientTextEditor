@@ -195,30 +195,25 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
     textEdit->setPalette(pal);
 #endif
 }
+
+
+/**
+ * @brief SLOT chiamata ogni volta ci sia uno scroll event, serve per la gestione dei Cursori di altri utenti nel testo
+ *
+ */
+
 void TextEdit::onUpdateCursors(){
-
-
-
     if(cursorsMap.size() > 0){
         for( std::shared_ptr<UserCursor> uc : cursorsMap){
             uc->getPos();
             QTextCursor cursor(textEdit->textCursor());
             cursor.setPosition( uc->getPos());
             QRect rt = textEdit->cursorRect(cursor);
-            QRect editor = textEdit->rect();
-
-            uc->getLabel_cur()->hide();
-            uc->getLabel_cur()->move(rt.x(),rt.y());
-
-            uc->getLabel_cur()->show();
-
-
+            uc->getCursor()->hide();
+            uc->getCursor()->move(rt.x(),rt.y());
+            uc->getCursor()->show();
         }
-
-
     }
-
-
 }
 
 /**
