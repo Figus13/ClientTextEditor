@@ -73,6 +73,7 @@
 #include <QMimeData>
 #include <QLabel>
 #include <QMimeDatabase>
+#include <QScrollBar>
 #include "showuridialog.h"
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
@@ -128,6 +129,9 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
             this, &TextEdit::onRemoteCursorChanged);
     connect(client.get(), &Client::file_erased, this, &TextEdit::onFileErased);
     connect(client.get(), &Client::refresh_text_edit, this, &TextEdit::onRefreshTextEdit);
+
+    connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::onUpdateCursors);
+
 
     colorId=0;
     /*------------Fine aggiunta--------*/
@@ -190,6 +194,26 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
     pal.setColor(QPalette::Text, QColor(Qt::black));
     textEdit->setPalette(pal);
 #endif
+}
+
+
+/**
+ * @brief SLOT chiamata ogni volta ci sia uno scroll event, serve per la gestione dei Cursori di altri utenti nel testo
+ *
+ */
+
+void TextEdit::onUpdateCursors(){
+    if(cursorsMap.size() > 0){
+        for( std::shared_ptr<UserCursor> uc : cursorsMap){
+            uc->getPos();
+            QTextCursor cursor(textEdit->textCursor());
+            cursor.setPosition( uc->getPos());
+            QRect rt = textEdit->cursorRect(cursor);
+            uc->getCursor()->hide();
+            uc->getCursor()->move(rt.x(),rt.y());
+            uc->getCursor()->show();
+        }
+    }
 }
 
 /**
@@ -717,6 +741,9 @@ void TextEdit::highlightUserText(const QString &str){
         QTextCursor cursor = textEdit->textCursor();
         cursor.select(QTextCursor::Document);
         cursor.mergeCharFormat(fmt);
+        flag_all_highlighted = false;
+        flag_one_highlighted = -1;
+
         /*
 
         for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
@@ -2298,6 +2325,10 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     QRect rt = textEdit->cursorRect(cursor);
     int rt_height = rt.height();
     std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
+    uc->setPos(cursorPos);
+    qDebug() << rt << " posizione";
+
+
     //label con il nome utente
     /*int label_width = cursorsMap[siteId]->getLabel()->width();//larghezza label da aggiornare/inserire
     int x = rt.x() + 7;
