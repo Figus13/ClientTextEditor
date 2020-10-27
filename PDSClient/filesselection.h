@@ -45,8 +45,8 @@ private slots:
 
 private:
     Ui::FilesSelection *ui;
-    std::shared_ptr<Client> client;
-    bool uriRequest = false;
+    std::shared_ptr<Client> client;     //client che fa tutte le operazioni di comunicazione, passato dalla classe MainWindow
+    bool uriRequest = false;            //flag usato per identificare se sto facendo richiesta di una uri
 
     void setUriRequest(bool status);
 };

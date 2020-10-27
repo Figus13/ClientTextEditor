@@ -62,20 +62,18 @@ private slots:
     void onReadyRead();
 
 private:
-    QTcpSocket* socket;
-    QString username;
-    QString nickname;
-    QString password;
-    bool haveImage = false;
-    QPixmap image;
-    int siteId;
-    int counter;
-    int fileIndexOpened;
-    int counterFail=0;
-    QVector<std::shared_ptr<FileInfo>> files;
-    QVector<std::shared_ptr<Symbol>> sVector;
-    QMap<int, QString> connectedUsers; //non usata per ora
-    QVector<Message> messagesReady;
+    QTcpSocket* socket;     //socket di connessione
+    QString username;       //username del connesso
+    QString nickname;       //nickname del connesso
+    QString password;       //password del connesso
+    bool haveImage = false; //flag che indica se possiede un'immagine di profilo
+    QPixmap image;          //immagine di profilo
+    int siteId;             //siteId associato all'utente
+    int counter;            //contatore del numero di caratteri inseriti nel file aperto dall'utente
+    int fileIndexOpened;    //indice del file che è stato aperto nella lista dei file posseduti, -1 se nessun file è aperto
+    QVector<std::shared_ptr<FileInfo>> files;   //files dell'utente loggato
+    QVector<std::shared_ptr<Symbol>> sVector;   //vettore di simboli usato al caricamento di un nuovo file
+    QVector<Message> messagesReady;             //vettore di messaggi contenenti simboli da spedire
 
 };
 

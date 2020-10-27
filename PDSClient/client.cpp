@@ -9,7 +9,6 @@ Client::Client(QObject* parent) : QObject(parent), counter(0)
 
     //quando si chiama close => disconnectedFromHost => SIGNAL:disconnected => onDisconnected
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-    //connect(socket, &QAbstractSocket::disconnected, this, &Client::closed);
     //quando si chiama close => disconnectedFromHost => SIGNAL:disconnected => SIGNAL:closed = > chiusura applicazione
     connect(socket, SIGNAL(disconnected()), this, SIGNAL(closed()));
 
@@ -51,13 +50,15 @@ int Client::getSiteId(){
     return this->siteId;
 }
 
+/**
+ * @brief funzione che gestisce tutti i casi di comunicazione in arrivo da parte del server
+ */
 void Client::onReadyRead(){
     while (socket->bytesAvailable() != 0) {
         QVector<int> position;
         int counter, recSiteId, alignment, textSize, insert;  //INSERT: 1 se inserimento, 0 se cancellazione
         QString color, font, text, nickname;
         QChar value;
-        //QVector<Symbol*> sVector;
         bool isBold, isItalic, isUnderlined;
         std::shared_ptr<Symbol> s;
         QMap<int, QString> owners;
@@ -69,6 +70,7 @@ void Client::onReadyRead(){
         QDataStream out(&bufOut, QIODevice::WriteOnly);//stream per la trasmissione
         int byteReceived = 0;
 
+        //fondamentale per aspettare di avere ricevuto tutta un'informazione
         if (socket->bytesAvailable() < (qint64)sizeof(int)) {
             socket->waitForReadyRead();
         }
@@ -82,9 +84,10 @@ void Client::onReadyRead(){
             in_buf.append(socket->read((qint64)dim - (qint64)byteReceived));
             byteReceived = in_buf.size() - sizeof(int);
         }
+
         in >> operation;
         switch(operation){
-        //ritorno login riuscito o fallito
+        //caso di login, scopro se è riuscito o fallito ed emetto le signal corrispondenti
         case 0:
             int status;
             in >> status;
@@ -105,6 +108,7 @@ void Client::onReadyRead(){
                 login_successful();
             }
             break;
+        //caso per la registrazione, scopro se è riuscita o fallita ed emetto le signal corrispondenti
         case 1:
             std::cout<< "registration\n";
             int statusReg;
@@ -116,7 +120,7 @@ void Client::onReadyRead(){
                 registration_successful();
             }
             break;
-
+        //caso per la gestione di inserimento o cancellazione di uno o più simboli
         case 3:
         {
             int siteIdSender=-1;
@@ -152,6 +156,7 @@ void Client::onReadyRead(){
 
             break;
         }
+        //caso per la ricezione di un file già esistente alla sua apertura
         case 4:
             qDebug() <<  "4)Dobbiamo gestire la ricezione di un file già scritto.";
             sVector.clear();
@@ -168,11 +173,13 @@ void Client::onReadyRead(){
             if(fileSize!=0){
                 emit file_ready(sVector);
             }
+            //ottengo i dati sugli utenti attualmente connessi a questo file
             in >> alreadyConnected;
             for(int i = 0; i<alreadyConnected; i++){
                 in >> siteId >> nickname;
                 emit signal_connection(siteId, nickname, 1);
             }
+            //ottengo i dati sugli utenti che possono lavorare a questo file
             in >> otherOwners;
             for(int i=0; i<otherOwners; i++){
                 in >> siteId >> nickname;
@@ -180,6 +187,7 @@ void Client::onReadyRead(){
             }
             emit signal_owners(owners);
             break;
+        //caso per la ricezione dei nomi di file disponibili ad essere editati dall'utente nella filesSelection
         case 6:
             int numFiles;
             in >> status;
@@ -197,6 +205,7 @@ void Client::onReadyRead(){
                 files_list_refreshed(files);
             }
             break;
+        //caso per la gestione del ritorno della richiesta di condivisione con me di un file
         case 7:
             int operation;
             in >> operation;
@@ -217,11 +226,13 @@ void Client::onReadyRead(){
                 uri_error(operation);
             }
             break;
+        //caso per la gestione di una nuova connessione o disconnessione di un altro utente allo stesso file che ho io aperto
         case 8:
             int ins;
             in >> siteId >> nickname >> ins; //ins 0 rimuovi, 1 inserisci
             emit signal_connection(siteId, nickname, ins);
             break;
+        //caso per gestire la notifica di avvenuta cancellazione di un file da parte di un utente
         case 9:
             in >> status;
             if(status == 1) { //cancellazione riuscita (lato server), eliminiamo e chiudiamo (se era aperto) il file
@@ -241,9 +252,9 @@ void Client::onReadyRead(){
                 erase_file_error();
             }
             break;
+        //caso per la gestione di cambio nickname
         case 10:
         {
-            qDebug() << "ciao";
             int op;
             QString oldNick;
             in >> op >> oldNick;
@@ -266,6 +277,7 @@ void Client::onReadyRead(){
             }
             break;
         }
+        //caso per gestire il cambiamento di posizione del puntatore di un altro utente connesso al mio stesso file
         case 11:
         {
             int siteIdSender, cursorIndex;
@@ -280,7 +292,10 @@ void Client::onReadyRead(){
     }
 
 }
-
+/**
+ * @brief notifico il server che ho chiuso l'editor con un certo file aperto
+ * @param fileIndex
+ */
 void Client::closeFile(int fileIndex){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
@@ -298,7 +313,11 @@ void Client::closeFile(int fileIndex){
 Client::~Client(){
 
 }
-
+/**
+ * @brief manda al server la richiesta di login da parte di un certo utente
+ * @param username: username dell'utente
+ * @param password: password dell'utente
+ */
 void Client::login(QString username, QString password){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
@@ -310,6 +329,12 @@ void Client::login(QString username, QString password){
     socket->flush();
 }
 
+/**
+ * @brief manda al server la richiesta di registrazione da parte di un certo utente
+ * @param username: username scelto dall'utente
+ * @param password: password scelta dall'utente
+ * @param nickName: nickname scelto dall'utente
+ */
 void Client::registration(QString username, QString password, QString nickName){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
@@ -321,6 +346,9 @@ void Client::registration(QString username, QString password, QString nickName){
     socket->flush();
 }
 
+/**
+ * @brief richiesta al server dei file editabili dall'utente loggato
+ */
 void Client::getFiles(){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
@@ -333,14 +361,18 @@ void Client::getFiles(){
     return; // i file vengono inviati dalla signal list_files_refreshed
 }
 
+
 QVector<std::shared_ptr<FileInfo>> Client::getMyFileList(){
     return this->files;
 }
 
 
 /*
- * La addFile aggiunge alla lista di files un nuovo file e
- *  richiama la funzione per la ricezione di un file dal server
+ * La addFile
+ */
+/**
+ * @brief aggiunge alla lista di files un nuovo file e richiama la funzione per la ricezione di un file dal server
+ * @param file: file da aggiungere
  */
 void Client::addFile(std::shared_ptr<FileInfo> file){
     files.append(file);
@@ -352,6 +384,10 @@ void Client::setFileIndex(int index){
     fileIndexOpened = index;
 }
 
+/**
+ * @brief comunica al server la decisione di cancellare un file
+ * @param fileIndex: indice del file da eliminare
+ */
 void Client::eraseFile(int fileIndex) {
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
@@ -363,6 +399,11 @@ void Client::eraseFile(int fileIndex) {
     socket->write(bufOut);
 }
 
+/**
+ * @brief notifica al server il cambiamento di informazioni di profilo da parte dell'utente, se cambio anche la foto
+ * @param nickname: nickname dell'utente
+ * @param image: immagine di profilo dell'utente
+ */
 void Client::profileChanged(QString nickname, QPixmap image) {
     if(this->nickname != nickname || this->image != image) {
         this->image = image;
@@ -377,7 +418,10 @@ void Client::profileChanged(QString nickname, QPixmap image) {
         socket->write(bufOut);
     }
 }
-
+/** notifica al server il cambiamento di informazioni di profilo da parte dell'utente, se cambio solo il nickname
+ * @brief Client::profileChanged
+ * @param nickname
+ */
 void Client::profileChanged(QString nickname) {
     if(this->nickname != nickname) {
         QByteArray buf;
@@ -390,8 +434,10 @@ void Client::profileChanged(QString nickname) {
     }
 }
 
-/*
- * modificata, ora riceve come argomento l'indice del file del vettore di files
+
+/**
+ * @brief richiede al server un file
+ * @param fileIndex: indice del file richiesto
  */
 void Client::getFile(int fileIndex){
 
@@ -407,10 +453,14 @@ void Client::getFile(int fileIndex){
 }
 
 void Client::disconnectFromServer(){
-    //socket->close();
     socket->disconnectFromHost();
 }
 
+/**
+ * @brief manda al server la coda di messaggi contenente caratteri da inserire o rimuovere
+ * @param messages: messaggi da inviare
+ * @param fileIndex: indice del file a cui si riferiscono i messaggi
+ */
 void Client::onMessageReady(QVector<Message> messages, int fileIndex){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
@@ -512,6 +562,10 @@ QTcpSocket* Client::getSocket(){
     return socket;
 }
 
+/**
+ * @brief richiedo al server l'URI di un file
+ * @param fileIndex: indice del file di cui chiedo l'URI
+ */
 void Client::requestURI(int fileIndex){
     qDebug() << files[fileIndex].get();
     QByteArray buf;
@@ -525,6 +579,10 @@ void Client::requestURI(int fileIndex){
     socket->flush();
 }
 
+/**
+ * @brief invio al server la posizione aggiornata del mio cursore
+ * @param index: posizione del cursore
+ */
 void Client::onMyCursorPositionChanged(int index){
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
@@ -537,6 +595,10 @@ void Client::onMyCursorPositionChanged(int index){
     socket->flush();
 }
 
+/**
+ * @brief chiedo al server un file tramite la sua Uri
+ * @param uri: uri del file
+ */
 void Client::getFileFromURI(QString uri) {
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);

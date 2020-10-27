@@ -7,7 +7,10 @@ ShowUriDialog::ShowUriDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 }
-
+/**
+ * @brief Setta la stringa desiderata nella lineEdit della dialog
+ * @param uri: stringa identificativa dell'uri
+ */
 void ShowUriDialog::setUri(QString uri) {
     ui->lineEdit->setText(uri);
 }

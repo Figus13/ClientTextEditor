@@ -1,15 +1,15 @@
 #include "usercursor.h"
 
-QVector<QColor> colors_qt = {	QColor(255,0,0,153),QColor(0,255,178,153),QColor(255,0,229,153),QColor(0,255,255,153),
-                                QColor(0,25,255,153),QColor(0,255,26,153),QColor(255,0,77,153),QColor(204,255,0,153),
-                                QColor(0,255,102,153),QColor(0,179,255,153),QColor(128,0,255,153),QColor(255,0,153,153),
-                                QColor(255,153,0,153),QColor(127,255,0,153),QColor(255,77,0,153),QColor(0,102,255,153),
-                                QColor(204,0,255,153),QColor(255,230,0,153)};
-std::vector<QString> colors = { "rgba(255,0,0,0.6)", "rgba(0,255,178,0.6)", "rgba(255,0,229,0.6)", "rgba(0,255,255,0.6)",
-                                "rgba(0,25,255,0.6)", "rgba(0,255,26,0.6)", "rgba(255,0,77,0.6)", "rgba(204,255,0,0.6)",
-                                "rgba(0,255,102,0.6)", "rgba(0,179,255,0.6)", "rgba(128,0,255,0.6)", "rgba(255,0,153,0.6)",
-                                "rgba(255,153,0,0.6)", "rgba(127,255,0,0.6)", "rgba(255,77,0,0.6)", "rgba(0,102,255,0.6)",
-                                "rgba(204,0,255,0.6)", "rgba(255,230,0,0.6)" };
+QVector<QColor> qtColors = {	QColor(55, 55, 174,153),QColor(174, 55, 114,153),QColor(55, 174, 114,153),QColor(138, 55, 174,153),
+                                QColor(55, 150, 174,153),QColor(174, 136, 55,153),QColor(217, 127, 42,153),QColor(91, 52, 16,153),
+                                QColor(16, 54, 91,153),QColor(48, 237, 218,153),QColor(217, 91, 6,153),QColor(6, 27, 217,153),
+                                QColor(165, 89, 89,153),QColor(165, 89, 165,153),QColor(121, 38, 180,153),QColor(21, 249, 245,153),
+                                QColor(67, 196, 7,153),QColor(137, 173, 250,153)};
+QVector<QString> colors = { "rgba(55, 55, 174,0.6)", "rgba(174, 55, 114,0.6)", "rgba(55, 174, 114,0.6)", "rgba(138, 55, 174,0.6)",
+                                "rgba(55, 150, 174,0.6)", "rgba(174, 136, 55,0.6)", "rgba(217, 127, 42,0.6)", "rgba(91, 52, 16,0.6)",
+                                "rgba(16, 54, 91,0.6)", "rgba(48, 237, 218,0.6)", "rgba(217, 91, 6,0.6)", "rgba(6, 27, 217,0.6)",
+                                "rgba(165, 89, 89,0.6)", "rgba(165, 89, 165,0.6)", "rgba(121, 38, 180,0.6)", "rgba(21, 249, 245,0.6)",
+                                "rgba(67, 196, 7,0.6)", "rgba(137, 173, 250,0.6)"};
 
 UserCursor::UserCursor(int siteId, QString nickname, int colorId, QWidget* text): User(siteId, nickname, colorId)
 {
@@ -26,23 +26,23 @@ UserCursor::UserCursor(int siteId, QString nickname, int colorId, QWidget* text)
     label->setWindowFlags(Qt::WindowStaysOnTopHint);
     label->setWindowFlags(Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);*/
 
-    label_cur = new QLabel(text);
-    label_cur->setTextFormat(Qt::RichText);
-    label_cur->setStyleSheet("background-color: " + colors[colorId% N_COLOR]);
-    label_cur->setFixedWidth(5);
+    cursor = new QLabel(text);
+    cursor->setTextFormat(Qt::RichText);
+    cursor->setStyleSheet("background-color: " + colors[colorId% N_COLOR]);
+    cursor->setFixedWidth(5);
 
     pos = 0;
 }
 
-QLabel* UserCursor::getLabel_cur()
+QLabel* UserCursor::getCursor()
 {
-    return label_cur;
+    return cursor;
 }
 
 void UserCursor::setLabelColor(int colorId){
     this->colorId = colorId;
-    label->setStyleSheet("color:" + colors[colorId]);
-    label_cur->setStyleSheet("background-color: " + colors[colorId]);
+    //label->setStyleSheet("color:" + colors[colorId]);
+    cursor->setStyleSheet("background-color: " + colors[colorId]);
 }
 
 /*QLabel* UserCursor::getLabel(){

@@ -12,11 +12,11 @@ public:
     int getPos();
     void setPos(int pos);
     void setLabelColor(int colorId);
-    QLabel* getLabel_cur();
+    QLabel* getCursor();
 private:
     int pos;
-    QLabel* label;
-    QLabel *label_cur;
+    //QLabel* label;
+    QLabel *cursor;
 };
 
 #endif // USERCURSOR_H

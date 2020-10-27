@@ -15,10 +15,10 @@ public:
     QColor getColor();
     int getSiteId();
 protected:
-    QString nickname;
-    int siteId;
-    QColor color;
-    int colorId;
+    QString nickname;   //Nickname dell'utente
+    int siteId;         //SiteId dell'utente
+    QColor color;       //Colore associato all'utente
+    int colorId;        //Identificativo del colore associato all'utente
 };
 
 #endif // USER_H
