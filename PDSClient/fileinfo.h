@@ -20,9 +20,9 @@ public:
     void setNickname(QString nickname);
 
 private:
-    QString filename;
-    QString usernameOwner;
-    QString nicknameOwner;
+    QString filename;       //nome del file
+    QString usernameOwner;  //username del creatore del file
+    QString nicknameOwner;  //nickname del creatore del file
 
 };
 

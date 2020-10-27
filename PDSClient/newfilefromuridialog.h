@@ -23,7 +23,7 @@ private slots:
 
 private:
     Ui::NewFileFromURIdialog *ui;
-    QString hashedfilename;
+    QString hashedfilename;         //hash corrispondente al filename
 };
 
 #endif // NEWFILEFROMURIDIALOG_H

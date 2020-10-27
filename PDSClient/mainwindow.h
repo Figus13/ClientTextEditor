@@ -32,7 +32,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    std::shared_ptr<Client> client;
+    std::shared_ptr<Client> client;     //client che fa tutte le operazioni di comunicazione
 
     void closeEvent(QCloseEvent *event);
 };

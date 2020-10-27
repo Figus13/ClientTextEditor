@@ -30,9 +30,9 @@ private slots:
 
 private:
     Ui::changeProfileDialog *ui;
-    QString nickname;
-    QPixmap imagePixmap;
-    bool havePixmap = false;
+    QString nickname;               //nickname dell'utente
+    QPixmap imagePixmap;            //immagine profilo dell'utente
+    bool havePixmap = false;        //flag che indica se l'utente ha un immagine profilo
 };
 
 #endif // CHANGEPROFILEDIALOG_H

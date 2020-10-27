@@ -18,10 +18,6 @@ FilesSelection::FilesSelection(QWidget *parent, std::shared_ptr<Client> client) 
     client.get()->getFiles(); //i file vengono gestiti nella slot onfilesListRefreshed
     connect(client.get(), &Client::files_list_refreshed,
             this, &FilesSelection::onFilesListRefreshed);
-    /*QVector<QString> files = client->getFiles();
-    for(int i=0; i<files.size(); i++){
-        ui->fileListWidget->addItem(files[i]);
-    }*/
     QObject::connect(this,  SIGNAL(closing()), client.get(), SLOT(disconnectFromServer()));
     ui->fileListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->fileListWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
@@ -37,11 +33,18 @@ FilesSelection::~FilesSelection()
 {
     delete ui;
 }
-
+/**
+ * @brief setta il flag di uri richiesta al corrispettivo valore
+ * @param status: stato da assegnare al flag
+ */
 void FilesSelection::setUriRequest(bool status) {
     this->uriRequest = status;
 }
 
+/**
+ * @brief ricarico nella listWidget tutti i file apribili dall'utente
+ * @param files: file apribili dall'utente
+ */
 void FilesSelection::onFilesListRefreshed(QVector<std::shared_ptr<FileInfo>> files)
 {
     ui->fileListWidget->clear();
@@ -57,6 +60,9 @@ void FilesSelection::onFilesListRefreshed(QVector<std::shared_ptr<FileInfo>> fil
     }
 }
 
+/**
+ * @brief apre la dialog per la creazione di un nuovo file, con i controlli sul nome scelto, poi manda al server la notifica della creazione tramite la classe Client
+ */
 void FilesSelection::on_newDocumentButton_clicked()
 {
     NewFileDialog dialog;
@@ -75,6 +81,7 @@ void FilesSelection::on_newDocumentButton_clicked()
         }else{
             bool flag = false;
             std::shared_ptr<FileInfo> file (new FileInfo(filename + ".txt",client.get()->getUsername(), client.get()->getNickname()));
+            //controlla se esiste già un file di cui sono il creatore con lo stesso nome
             for(std::shared_ptr<FileInfo> f : client.get()->getMyFileList()){
                 if( f.get()->getFileName() == filename + ".txt" && f.get()->getUsername() == client.get()->getUsername()){
                   flag = true;
@@ -104,6 +111,9 @@ void FilesSelection::on_newDocumentButton_clicked()
     }
 }
 
+/**
+ * @brief apre la dialog in cui inserire un URI per diventare editor di un file non di mia proprietà
+ */
 void FilesSelection::on_newFileFromLink_clicked()
 {
     NewFileFromURIdialog dialog;
@@ -113,7 +123,9 @@ void FilesSelection::on_newFileFromLink_clicked()
         client.get()->getFileFromURI(uri);
     }
 }
-
+/**
+ * @brief apre la dialog per modificare le impostazioni del profilo, con controlli sul nickname, e poi notifica le modifiche al server tramite la classe Client
+ */
 void FilesSelection::on_changeProfileButton_clicked() {
     changeProfileDialog dialog;
     dialog.setModal(true);
@@ -156,6 +168,10 @@ void FilesSelection::on_changeProfileButton_clicked() {
     }
 }
 
+/**
+ * @brief apre un file selezionato nella lista, chiedendolo al server tramite la classe Client
+ * @param item: file della lista selezionato
+ */
 void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
 {
     QString filename = item->text().split(" ")[0];
@@ -171,6 +187,10 @@ void FilesSelection::on_fileListWidget_itemDoubleClicked(QListWidgetItem *item)
     QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
 }
 
+/**
+ * @brief modella cosa è possibile fare cliccando col tasto destro su un elemento della lista, condivisione o eliminazione
+ * @param pos
+ */
 void FilesSelection::showContextMenu(const QPoint &pos)
 {
     if(ui->fileListWidget->currentRow() != -1) {
@@ -191,18 +211,26 @@ void FilesSelection::showContextMenu(const QPoint &pos)
         menu.exec(globalPos);
     }
 }
-
+/**
+ * @brief chiede al server tramite la classe Client l'URI del file scelto
+ */
 void FilesSelection::onShareURIButtonPressed(){
     setUriRequest(true);
     int fileIndex = ui->fileListWidget->currentRow();
     client.get()->requestURI(fileIndex);
 }
-
+/**
+ * @brief gestisce la cancellazione del file dalla lista e lo notifica al server tramite la classe Client
+ */
 void FilesSelection::onEraseFileButtonPressed() {
     int fileIndex = ui->fileListWidget->currentRow();
     client.get()->eraseFile(fileIndex);
 }
 
+/**
+ * @brief alla ricezione dell'URI dal server, apro una dialog in cui la mostro e permetto all'utente di copiarla
+ * @param uri: uri ricevuta dal server
+ */
 void FilesSelection::onURIReady(QString uri) {
     if(uriRequest) {
         setUriRequest(false);
@@ -213,10 +241,18 @@ void FilesSelection::onURIReady(QString uri) {
     }
 }
 
+/**
+ * @brief alla cancellazione di un file fa il refresh dei file disponibili
+ * @param index
+ */
 void FilesSelection::onFileErased(int index) {
     onFilesListRefreshed(client.get()->getMyFileList());
 }
 
+/**
+ * @brief gestisce errori da parte del server nella condivisione del documento
+ * @param operation
+ */
 void FilesSelection::onUriError(int operation) {
     if(operation == 3) {
         QMessageBox::information(this,"Condivisione documento","Condivisione non riuscita, URI inesistente.");
@@ -225,19 +261,28 @@ void FilesSelection::onUriError(int operation) {
         QMessageBox::information(this,"Condivisione documento","Hai già accesso al file.");
     }
 }
-
+/**
+ * @brief gestisce errori all'eliminazione del file
+ */
 void FilesSelection::onEraseFileError() {
     QMessageBox::information(this,"Elimina documento","Errore: impossibile eliminare il file.");
 }
 
+/**
+ * @brief gestisce errori di cambiamento nickname
+ * @param oldNick
+ */
 void FilesSelection::onNicknameError(QString oldNick) {
     ui->nicknameLabel->setText(oldNick);
     ui->nicknameLabel->adjustSize();
     QMessageBox::information(this,"Modifica profilo","Nickname già esistente");
 }
 
+/**
+ * @brief mostra la finestra di filesSelection (utile per quando viene chiuso l'editor di testo), il riaggiornamento dei file permette una visiona sincronizzata
+ *          e coerente del file all'apertura, se non ci fosse potremmo aprire un file che è ancora processato lato server senza vedere tutti i nuovi cambiamenti
+ */
 void FilesSelection::showWindow(){
-
     ui->fileListWidget->clear();
     client.get()->getFiles();  //i file vengono gestiti nella slot onfilesListRefreshed
     /*QVector<QString> files = client->getFiles();
@@ -247,7 +292,10 @@ void FilesSelection::showWindow(){
     show();
 }
 
-
+/**
+ * @brief alla chiusura della finestra chiama la disconnessione del client
+ * @param e
+ */
 void FilesSelection::closeEvent(QCloseEvent *e)
 {
     client.get()->getSocket()->disconnect();

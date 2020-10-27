@@ -192,20 +192,23 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
 #endif
 }
 
+/**
+ * @brief riceve notifica di una nuova connessione/disconnessione da parte di un utente, modifica l'informazione nella tendina apposita e inserisce il suo cursore
+ * @param siteId: siteId dell'utente
+ * @param nickname: nickname dell'utente
+ * @param ins: 1 se si è connesso, 0 se si è disconnesso
+ */
 void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
     if(ins == 1){
-
         if(colorableUsers.contains(siteId)){
             // comboUser->setItemText(colorableUsers.keys().indexOf(siteId) + 2,  QString::number(siteId) + " - " + nickname +  "- connesso" );
             comboUser->setItemText(comboUser->findData(siteId),  QString::number(siteId) + " - " + nickname +  " (connesso)" );
-
-
         }
-
         if(!colorableUsers.contains(siteId)){
             cursorsMap.insert(siteId, std::make_shared<UserCursor>(UserCursor(siteId, nickname, colorId, textEdit)));
             User user(siteId, nickname, colorId);
             colorableUsers.insert(siteId,  std::make_shared<User>(user));
+            //
             QPixmap px(15,15);
             px.fill(colorableUsers[siteId]->getColor());
             QIcon icon(px);
@@ -215,9 +218,8 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
         }
         colorId++;
         bar->clearMessage();
-        QString s("Utenti Connessi: " + QString::number(this->cursorsMap.size() +1 ) );
+        QString s("Utenti Connessi: " + QString::number(this->cursorsMap.size() +1 ));
         bar->showMessage(tr(qPrintable(s)));
-
     }else if(ins == 0){
         if(cursorsMap.contains(siteId)){
             cursorsMap.remove(siteId);
@@ -229,6 +231,10 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
     }
 }
 
+/**
+ * @brief riceve dal server i dati su tutti gli utenti che possono modificare il file, in modo da poter inserire tutti nella tendina apposita
+ * @param owners: mappa siteId-nickname degli editor
+ */
 void TextEdit::onSignalOwners(QMap<int, QString> owners){
     for(int siteId: owners.keys()){
         //perché se ci sono già connessi entra prima nella onSignalConnection, quindi raddoppio gli item
@@ -247,12 +253,14 @@ void TextEdit::onSignalOwners(QMap<int, QString> owners){
                     comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - disconnesso", siteId);
                 }
             }
-
         }
     }
 }
 
-
+/**
+ * @brief alla chiusura dell'editor segnalo con la closeWindow che deve riaprire il filesSelection e notifico al server la chiusura del file
+ * @param e
+ */
 void TextEdit::closeEvent(QCloseEvent *e)
 {
     /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
@@ -269,6 +277,10 @@ void TextEdit::closeEvent(QCloseEvent *e)
         e->ignore();*/
 }
 
+/**
+ * @brief se ho un file aperto che è stato appena cancellato lo chiudo e mostro una dialog
+ * @param index: indice del file
+ */
 void TextEdit::onFileErased(int index) {
     if(this->fileIndex == index && !this->isHidden()) {
         QMessageBox::information(this,"OPS!","Il creatore ha eliminato il file.");
@@ -278,6 +290,11 @@ void TextEdit::onFileErased(int index) {
     }
 }
 
+/**
+ * @brief se un utente ha cambiato il proprio nickname riaggiorno il suo nickname nella tendina apposita
+ * @param oldNick: vecchio nickname
+ * @param newNick: nuovo nickname
+ */
 void TextEdit::onRefreshTextEdit(QString oldNick, QString newNick) {
     for(std::shared_ptr<User> user : colorableUsers) {
         if(user->getNickname() == oldNick) {
@@ -302,6 +319,7 @@ void TextEdit::onRefreshTextEdit(QString oldNick, QString newNick) {
         }
     }
 }
+
 
 void TextEdit::setupFileActions()
 {
@@ -612,8 +630,11 @@ void TextEdit::setupTextActions()
     /*FINE AGGIUNTA DA NOI*/
 }
 
+/**
+ * @brief funzione per evidenziare il testo degli utenti, selezionabile tramite tendina apposita
+ * @param str: testo della scelta selezionata nella tendina
+ */
 void TextEdit::highlightUserText(const QString &str){
-
     disconnect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
     if(str == "Evidenzia tutti"){
         flag_all_highlighted = true;
@@ -638,7 +659,6 @@ void TextEdit::highlightUserText(const QString &str){
             }
 
             if(_symbols[i+j]->getSiteId() != siteIdTmp){
-
                 QTextCursor cursor = textEdit->textCursor();
                 cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
                 cursor.setPosition(i + j, QTextCursor::KeepAnchor);
@@ -651,9 +671,7 @@ void TextEdit::highlightUserText(const QString &str){
                 i = i+j;
                 siteIdTmp = _symbols[i]->getSiteId();
                 j=0;
-
             }
-            qDebug() << i << " " << j;
         }
         /*
         for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
@@ -699,7 +717,6 @@ void TextEdit::highlightUserText(const QString &str){
         QTextCursor cursor = textEdit->textCursor();
         cursor.select(QTextCursor::Document);
         cursor.mergeCharFormat(fmt);
-
         /*
 
         for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
@@ -730,9 +747,6 @@ void TextEdit::highlightUserText(const QString &str){
             QTextCharFormat plainFormat(cursor.charFormat());
             plainFormat.setBackground(Qt::white); //bianco
             cursor.setCharFormat(plainFormat);*/
-
-
-
     }else if(str.contains("Modifica testo")){
         int pos = str.split(" - ")[1].toInt();
         int add = str.split(" - ")[2].toInt();
@@ -751,7 +765,6 @@ void TextEdit::highlightUserText(const QString &str){
             fmt.setBackground(Qt::white);
             cursor.mergeCharFormat(fmt);
         }
-        // cursor.setCharFormat(plainFormat);
     }else{
         flag_all_highlighted = false;
         int highlightedUserSiteId = str.split(" - ")[0].toInt();
@@ -762,19 +775,12 @@ void TextEdit::highlightUserText(const QString &str){
         QTextCursor cursor = textEdit->textCursor();
         cursor.select(QTextCursor::Document);
         cursor.mergeCharFormat(fmt);
-
-
         int i = 0;
         int j = 0;
-
-
         while(i < textEdit->toPlainText().size() ){
-
-
             if( i != textEdit->toPlainText().size()-1 && _symbols[i]->getSiteId() == highlightedUserSiteId ){
                 j++;
             }else{
-
                 if(j!=0){
                     QTextCursor cursor = textEdit->textCursor();
                     cursor.setPosition(i-j, QTextCursor::MoveAnchor); //per selezionare un carattere
@@ -784,22 +790,13 @@ void TextEdit::highlightUserText(const QString &str){
                         QTextCharFormat fmt;
                         fmt.setBackground(colorableUsers[highlightedUserSiteId]->getColor());
                         cursor.mergeCharFormat(fmt);
-
                     }
                     j=0;
                 }
-
             }
-
             i++;
         }
-
-
     }
-
-
-
-
     /*for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
             if(_symbols[i]->getSiteId() == siteIdTmp){
                 for(j=1; j<textEdit->toPlainText().size()-i; j++){
@@ -862,8 +859,6 @@ void TextEdit::highlightUserText(const QString &str){
         }
 }*/
     connect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
-
-
 }
 
 bool TextEdit::load(const QString &f)
@@ -911,7 +906,10 @@ bool TextEdit::maybeSave()
         return false;
     return true;
 }
-
+/**
+ * @brief mostra il nome del file in alto nella finestra
+ * @param fileName: nome del file
+ */
 void TextEdit::setCurrentFileName(const QString &fileName)
 {
     this->fileName = fileName;
@@ -1075,25 +1073,9 @@ void TextEdit::textBold()
 {
     QTextCharFormat fmt;
     fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
-
-
     QTextCursor cursor = textEdit->textCursor();
-    Message mess{};
-    /*if(cursor.hasSelection()){
-        int inizio = cursor.selectionStart();
-        localInsert(inizio, textEdit->fontPointSize(), textEdit->alignment(), actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->textColor().name(), this->font().toString(),mess);
-        message_ready(mess, fileName);
-        int fine = cursor.selectionEnd();
-        localInsert(fine, textEdit->fontPointSize(), textEdit->alignment(), !actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->textColor(), this->font().toString(),mess);
-        message_ready(mess, fileName);
-    }else{
-        int index = cursor.position();
-        localInsert(index, textEdit->fontPointSize(), textEdit->alignment(), actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), textEdit->textColor(), this->font().toString(),mess);
-        message_ready(mess, fileName);
-    }*/
-
     mergeFormatOnWordOrSelection(fmt);
-    mergeFormatOnWordOrSelection(fmt);
+    //mergeFormatOnWordOrSelection(fmt);
 }
 
 void TextEdit::textUnderline()
@@ -1284,6 +1266,9 @@ void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
     colorChanged(format.foreground().color());
 }
 
+/**
+ * @brief scatenata a ogni cambiamento di posizione del cursore, commentata la parte relativa agli elenchi puntati, che sono stati rimossi
+ */
 void TextEdit::cursorPositionChanged()
 {
     alignmentChanged(textEdit->alignment());
@@ -1344,6 +1329,9 @@ void TextEdit::cursorPositionChanged()
     writingFlag=false;
 }
 
+/**
+ * @brief quando viene effettuata una copia o una taglia, setto un vettore charsFormat con lo stile della parte messa negli appunti
+ */
 void TextEdit::clipboardDataChanged()
 {
 #ifndef QT_NO_CLIPBOARD
@@ -1380,7 +1368,7 @@ void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
     QTextCursor cursor;
     cursor= textEdit->textCursor();
     /*if (!cursor.hasSelection())
-        cursor.select(QTextCursor::WordUnderCursor);*/ // non mi piace
+        cursor.select(QTextCursor::WordUnderCursor);*/ // tolta per evitare che modifichi tutta la parola, voglio gestire carattere per carattere
     if (!cursor.hasSelection()){
         cursor.mergeCharFormat(format);
     }
@@ -1689,6 +1677,8 @@ int TextEdit::alignToInt(int align){
         return 2;
     }else if(align == 8){ //justify
         return 3;
+    }else{
+        return 0;
     }
 }
 
@@ -1701,6 +1691,8 @@ Qt::Alignment TextEdit::intToAlign(int val){
         return Qt::AlignHCenter;
     }else if(val == 3){
         return Qt::AlignJustify;
+    }else{
+        return 0;
     }
 }
 // index: indice in cui inserire. Restituisco un vettore della posizione adatto.
@@ -2196,15 +2188,15 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     uc->getLabel()->move(x, y);
     uc->getLabel()->show();*/
 
-    uc->getLabel_cur()->setFixedHeight(rt_height);
-    uc->getLabel_cur()->setFixedWidth(2);
+    uc->getCursor()->setFixedHeight(rt_height);
+    uc->getCursor()->setFixedWidth(2);
     int x2 = rt.x() - 1;
     int y2 = rt.y();
     if (y2 < 0) y2 = 0;
     if (y2 > editor_height) y2 = editor_height - 10;
-    uc->getLabel_cur()->hide();
-    uc->getLabel_cur()->move(x2, y2);
-    uc->getLabel_cur()->show();
+    uc->getCursor()->hide();
+    uc->getCursor()->move(x2, y2);
+    uc->getCursor()->show();
 }
 
 void TextEdit::onRemoteCursorChanged(int cursorIndex, int siteIdSender){ //forse è un ERRORE: ci vuole il vettore delle pos non
