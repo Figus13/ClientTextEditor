@@ -1432,6 +1432,65 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 }
 
 /*-----FATTE DA NOI-----*/
+/*void TextEdit::onTextChanged(int pos, int del, int add){
+
+    QString added = textEdit->toPlainText().mid(pos, add);
+
+    QTextCursor cursor(textEdit->textCursor());
+    QVector<QFont> fonts;
+    QVector<QTextCharFormat> changeFormatVect;
+    highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
+
+    if(cursor.position() == pos){
+        for(int i=0; i<del; i++){
+            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
+            QTextCharFormat plainFormat(cursor.charFormat());
+            changeFormatVect.push_back(plainFormat);
+            //fonts.push_back(plainFormat.font());
+        }
+    }else if (cursor.position() == pos + del){
+        for(int i=0; i<del; i++){
+            QTextCharFormat plainFormat(cursor.charFormat());
+            //fonts.push_front(plainFormat.font());
+            changeFormatVect.push_back(plainFormat);
+            cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
+        }
+    }
+    //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
+    QVector<Message> messagesDel;
+    for(int i=0; i<del; i++){
+        writingFlag= true;
+        if(pos != this->_symbols.size()){
+            Message mess{'d', this->_symbols[pos]};
+            this->_symbols.erase(this->_symbols.begin() + pos);
+            messagesDel.push_back(mess);
+        }
+    }
+    if(messagesDel.size() != 0){
+        message_ready(messagesDel, this->fileIndex);
+    }
+    QVector<Message> messagesAdd;
+    for(int i=0; i<add; i++){
+        writingFlag=true;
+        Message mess{};
+        if(added.size() > i){
+            if(del > 0 && changeFormatVect.size() != 0){
+                localInsert(pos+i, added[i], &(changeFormatVect[i]), mess);
+            }else if( add == charsFormat.size()){
+                localInsert(pos+i, added[i], &(charsFormat[i]), mess);
+            } else{
+                localInsert(pos+i, added[i], nullptr, mess);
+            }
+
+            messagesAdd.push_back(mess);
+        }
+    }
+    if(messagesAdd.size() != 0){
+        message_ready(messagesAdd, this->fileIndex);
+    }
+    writingFlag=false;
+}*/
+
 void TextEdit::onTextChanged(int pos, int del, int add){
 
     QString added = textEdit->toPlainText().mid(pos, add);
@@ -1470,29 +1529,21 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         message_ready(messagesDel, this->fileIndex);
     }
     QVector<Message> messagesAdd;
-    //qDebug() << "Add " << add << " Added.size() " << added.size();
-    for(int i=0; i<add; i++){
+
+    if(add==1){
         writingFlag=true;
         Message mess{};
-        if(added.size() > i){
-            if(del > 0 && changeFormatVect.size() != 0){
-                localInsert(pos+i, added[i], &(changeFormatVect[i]), mess);
-            }else if( add == charsFormat.size()){
-                localInsert(pos+i, added[i], &(charsFormat[i]), mess);
-            } else{
-                localInsert(pos+i, added[i], nullptr, mess);
-            }
-            /*if(del > 0){ //controlla se con selezione e incolla funziona
-                if(fonts.size() != 0 ){
-                    localInsert(pos+i, added[i], &(fonts[i]), mess);
-                }else{
-                    localInsert(pos+i, added[i], nullptr, mess);
-                }
-            }else{
-                localInsert(pos+i, added[i], nullptr, mess);
-            }*/
-            messagesAdd.push_back(mess);
+        if(del > 0 && changeFormatVect.size() != 0){
+            localInsert(pos, added[0], &(changeFormatVect[0]), mess);
+        }else if( add == charsFormat.size()){
+            localInsert(pos, added[0], &(charsFormat[0]), mess);
+        } else{
+            localInsert(pos, added[0], nullptr, mess);
         }
+        messagesAdd.push_back(mess);
+    }else{
+        writingFlag=true;
+        messagesAdd = localInsert(pos, added, del, add, changeFormatVect);
     }
     if(messagesAdd.size() != 0){
         message_ready(messagesAdd, this->fileIndex);
@@ -1508,6 +1559,110 @@ void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender)
     }
 }
 
+//  Funzione utilizzata per creare un symbolo corrispondente all'inserimento di un singolo carattere appena fatto.
+//  Alla fine di questa funzione possiamo utilizzare il messaggio passato come parametro per notificare al server l'inserimento
+bool TextEdit::localInsert(int index, QChar value, QTextCharFormat *format, Message& m){
+    QFont qf;
+    if(format != nullptr){
+        qf = (*format).font();
+    }else{
+        QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
+        qf = plainFormat.font();
+    }
+    QVector<int> pos;
+    if ((index > (this->_symbols.size())) || index < 0) {
+        return false;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
+    }
+    this->counter++;
+    pos = generatePos(index);
+    if (pos.size() == 0) {
+        return false;
+    }
+
+    /*  ATTENZIONE PRIMA ERA COSI  */
+    //std::shared_ptr<Symbol> s(new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family()));
+    std::shared_ptr<Symbol> s = std::make_shared<Symbol>(Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(),
+                                                                actionTextItalic->isChecked(), actionTextUnderline->isChecked(),
+                                                                alignToInt(textEdit->textCursor().blockFormat().alignment()) ,
+                                                                qf.pointSize(),  textEdit->textColor(), qf.family()));
+
+    this->_symbols.insert(this->_symbols.begin() + index, s);
+
+    m.setAction('i');
+    m.setSymbol(s);
+
+    return true;
+}
+
+
+// Funzione utilizzata per creare un blocco di simboli corrispondente all'inserimento di un blocco di caratteri appena fatto.
+//  Alla fine di questa funzione ci viene restituito il vettore contenente i messaggi da spedire al server.
+QVector<Message> TextEdit::localInsert(int startIndex, QString added, int del, int add, QVector<QTextCharFormat> changeFormatVect){
+    QVector<Message> messages;
+    QVector<std::shared_ptr<Symbol>> newSymbols;
+    QVector<QVector<int>> positionVector = generatePos(startIndex, added.size());
+
+    for(int i=0; i<add; i++){
+        writingFlag=true;
+        std::shared_ptr<Symbol> s;
+        if(added.size() > i){
+            if(del > 0 && changeFormatVect.size() != 0){
+                s = createSymbol(startIndex+i, added[i], &(changeFormatVect[i]), positionVector[i]);
+            }else if(add == charsFormat.size()){
+                s = createSymbol(startIndex+i, added[i], &(charsFormat[i]), positionVector[i]);
+            } else{
+                s = createSymbol(startIndex+i, added[i], nullptr, positionVector[i]);
+            }
+            newSymbols.push_back(s);
+            Message mess{'i', s};
+            messages.push_back(mess);
+        }
+    }
+    QVector<std::shared_ptr<Symbol>> inizio = this->_symbols.mid(0, startIndex);
+    QVector<std::shared_ptr<Symbol>> fine = this->_symbols.mid(startIndex, this->_symbols.size() - startIndex);
+
+    if(inizio.size() != 0){
+        this->_symbols = inizio;
+        this->_symbols.append(newSymbols);
+    }else{
+        this->_symbols = newSymbols;
+    }
+
+    if(fine.size() != 0){
+        this->_symbols.append(fine);
+    }
+
+    return messages;
+}
+
+std::shared_ptr<Symbol> TextEdit::createSymbol(int index, QChar value, QTextCharFormat *format, QVector<int> position){
+    QFont qf;
+    if(format != nullptr){
+        qf = (*format).font();
+    }else{
+        QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
+        qf = plainFormat.font();
+    }
+    //QVector<int> pos;
+    /*if ((index > (this->_symbols.size())) || index < 0) {
+        return nullptr;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
+    }*/
+    this->counter++;
+    //pos = generatePos(index);
+    if (position.size() == 0) {
+        return nullptr;
+    }
+    /*  ATTENZIONE PRIMA ERA COSI  */
+    //std::shared_ptr<Symbol> s(new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family()));
+    std::shared_ptr<Symbol> s = std::make_shared<Symbol>(Symbol(position, this->counter, this->siteId, value, actionTextBold->isChecked(),
+                                                                actionTextItalic->isChecked(), actionTextUnderline->isChecked(),
+                                                                alignToInt(textEdit->textCursor().blockFormat().alignment()) ,
+                                                                qf.pointSize(),  textEdit->textColor(), qf.family()));
+
+
+
+    return s;
+}
 
 /*void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
 
@@ -1606,93 +1761,8 @@ bool TextEdit::styleIsEqual(std::shared_ptr<Symbol> s1, std::shared_ptr<Symbol> 
             (s1->getColor().name().compare(s2->getColor().name())==0) && (s1->getFont().compare(s2->getFont())==0));
 }
 
-/* VECCHIA VERSIONE DELLA OnFileReady
- * void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
-    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-               this, &TextEdit::cursorPositionChanged);
-
-    this->_symbols = s;
-    textEdit->textCursor().beginEditBlock();
-    //FLAG_OPEN_FILE = true; sostituita con il disconnect, evitiamo di fare signal->slot
-    disconnect(textEdit->document(), &QTextDocument::contentsChange,
-               this, &TextEdit::onTextChanged);
-    for(std::shared_ptr<Symbol> sym: s){
-        QTextCursor cursor(textEdit->textCursor());
-        QTextCharFormat plainFormat(cursor.charFormat());
-        QTextCharFormat headingFormat;
-        headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
-        headingFormat.setFontItalic(sym->isItalic());
-        headingFormat.setFontUnderline(sym->isUnderlined());
-        headingFormat.setForeground(sym->getColor());
-        headingFormat.setFontPointSize(sym->getTextSize());
-        headingFormat.setFontFamily(sym->getFont());
-        Qt::Alignment x = intToAlign(sym->getAlignment());
-        textEdit->setAlignment(x);
-        cursor.insertText((const QString)sym->getValue(), headingFormat);
-        if(sym->getSiteId() == this->siteId){
-            if(this->counter < sym->getCounter()){
-                this->counter = sym->getCounter();
-            }
-        }
-        //qDebug() << "VALUE: " << sym->getValue();
-    }
-
-    textEdit->textCursor().endEditBlock();
-    //FLAG_OPEN_FILE = false;
-    connect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
-    //textEdit->setPlainText(text);
-    textEdit->textCursor();
-    connect(textEdit, &QTextEdit::cursorPositionChanged,
-            this, &TextEdit::cursorPositionChanged);
-}*/
-
 void TextEdit::onFileClosed() {
     disconnect(client.get(), &Client::URI_Ready, this, &TextEdit::onURIReady);
-}
-
-std::string TextEdit::localInsert(int index, QChar value, QTextCharFormat *format, Message& m){
-    /*
-    if(font != nullptr){
-        qf = *font;
-    }else{
-        QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
-        qf = plainFormat.font();
-    }*/
-    QFont qf;
-    if(format != nullptr){
-        qf = (*format).font();
-    }else{
-        QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
-        qf = plainFormat.font();
-    }
-    QVector<int> pos;
-    if ((index > (this->_symbols.size())) || index < 0) {
-        return "Errore";//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
-    }
-    this->counter++;
-    pos = generatePos(index);
-    if (pos.size() == 0) {
-        return "Errore";
-    }
-    //TextSymbol* symbol = new TextSymbol(false, pos, this->counter, this->siteId, value);
-    //Symbol * s3 = ; //TODO color.name?
-    std::shared_ptr<Symbol> s2 (new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family()));
-    //qDebug() << qf.family() <<  qf.family().length();
-    /*qDebug() << sizeof(int)*pos.size() << sizeof(this->counter) << sizeof(this->siteId) << sizeof(value) << sizeof(actionTextBold->isChecked()) <<
-                sizeof(actionTextItalic->isChecked()) << sizeof(actionTextUnderline->isChecked()) << sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment()))
-             << sizeof(qf.pointSize()) << sizeof(textEdit->textColor().name()) << sizeof(char)*qf.family().length();
-    int max = sizeof(pos) + sizeof(this->counter) + sizeof(this->siteId) + sizeof(value) + sizeof(actionTextBold->isChecked()) +
-                             sizeof(actionTextItalic->isChecked()) + sizeof(actionTextUnderline->isChecked()) +
-                             sizeof(alignToInt(textEdit->textCursor().blockFormat().alignment())) +
-                             sizeof(qf.pointSize()) + sizeof(textEdit->textColor().name()) + sizeof(char)*qf.family().length();
-    qDebug() << max;*/
-    this->_symbols.insert(this->_symbols.begin() + index, s2);
-
-    m.setAction('i');
-    m.setSymbol(s2);
-
-    return "OK";
 }
 
 int TextEdit::alignToInt(int align){
@@ -1722,6 +1792,61 @@ Qt::Alignment TextEdit::intToAlign(int val){
         return 0;
     }
 }
+
+//Restituisce più di un vettore di posizione. Utile nel caso di inserimenti in blocco.
+QVector<QVector<int>> TextEdit::generatePos(int index, int nPosition) {
+    QVector<QVector<int>> vector;
+    bool firstPosition=true;
+    int i;
+    // qDebug() << index;
+    if ((index > (this->_symbols.size())) || index < 0) {
+        return vector;   //IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
+    }
+    for(int k=0; k<nPosition; k++){
+        QVector<int> pos;
+        if (this->_symbols.empty()) { //il vettore è vuoto, quindi creo un vettore di posizione [1 , siteid] e lo metto da parte
+            pos.push_back(index + 1);
+        }
+        else {
+            if (index == 0 && firstPosition==true) { //indice uguale a 0, inserisco con compresa tra 0 e 1. Inserimento in TESTA
+                                                     //Non è più un inserimento in testa, nel caso sia già stato inserito un altro elemento (firstPosition==false)
+                QVector<int> pos_successivo = _symbols[index]->getPosition();   //OTTENGO IL POS DELLA PRECEDENTE TESTA, ORA DEVO GENERARE IL NUOVO.
+                QVector<int> vuoto;
+                vuoto.push_back(0);
+                pos = calcIntermediatePos(pos_successivo, vuoto);
+            }
+            else {
+                QVector<int> pos_precedente;
+                if(firstPosition==true){
+                    pos_precedente = _symbols[index - 1]->getPosition();
+                }else{
+                    pos_precedente = vector[k - 1];
+                }
+                if (_symbols.size() == index) {         //Inserimento in CODA
+                    for (i = 0; i < _symbols[index - 1]->getPosition().size(); i++) {
+                        if (pos_precedente[i] == INT_MAX) {
+                            pos.push_back(INT_MAX);
+                        }
+                        else break;
+                    }
+                    pos.push_back(pos_precedente[i] + 1);
+
+                }
+                else {     //Inserimento in un indice diverso dalla coda o dalla testa.
+                    QVector<int> pos_successivo = _symbols[index]->getPosition();
+                    pos = calcIntermediatePos(pos_successivo, pos_precedente);
+                }
+            }
+        }
+        pos.push_back(this->siteId);
+        vector.push_back(pos);
+        firstPosition=false;
+    }
+    /*Il siteId viene messo per garantire che se due client scrivono nello stesso istante un carattere in una certa posizione,
+     l'unicit� della posizione e garantito da questa ultima cifra.*/
+    return vector;
+}
+
 // index: indice in cui inserire. Restituisco un vettore della posizione adatto.
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;
