@@ -1520,10 +1520,13 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     for(int i=0; i<del; i++){
         writingFlag= true;
         if(pos != this->_symbols.size()){
-            Message mess{'d', this->_symbols[pos]};
-            this->_symbols.erase(this->_symbols.begin() + pos);
+            Message mess{'d', this->_symbols[pos+i]};
+            //this->_symbols.erase(this->_symbols.begin() + pos);
             messagesDel.push_back(mess);
         }
+    }
+    if(del>0){
+        this->_symbols.remove(pos, del);
     }
     if(messagesDel.size() != 0){
         message_ready(messagesDel, this->fileIndex);
