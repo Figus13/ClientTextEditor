@@ -225,8 +225,6 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
             QString s("Utenti Connessi: " + QString::number(this->cursorsMap.size() + 1) );
             bar->showMessage(tr(qPrintable(s)));
             comboUser->setItemText(comboUser->findData(siteId),  QString::number(siteId) + " - " + nickname +  " (disconnesso)" );
-
-
         }
     }
 }
@@ -569,6 +567,7 @@ void TextEdit::setupTextActions()
     connect(comboStyle, QOverload<int>::of(&QComboBox::activated), this, &TextEdit::textStyle);*/
     // capire crush: FINE DA COMMENTARE
     comboFont = new QFontComboBox(tb);
+    comboFont->setEditable(false);
     tb->addWidget(comboFont);
     connect(comboFont, &QComboBox::textActivated, this, &TextEdit::textFamily);
 
@@ -632,7 +631,6 @@ void TextEdit::highlightUserText(const QString &str){
                     QTextCharFormat fmt;
                     fmt.setBackground(colorableUsers[siteIdTmp]->getColor());
                     cursor.mergeCharFormat(fmt);
-
                 }
 
                 break;
@@ -745,7 +743,6 @@ void TextEdit::highlightUserText(const QString &str){
         //QTextCharFormat plainFormat(cursor.charFormat());
         QTextCharFormat fmt;
         if(flag_all_highlighted || flag_one_highlighted == siteId){
-
             fmt.setBackground(colorableUsers[siteId]->getColor());
             cursor.setPosition(pos,QTextCursor::MoveAnchor);
             cursor.setPosition(pos+add,QTextCursor::KeepAnchor);
@@ -1350,8 +1347,22 @@ void TextEdit::cursorPositionChanged()
 void TextEdit::clipboardDataChanged()
 {
 #ifndef QT_NO_CLIPBOARD
-    if (const QMimeData *md = QApplication::clipboard()->mimeData())
-        actionPaste->setEnabled(md->hasText());
+    if (const QMimeData *md = QApplication::clipboard()->mimeData()){
+            actionPaste->setEnabled(md->hasText());
+            QTextCursor cursor = textEdit->textCursor();
+            if(textEdit->textCursor().hasSelection()){
+                charsFormat.clear();
+                qDebug() << cursor.selectionStart() << " " << cursor.selectionEnd();
+                int inizio = cursor.selectionStart();
+                int fine = cursor.selectionEnd();
+                cursor.setPosition(cursor.selectionStart());
+                for(int i = inizio ; i < fine; i++){
+                    cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,1);
+                    QTextCharFormat textFormat(cursor.charFormat());
+                    charsFormat.push_back(textFormat);
+                }
+            }
+        }
 #endif
 }
 
@@ -1412,18 +1423,21 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 
     QTextCursor cursor(textEdit->textCursor());
     QVector<QFont> fonts;
+    QVector<QTextCharFormat> changeFormatVect;
     highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
 
     if(cursor.position() == pos){
         for(int i=0; i<del; i++){
             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
             QTextCharFormat plainFormat(cursor.charFormat());
-            fonts.push_back(plainFormat.font());
+            changeFormatVect.push_back(plainFormat);
+            //fonts.push_back(plainFormat.font());
         }
     }else if (cursor.position() == pos + del){
         for(int i=0; i<del; i++){
             QTextCharFormat plainFormat(cursor.charFormat());
-            fonts.push_front(plainFormat.font());
+            //fonts.push_front(plainFormat.font());
+            changeFormatVect.push_back(plainFormat);
             cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
         }
     }
@@ -1446,7 +1460,14 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         writingFlag=true;
         Message mess{};
         if(added.size() > i){
-            if(del > 0){ //controlla se con selezione e incolla funziona
+            if(del > 0 && changeFormatVect.size() != 0){
+                localInsert(pos+i, added[i], &(changeFormatVect[i]), mess);
+            }else if( add == charsFormat.size()){
+                localInsert(pos+i, added[i], &(charsFormat[i]), mess);
+            } else{
+                localInsert(pos+i, added[i], nullptr, mess);
+            }
+            /*if(del > 0){ //controlla se con selezione e incolla funziona
                 if(fonts.size() != 0 ){
                     localInsert(pos+i, added[i], &(fonts[i]), mess);
                 }else{
@@ -1454,7 +1475,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
                 }
             }else{
                 localInsert(pos+i, added[i], nullptr, mess);
-            }
+            }*/
             messagesAdd.push_back(mess);
         }
     }
@@ -1615,11 +1636,17 @@ void TextEdit::onFileClosed() {
     disconnect(client.get(), &Client::URI_Ready, this, &TextEdit::onURIReady);
 }
 
-std::string TextEdit::localInsert(int index, QChar value, QFont* font, Message& m)
-{
-    QFont qf;
+std::string TextEdit::localInsert(int index, QChar value, QTextCharFormat *format, Message& m){
+    /*
     if(font != nullptr){
         qf = *font;
+    }else{
+        QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
+        qf = plainFormat.font();
+    }*/
+    QFont qf;
+    if(format != nullptr){
+        qf = (*format).font();
     }else{
         QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
         qf = plainFormat.font();
