@@ -133,6 +133,7 @@ private slots:
     void onSignalConnection(int siteId, QString nickname, int ins);
     void onPrintOnPDF();
     void onRefreshTextEdit(QString oldNick, QString newNick);
+    void onUpdateCursors();
 
 private:
     /*----AGGIUNTE DA NOI -----*/

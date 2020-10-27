@@ -73,6 +73,7 @@
 #include <QMimeData>
 #include <QLabel>
 #include <QMimeDatabase>
+#include <QScrollBar>
 #include "showuridialog.h"
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
@@ -128,6 +129,9 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
             this, &TextEdit::onRemoteCursorChanged);
     connect(client.get(), &Client::file_erased, this, &TextEdit::onFileErased);
     connect(client.get(), &Client::refresh_text_edit, this, &TextEdit::onRefreshTextEdit);
+
+    connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::onUpdateCursors);
+
 
     colorId=0;
     /*------------Fine aggiunta--------*/
@@ -190,6 +194,31 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
     pal.setColor(QPalette::Text, QColor(Qt::black));
     textEdit->setPalette(pal);
 #endif
+}
+void TextEdit::onUpdateCursors(){
+
+
+
+    if(cursorsMap.size() > 0){
+        for( std::shared_ptr<UserCursor> uc : cursorsMap){
+            uc->getPos();
+            QTextCursor cursor(textEdit->textCursor());
+            cursor.setPosition( uc->getPos());
+            QRect rt = textEdit->cursorRect(cursor);
+            QRect editor = textEdit->rect();
+
+            uc->getLabel_cur()->hide();
+            uc->getLabel_cur()->move(rt.x(),rt.y());
+
+            uc->getLabel_cur()->show();
+
+
+        }
+
+
+    }
+
+
 }
 
 void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
@@ -699,6 +728,8 @@ void TextEdit::highlightUserText(const QString &str){
         QTextCursor cursor = textEdit->textCursor();
         cursor.select(QTextCursor::Document);
         cursor.mergeCharFormat(fmt);
+        flag_all_highlighted = false;
+        flag_one_highlighted = -1;
 
         /*
 
@@ -2181,6 +2212,10 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     QRect rt = textEdit->cursorRect(cursor);
     int rt_height = rt.height();
     std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
+    uc->setPos(cursorPos);
+    qDebug() << rt << " posizione";
+
+
     //label con il nome utente
     /*int label_width = cursorsMap[siteId]->getLabel()->width();//larghezza label da aggiornare/inserire
     int x = rt.x() + 7;
@@ -2200,8 +2235,10 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     uc->getLabel_cur()->setFixedWidth(2);
     int x2 = rt.x() - 1;
     int y2 = rt.y();
-    if (y2 < 0) y2 = 0;
-    if (y2 > editor_height) y2 = editor_height - 10;
+    qDebug() << x2 << " " << y2;
+    //if (y2 < 0) y2 = 0;
+    //if (y2 > editor_height) y2 = editor_height - 10;
+    uc->getLabel_cur();
     uc->getLabel_cur()->hide();
     uc->getLabel_cur()->move(x2, y2);
     uc->getLabel_cur()->show();
