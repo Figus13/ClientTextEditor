@@ -1924,20 +1924,24 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
 void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
-    int index, nextIndex, counter=1, startRemove;
+    int index, nextIndex = -1, counter=1, startRemove;
     QTextCursor cursor = textEdit->textCursor();
     for(int i=0; i<messages.size(); i++){
         std::shared_ptr<Symbol> sym = messages[i].getSymbol();
         if(i==0){
             index = findIndexFromExistingPosition(sym->getPosition());
-            startRemove=index;
-            cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
+            if(index != -1){
+                startRemove=index;
+                cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
+            }
         }else if(counter ==1){
             //da qui
-            startRemove =findIndexFromExistingPosition(sym->getPosition());
-            cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
+            index =findIndexFromExistingPosition(sym->getPosition());
+            if(index != -1){
+                startRemove = index;
+                cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
+            }
             //a qui
-            index = nextIndex;
         }else{
             index = nextIndex;
         }
@@ -1945,20 +1949,21 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
             nextIndex=findIndexFromExistingPosition(messages[i+1].getSymbol()->getPosition());
         }
 
-        if(i!=(messages.size()-1) && index==nextIndex-1){//sono di fila, posso cancellarli con una operazione
+        if(i!=(messages.size()-1) && index==nextIndex-1 && index != -1 && nextIndex != -1){//sono di fila, posso cancellarli con una operazione
             counter++;
         }else{
-
-            cursor.setPosition(index+1, QTextCursor::KeepAnchor);
-            //cursor.setPosition(index);
-            cursor.selectedText();
-            cursor.removeSelectedText();
-            //cursor.deleteChar();            //ATTENZIONE BISOGNA CANCELLARNE PIù DI UNO
-            this->_symbols.remove(startRemove, counter);
-            counter=1;
+            if(startRemove != -1){
+                cursor.setPosition(index+1, QTextCursor::KeepAnchor);
+                cursor.selectedText();
+                cursor.removeSelectedText();
+                this->_symbols.remove(startRemove, counter);
+                counter=1;
+            }
         }
     }
-    remoteCursorChangePosition(index, siteIdSender);
+    if(index != -1){
+        remoteCursorChangePosition(index, siteIdSender);
+    }
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
 }
@@ -2188,10 +2193,14 @@ int TextEdit::findIndexFromExistingPosition(QVector<int> position){
 
         while (flag == 0)
         {
+
             i = (dx + sx) / 2;
             if (this->_symbols[i]->getPosition() == position) {
                 flag = 1;
                 index = i;
+            }else if(dx == sx+1){
+                flag = 1;
+                index = -1;
             }
             else {
                 if (this->_symbols[i]->getPosition() > position) {// il nostro simbolo ha pos minore del simbolo indicizzato -> andare a sinistra;
