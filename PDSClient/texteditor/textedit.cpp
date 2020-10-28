@@ -1961,8 +1961,10 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
             }
         }
     }
-    if(index != -1){
+    if(index != -1 && index <this->_symbols.size()){
         remoteCursorChangePosition(index, siteIdSender);
+    }else{
+        remoteCursorChangePosition(0, siteIdSender);
     }
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
