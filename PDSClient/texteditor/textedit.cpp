@@ -1340,26 +1340,33 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
 
     if(cursor.position() == pos){
-        for(int i=0; i<del-1; i++){
+        for(int i=0; i<del; i++){
             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
             QTextCharFormat plainFormat(cursor.charFormat());
             changeFormatVect.push_back(plainFormat);
             //fonts.push_back(plainFormat.font());
         }
     }else if (cursor.position() == pos + del){
-        for(int i=0; i<del-1; i++){
+        for(int i=0; i<del; i++){
             QTextCharFormat plainFormat(cursor.charFormat());
             //fonts.push_front(plainFormat.font());
             changeFormatVect.push_back(plainFormat);
             cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
         }
     }
+    int counter = 0;
     //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
+
+   /* if(added.size() > 0) {
+        del--;
+    }*/
+
     QVector<Message> messagesDel;
-    for(int i=0; i<del-1; i++){
+    for(int i=0; i<del; i++){
         writingFlag= true;
 
-        if(pos != this->_symbols.size()){
+        if(pos+i != this->_symbols.size()){
+            counter++;
             Message mess{'d', this->_symbols[pos+i]};
             //this->_symbols.erase(this->_symbols.begin() + pos);
             messagesDel.push_back(mess);
@@ -1367,7 +1374,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     }
     qDebug() << pos << del ;
     if(del>0){
-        this->_symbols.remove(pos, del-1);
+        this->_symbols.remove(pos, counter);
     }
     qDebug() << messagesDel.size();
     if(messagesDel.size() != 0){
@@ -1388,7 +1395,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         messagesAdd.push_back(mess);
     }else{
         writingFlag=true;
-        messagesAdd = localInsert(pos, added, del-1, add, changeFormatVect);
+        messagesAdd = localInsert(pos, added, del, add, changeFormatVect);
     }
     if(messagesAdd.size() != 0){
         message_ready(messagesAdd, this->fileIndex);
@@ -1455,7 +1462,7 @@ QVector<Message> TextEdit::localInsert(int startIndex, QString added, int del, i
     for(int i=0; i<add; i++){
         writingFlag=true;
         std::shared_ptr<Symbol> s;
-        if(added.size() > i){
+        if(added.size() > i ){
             if(del > 0 && changeFormatVect.size() != 0){
                 s = createSymbol(startIndex+i, added[i], &(changeFormatVect[i]), positionVector[i]);
             }else if(add == charsFormat.size()){
