@@ -1322,68 +1322,6 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 /*-----FATTE DA NOI-----*/
 
 
-/*void TextEdit::onTextChanged(int pos, int del, int add){
-
-    QString added = textEdit->toPlainText().mid(pos, add);
-
-    QTextCursor cursor(textEdit->textCursor());
-    QVector<QFont> fonts;
-    QVector<QTextCharFormat> changeFormatVect;
-    //chiamiamo questa funzione per aggiornare il background quando inseriamo un carattere nell'editor, in base all'evidenziazione selezionata
-    highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
-    //questa parte serve per gestire il cambiamento di font
-    if(cursor.position() == pos){
-        for(int i=0; i<del; i++){
-            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
-            QTextCharFormat plainFormat(cursor.charFormat());
-            changeFormatVect.push_back(plainFormat);
-            //fonts.push_back(plainFormat.font());
-        }
-    }else if (cursor.position() == pos + del){
-        for(int i=0; i<del; i++){
-            QTextCharFormat plainFormat(cursor.charFormat());
-            //fonts.push_front(plainFormat.font());
-            changeFormatVect.push_back(plainFormat);
-            cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
-        }
-    }
-    //qui si gestisce la cancellazione
-    QVector<Message> messagesDel;
-    for(int i=0; i<del; i++){
-        writingFlag= true;
-        if(pos != this->_symbols.size()){
-            Message mess{'d', this->_symbols[pos]};
-            this->_symbols.erase(this->_symbols.begin() + pos);
-            messagesDel.push_back(mess);
-        }
-    }
-    if(messagesDel.size() != 0){
-        message_ready(messagesDel, this->fileIndex);
-    }
-    //qua si gestisce l'inserimento
-    QVector<Message> messagesAdd;
-    for(int i=0; i<add; i++){
-        writingFlag=true;
-        Message mess{};
-        if(added.size() > i){
-            //qui si gestisce il caso in cui ho cambiato il font
-            if(del > 0 && changeFormatVect.size() != 0){
-                localInsert(pos+i, added[i], &(changeFormatVect[i]), mess);
-            //qui gestisco l'incolla
-            }else if( add == charsFormat.size()){
-                localInsert(pos+i, added[i], &(charsFormat[i]), mess);
-            //qui gestisco il caso generico
-            }else{
-                localInsert(pos+i, added[i], nullptr, mess);
-            }
-            messagesAdd.push_back(mess);
-        }
-    }
-    if(messagesAdd.size() != 0){
-        message_ready(messagesAdd, this->fileIndex);
-    }
-    writingFlag=false;
-}*/
 /**
  * @brief a ogni modifica del testo viene scatenata, si occupa di gestire i simboli che vengono poi mandati al server
  * @param pos
@@ -1416,17 +1354,20 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     }
     //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
     QVector<Message> messagesDel;
-    for(int i=0; i<del; i++){
+    for(int i=0; i<del-1; i++){
         writingFlag= true;
+
         if(pos != this->_symbols.size()){
             Message mess{'d', this->_symbols[pos+i]};
             //this->_symbols.erase(this->_symbols.begin() + pos);
             messagesDel.push_back(mess);
         }
     }
+    qDebug() << pos << del ;
     if(del>0){
-        this->_symbols.remove(pos, del);
+        this->_symbols.remove(pos, del-1);
     }
+    qDebug() << messagesDel.size();
     if(messagesDel.size() != 0){
         message_ready(messagesDel, this->fileIndex);
     }
