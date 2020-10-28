@@ -1320,6 +1320,8 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 }
 
 /*-----FATTE DA NOI-----*/
+
+
 /*void TextEdit::onTextChanged(int pos, int del, int add){
 
     QString added = textEdit->toPlainText().mid(pos, add);
@@ -1327,8 +1329,9 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
     QTextCursor cursor(textEdit->textCursor());
     QVector<QFont> fonts;
     QVector<QTextCharFormat> changeFormatVect;
+    //chiamiamo questa funzione per aggiornare il background quando inseriamo un carattere nell'editor, in base all'evidenziazione selezionata
     highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
-
+    //questa parte serve per gestire il cambiamento di font
     if(cursor.position() == pos){
         for(int i=0; i<del; i++){
             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
@@ -1344,7 +1347,7 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
             cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
         }
     }
-    //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
+    //qui si gestisce la cancellazione
     QVector<Message> messagesDel;
     for(int i=0; i<del; i++){
         writingFlag= true;
@@ -1357,19 +1360,22 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
     if(messagesDel.size() != 0){
         message_ready(messagesDel, this->fileIndex);
     }
+    //qua si gestisce l'inserimento
     QVector<Message> messagesAdd;
     for(int i=0; i<add; i++){
         writingFlag=true;
         Message mess{};
         if(added.size() > i){
+            //qui si gestisce il caso in cui ho cambiato il font
             if(del > 0 && changeFormatVect.size() != 0){
                 localInsert(pos+i, added[i], &(changeFormatVect[i]), mess);
+            //qui gestisco l'incolla
             }else if( add == charsFormat.size()){
                 localInsert(pos+i, added[i], &(charsFormat[i]), mess);
-            } else{
+            //qui gestisco il caso generico
+            }else{
                 localInsert(pos+i, added[i], nullptr, mess);
             }
-
             messagesAdd.push_back(mess);
         }
     }
@@ -1378,7 +1384,12 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
     }
     writingFlag=false;
 }*/
-
+/**
+ * @brief a ogni modifica del testo viene scatenata, si occupa di gestire i simboli che vengono poi mandati al server
+ * @param pos
+ * @param del
+ * @param add
+ */
 void TextEdit::onTextChanged(int pos, int del, int add){
 
     QString added = textEdit->toPlainText().mid(pos, add);
@@ -1442,6 +1453,11 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     writingFlag=false;
 }
 
+/**
+ * @brief funzione chiamata quando arrivano dal server messaggi con simboli da inserire o cancellare
+ * @param messages
+ * @param siteIdSender
+ */
 void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
     if( messages[0].getAction() == 'i'){
         this->remoteInsert(messages);
@@ -1585,6 +1601,10 @@ std::shared_ptr<Symbol> TextEdit::createSymbol(int index, QChar value, QTextChar
     }
 }*/
 
+/**
+ * @brief chiamata quando viene aperto un file, renderizza a schermo tutto il testo in maniera corretta
+ * @param s: vettore di simboli da inserire nell'editor
+ */
 void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
                this, &TextEdit::cursorPositionChanged);
@@ -1646,16 +1666,30 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
             this, &TextEdit::cursorPositionChanged);
 }
 
+/**
+ * @brief funzione per paragonare lo stile di 2 simboli
+ * @param s1: simbolo 1
+ * @param s2: simbolo 2
+ * @return true se sono uguali, altrimenti false
+ */
 bool TextEdit::styleIsEqual(std::shared_ptr<Symbol> s1, std::shared_ptr<Symbol> s2){
     return ((s1->getAlignment()==s2->getAlignment()) && (s1->isBold()==s2->isBold()) && (s1->isItalic()==s2->isItalic()) &&
             (s1->isUnderlined()==s2->isUnderlined()) && (s1->getTextSize()==s2->getTextSize()) &&
             (s1->getColor().name().compare(s2->getColor().name())==0) && (s1->getFont().compare(s2->getFont())==0));
 }
 
+/**
+ * @brief disconnette la signal Uri_ready alla chiusura di un file
+ */
 void TextEdit::onFileClosed() {
     disconnect(client.get(), &Client::URI_Ready, this, &TextEdit::onURIReady);
 }
 
+/**
+ * @brief corrispondenza tra tipo di allineamento e intero (valori presi sperimentalmente)
+ * @param align: tipo di allineamento
+ * @return
+ */
 int TextEdit::alignToInt(int align){
     if(align == 1){ //left
         return 0;
@@ -1670,6 +1704,11 @@ int TextEdit::alignToInt(int align){
     }
 }
 
+/**
+ * @brief inverso della alignToInt, a partire dal codice intero con cui sono salvati gli allineamenti mappa sull'alignment corrispondente
+ * @param val: valore intero corrispondente a un allineamento
+ * @return
+ */
 Qt::Alignment TextEdit::intToAlign(int val){
     if(val == 0){
         return Qt::AlignLeft;
@@ -1683,6 +1722,11 @@ Qt::Alignment TextEdit::intToAlign(int val){
         return 0;
     }
 }
+/**
+ * @brief genera il vettore posizione secondo il protocollo crdt
+ * @param index: indice di posizione nell'editor
+ * @return vettore di interi con la posizione all'interno
+ */
 
 //Restituisce più di un vettore di posizione. Utile nel caso di inserimenti in blocco.
 QVector<QVector<int>> TextEdit::generatePos(int index, int nPosition) {
@@ -1738,6 +1782,11 @@ QVector<QVector<int>> TextEdit::generatePos(int index, int nPosition) {
     return vector;
 }
 
+/**
+ * @brief genera il vettore posizione secondo il protocollo crdt
+ * @param index: indice di posizione nell'editor
+ * @return vettore di interi con la posizione all'interno
+ */
 // index: indice in cui inserire. Restituisco un vettore della posizione adatto.
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;
@@ -1780,6 +1829,13 @@ QVector<int> TextEdit::generatePos(int index) {
      l'unicit� della posizione e garantito da questa ultima cifra.*/
     return pos;
 }
+
+/**
+ * @brief TextEdit::calcIntermediatePos
+ * @param pos_sup
+ * @param pos_inf
+ * @return
+ */
 QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf) {
     QVector<int> pos;
     int inf, sup, k = 20, i = 0, nuovo_valore, flag = 0, MAX = INT_MAX - 100;
@@ -1851,6 +1907,10 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
     return pos;
 }
 
+/**
+ * @brief funzione che inserisce simboli arrivati dal server
+ * @param messages: messaggi contenenti i simboli da inserire
+ */
 void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
@@ -1902,6 +1962,15 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
             this, &TextEdit::onTextChanged);
 }
 
+/**
+ * @brief funzione che inserisce simboli arrivati dal server
+ * @param messages: messaggi contenenti i simboli da inserire
+ */
+/**
+ * @brief funzione che cancella i simboli arrivati dal server
+ * @param messages: messaggi contenenti i simboli da cancellare
+ * @param siteIdSender: siteId del mittente dei simboli da cancellare
+ */
 void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
@@ -2080,6 +2149,11 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     return index;
 }*/
 
+/**
+ * @brief TextEdit::findIndexFromNewPosition
+ * @param position
+ * @return
+ */
 int TextEdit::findIndexFromNewPosition(QVector<int> position){
     int index = this->_symbols.size();
     int size = this->_symbols.size();
@@ -2131,6 +2205,11 @@ int TextEdit::findIndexFromNewPosition(QVector<int> position){
     return index;
 }
 
+/**
+ * @brief TextEdit::findIndexFromExistingPosition
+ * @param position
+ * @return
+ */
 int TextEdit::findIndexFromExistingPosition(QVector<int> position){
     int index = this->_symbols.size();
     int size = this->_symbols.size();
@@ -2183,10 +2262,18 @@ int TextEdit::findIndexFromExistingPosition(QVector<int> position){
     return index;
 }
 
+/**
+ * @brief setta il flag che dice se ho fatto la richiesta di una URI
+ * @param status: valore da settare
+ */
 void TextEdit::setUriRequest(bool status) {
     this->uriRequest = status;
 }
 
+/**
+ * @brief mostra in una dialog l'URI del file
+ * @param uri: uri del file
+ */
 void TextEdit::onURIReady(QString uri) {
     if(uriRequest) {
         setUriRequest(false);
@@ -2197,14 +2284,22 @@ void TextEdit::onURIReady(QString uri) {
     }
 }
 
+/**
+ * @brief richiede al server l'uri per condividere il file
+ */
 void TextEdit::onShareURIButtonPressed(){
 
     setUriRequest(true);
     client.get()->requestURI(this->fileIndex);
 }
 
-void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
 
+/**
+ * @brief cambia posizione del cursore di un altro utente collegato
+ * @param cursorPos: posizione del cursore
+ * @param siteId: siteId dell'utente proprietario del cursore
+ */
+void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     QTextCursor cursor(textEdit->textCursor());
     //int pos_entry = cursor.position();//DEBUG
     cursor.setPosition(cursorPos);//setto la posizione per poter prendere le coordinate
@@ -2244,8 +2339,14 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     uc->getCursor()->hide();
     uc->getCursor()->move(x2, y2);
     uc->getCursor()->show();
+
 }
 
+/**
+ * @brief cambia posizione del cursore di un altro utente collegato
+ * @param cursorIndex: posizione del cursore
+ * @param siteIdSender: siteId dell'utente proprietario del cursore
+ */
 void TextEdit::onRemoteCursorChanged(int cursorIndex, int siteIdSender){ //forse è un ERRORE: ci vuole il vettore delle pos non
     remoteCursorChangePosition(cursorIndex, siteIdSender);                    // l'indice (cursorIndex);
 }
