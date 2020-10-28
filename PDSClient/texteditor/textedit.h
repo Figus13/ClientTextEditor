@@ -133,6 +133,7 @@ private slots:
     void onSignalConnection(int siteId, QString nickname, int ins);
     void onPrintOnPDF();
     void onRefreshTextEdit(QString oldNick, QString newNick);
+    void onUpdateCursors();
 
 private:
     /*----AGGIUNTE DA NOI -----*/
@@ -151,7 +152,10 @@ private:
     QVector<QTextCharFormat> charsFormat;               //vettore per il formato delle copia/taglia-incolla
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
-    std::string localInsert(int index, QChar value, QTextCharFormat *format, Message& m);
+    QVector<QVector<int>> generatePos(int index, int nPosVector);
+    bool localInsert(int index, QChar value, QTextCharFormat *format, Message& m);
+    QVector<Message> localInsert(int startIndex, QString added, int del, int add, QVector<QTextCharFormat> changeFormatVect);
+
     void remoteInsert(QVector<Message> messages);
     void remoteDelete(QVector<Message> messages, int siteIdSender);
     int findIndexFromNewPosition(QVector<int> position);
@@ -165,6 +169,7 @@ private:
     void onSignalOwners(QMap<int,QString> owners);
     void remoteCursorChangePosition(int cursorPos, int siteId);
     bool styleIsEqual(std::shared_ptr<Symbol> s1, std::shared_ptr<Symbol> s2);
+    std::shared_ptr<Symbol> createSymbol(int index, QChar value, QTextCharFormat *format, QVector<int> position);
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();
