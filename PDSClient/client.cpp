@@ -152,8 +152,9 @@ void Client::onReadyRead(){
                     //message_from_server(m, siteIdSender);
                 }
             }
-            messages_from_server(messages, siteIdSender);
-
+            if(messages.size() > 0){
+              messages_from_server(messages, siteIdSender);
+            }
             break;
         }
         //caso per la ricezione di un file già esistente alla sua apertura
