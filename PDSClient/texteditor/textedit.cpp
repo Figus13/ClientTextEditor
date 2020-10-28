@@ -750,7 +750,7 @@ void TextEdit::highlightUserText(const QString &str){
             }else{
                 if(highlight){
                     cursor.setPosition(j, QTextCursor::MoveAnchor); //per selezionare un carattere
-                    cursor.setPosition(i+1, QTextCursor::KeepAnchor);
+                    cursor.setPosition(i, QTextCursor::KeepAnchor);
                     if (colorableUsers.contains(highlightedUserSiteId)) {
                         QTextCharFormat fmt;
                         fmt.setBackground(colorableUsers[highlightedUserSiteId]->getColor());
@@ -764,7 +764,7 @@ void TextEdit::highlightUserText(const QString &str){
 
         if(highlight){
             cursor.setPosition(j, QTextCursor::MoveAnchor); //per selezionare un carattere
-            cursor.setPosition(i+1, QTextCursor::KeepAnchor);
+            cursor.setPosition(i, QTextCursor::KeepAnchor);
             if (colorableUsers.contains(highlightedUserSiteId)) {
                 QTextCharFormat fmt;
                 fmt.setBackground(colorableUsers[highlightedUserSiteId]->getColor());
