@@ -137,19 +137,19 @@ private slots:
 
 private:
     /*----AGGIUNTE DA NOI -----*/
-    std::shared_ptr<Client> client;
-    QMap<int, std::shared_ptr<UserCursor>> cursorsMap;
-    int colorId;
-    bool flag_all_highlighted = false;
-    int flag_one_highlighted = -1;
-    QVector<std::shared_ptr<Symbol>> _symbols;
-    int counter; //Inizializzato sempre a zero nel costruttore
-    int siteId;  //per ora per comodità l'ho messo qui ---ATTENZIONE PER ORA INIZIALIZZATO A ZERO---
-    bool uriRequest = false;
-    QMap<int, std::shared_ptr<User>> colorableUsers;
+    std::shared_ptr<Client> client;                     //client responsabile di comunicare col server, passato dalla filesselection
+    QMap<int, std::shared_ptr<UserCursor>> cursorsMap;  //mappa siteId-cursore dei client connessi al file
+    int colorId;                                        //counter dei colori utilizzati per i diversi client
+    bool flag_all_highlighted = false;                  //flag per dire se ho la selezione "Evidenzia tutti" attiva
+    int flag_one_highlighted = -1;                      //flag che indica quale siteId particolare deve avere il testo evidenziato, -1 significa nessuno
+    QVector<std::shared_ptr<Symbol>> _symbols;          //vettore di simboli del file
+    int counter;                                        //counter di simboli inseriti da questo client, inizializzato nella onFileReady al valore attuale
+    int siteId;                                         //siteId del client connesso
+    bool uriRequest = false;                            //flago che indica se ho fatto richiesta di una URI
+    QMap<int, std::shared_ptr<User>> colorableUsers;    //mappa int-utente per segnare i possibili editor del file nella tendina degli highlight
     bool writingFlag; //Questo flag permette di non mandare la modifica del puntatore aggiornato nel caso si
                               //stia scrivendo, verrà dedotto dal fatto che si sta scrivendo in una determinata posizione.
-    QVector<QTextCharFormat> charsFormat;
+    QVector<QTextCharFormat> charsFormat;               //vettore per il formato delle copia/taglia-incolla
     QVector<int> calcIntermediatePos(QVector<int> pos_sup, QVector<int> pos_inf);
     QVector<int> generatePos(int index);
     QVector<QVector<int>> generatePos(int index, int nPosVector);
@@ -211,7 +211,7 @@ private:
     QFontComboBox *comboFont;
     QComboBox *comboSize;
     /*AGGIUNTO DA NOI*/
-    QComboBox *comboUser;
+    QComboBox *comboUser;   //tendina per l'highlight
     /*FINE AGGIUNTA DA NOI*/
     QToolBar *tb;
     QString fileName;
