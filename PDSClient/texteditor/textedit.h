@@ -169,7 +169,8 @@ private:
     void onSignalOwners(QMap<int,QString> owners);
     void remoteCursorChangePosition(int cursorPos, int siteId);
     bool styleIsEqual(std::shared_ptr<Symbol> s1, std::shared_ptr<Symbol> s2);
-    std::shared_ptr<Symbol> createSymbol(int index, QChar value, QTextCharFormat *format, QVector<int> position);
+    std::shared_ptr<Symbol> createSymbol(QVector<int> position, QChar value, QTextCharFormat *format);
+    void deleteFromEditor(int startIndex, int endIndex, QTextCursor cursor);
     /*----FINE AGGIUNTE--------*/
     void setupFileActions();
     void setupEditActions();
