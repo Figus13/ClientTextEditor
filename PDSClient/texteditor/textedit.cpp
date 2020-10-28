@@ -663,76 +663,36 @@ void TextEdit::highlightUserText(const QString &str){
     if(str == "Evidenzia tutti"){
         flag_all_highlighted = true;
         flag_one_highlighted = -1;
-        int i = 0;
+        int inizio = 0; //posizione iniziale del testo da  sottolineare
         int j = 0;
         int siteIdTmp = _symbols[0]->getSiteId();
-        while(i < textEdit->toPlainText().size()){
+        QTextCursor cursor = textEdit->textCursor();
+        int dim = textEdit->toPlainText().size()-1;
+        while(j < dim){
             j++;
-            if(i+j == textEdit->toPlainText().size() ){
-                QTextCursor cursor = textEdit->textCursor();
-                cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
-                cursor.setPosition(i + j, QTextCursor::KeepAnchor);
-                if (colorableUsers.contains(siteIdTmp)) {
-                    QTextCharFormat fmt;
-                    fmt.setBackground(colorableUsers[siteIdTmp]->getColor());
-                    cursor.mergeCharFormat(fmt);
-                }
+            if(_symbols[j]->getSiteId() != siteIdTmp){
 
-                break;
-
-            }
-
-            if(_symbols[i+j]->getSiteId() != siteIdTmp){
-                QTextCursor cursor = textEdit->textCursor();
-                cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
-                cursor.setPosition(i + j, QTextCursor::KeepAnchor);
+                cursor.setPosition(inizio, QTextCursor::MoveAnchor); //per selezionare un carattere
+                cursor.setPosition(j, QTextCursor::KeepAnchor);
                 if (colorableUsers.contains(siteIdTmp)) {
                     QTextCharFormat fmt;
                     fmt.setBackground(colorableUsers[siteIdTmp]->getColor());
                     cursor.mergeCharFormat(fmt);
 
                 }
-                i = i+j;
-                siteIdTmp = _symbols[i]->getSiteId();
-                j=0;
+                //i = i+j;
+                inizio = j;
+                siteIdTmp = _symbols[j]->getSiteId();
+                //j=0;
             }
         }
-        /*
-        for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
-            int siteIdTmp = _symbols[i]->getSiteId();
-            for(j=1; j<textEdit->toPlainText().size()-i; j++){
-                if(_symbols[i+1]->getSiteId() != siteIdTmp){
-                    j++;
-
-                    break;
-                }else if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
-                    break;
-                }else if(_symbols[i+j]->isBold() != _symbols[i]->isBold()){
-                    break;
-                }else if(_symbols[i+j]->isUnderlined() != _symbols[i]->isUnderlined()){
-                    break;
-                }else if(_symbols[i+j]->isItalic() != _symbols[i]->isItalic()){
-                    break;
-                }else if(_symbols[i+j]->getTextSize() != _symbols[i]->getTextSize()){
-                    break;
-                }else if(_symbols[i+j]->getColor() != _symbols[i]->getColor()){
-                    break;
-                }
-            }
-            qDebug() << i << " " << j << " " << siteIdTmp;
-            const QSignalBlocker blocker(textEdit);
-            QTextCursor cursor = textEdit->textCursor();
-            cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
-            cursor.setPosition(i + j, QTextCursor::KeepAnchor);
-            if (colorableUsers.contains(siteIdTmp)) {
-                QTextCharFormat fmt;
-                fmt.setBackground(colorableUsers[siteIdTmp]->getColor());
-                QTextCharFormat plainFormat(cursor.charFormat());
-                cursor.mergeCharFormat(fmt);
-
-            }
-            i = i+j-1;
-            */
+        cursor.setPosition(inizio, QTextCursor::MoveAnchor); //per selezionare un carattere
+        cursor.setPosition(j+1, QTextCursor::KeepAnchor);
+        if (colorableUsers.contains(siteIdTmp)) {
+            QTextCharFormat fmt;
+            fmt.setBackground(colorableUsers[siteIdTmp]->getColor());
+            cursor.mergeCharFormat(fmt);
+        }
 
     }else if(str == "Non evidenziare"){
 
@@ -744,45 +704,16 @@ void TextEdit::highlightUserText(const QString &str){
         flag_all_highlighted = false;
         flag_one_highlighted = -1;
 
-        /*
-
-        for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
-            int siteIdTmp = _symbols[i]->getSiteId();
-            for(j=1; j<textEdit->toPlainText().size()-i; j++){
-                if(_symbols[i+j]->getSiteId() != siteIdTmp){
-                    break;
-                }else if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
-                    break;
-                }else if(_symbols[i+j]->isBold() != _symbols[i]->isBold()){
-                    break;
-                }else if(_symbols[i+j]->isUnderlined() != _symbols[i]->isUnderlined()){
-                    break;
-                }else if(_symbols[i+j]->isItalic() != _symbols[i]->isItalic()){
-                    break;
-                }else if(_symbols[i+j]->getTextSize() != _symbols[i]->getTextSize()){
-                    break;
-                }else if(_symbols[i+j]->getColor() != _symbols[i]->getColor()){
-                    break;
-                }
-            }
-            flag_all_highlighted = false;
-            flag_one_highlighted = -1;
-            const QSignalBlocker blocker(textEdit);
-            QTextCursor cursor = textEdit->textCursor();
-            cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
-            cursor.setPosition(i+j, QTextCursor::KeepAnchor);
-            QTextCharFormat plainFormat(cursor.charFormat());
-            plainFormat.setBackground(Qt::white); //bianco
-            cursor.setCharFormat(plainFormat);*/
     }else if(str.contains("Modifica testo")){
+
         int pos = str.split(" - ")[1].toInt();
         int add = str.split(" - ")[2].toInt();
-        //const QSignalBlocker blocker(textEdit);
         QTextCursor cursor = textEdit->textCursor();
+        QTextCharFormat fmt;
+
         cursor.setPosition(pos, QTextCursor::MoveAnchor); //per selezionare un carattere
         cursor.setPosition(pos + add, QTextCursor::KeepAnchor);
-        //QTextCharFormat plainFormat(cursor.charFormat());
-        QTextCharFormat fmt;
+
         if(flag_all_highlighted || flag_one_highlighted == siteId){
             fmt.setBackground(colorableUsers[siteId]->getColor());
             cursor.setPosition(pos,QTextCursor::MoveAnchor);
@@ -792,99 +723,57 @@ void TextEdit::highlightUserText(const QString &str){
             fmt.setBackground(Qt::white);
             cursor.mergeCharFormat(fmt);
         }
-    }else{
-        flag_all_highlighted = false;
-        int highlightedUserSiteId = str.split(" - ")[0].toInt();
-        flag_one_highlighted = highlightedUserSiteId;
 
-        QTextCharFormat fmt;
-        fmt.setBackground(Qt::white);
+    }else{
+
+        int highlightedUserSiteId = str.split(" - ")[0].toInt();
         QTextCursor cursor = textEdit->textCursor();
-        cursor.select(QTextCursor::Document);
-        cursor.mergeCharFormat(fmt);
+        QTextCharFormat fmt;
         int i = 0;
         int j = 0;
-        while(i < textEdit->toPlainText().size() ){
-            if( i != textEdit->toPlainText().size()-1 && _symbols[i]->getSiteId() == highlightedUserSiteId ){
-                j++;
+        int dim =  textEdit->toPlainText().size()-1;
+        bool highlight = false;
+        flag_all_highlighted = false;
+        flag_one_highlighted = highlightedUserSiteId;
+
+        fmt.setBackground(Qt::white);
+        cursor.select(QTextCursor::Document);
+        cursor.mergeCharFormat(fmt);
+
+        while(i < dim){
+
+            if(_symbols[i]->getSiteId() == highlightedUserSiteId){
+                if(!highlight){
+                    highlight = true;
+                    j=i;
+                }
             }else{
-                if(j!=0){
-                    QTextCursor cursor = textEdit->textCursor();
-                    cursor.setPosition(i-j, QTextCursor::MoveAnchor); //per selezionare un carattere
-                    if( i == textEdit->toPlainText().size()-1){ i++ ; }
-                    cursor.setPosition(i, QTextCursor::KeepAnchor);
+                if(highlight){
+                    cursor.setPosition(j, QTextCursor::MoveAnchor); //per selezionare un carattere
+                    cursor.setPosition(i+1, QTextCursor::KeepAnchor);
                     if (colorableUsers.contains(highlightedUserSiteId)) {
                         QTextCharFormat fmt;
                         fmt.setBackground(colorableUsers[highlightedUserSiteId]->getColor());
                         cursor.mergeCharFormat(fmt);
                     }
-                    j=0;
+                    highlight = false;
                 }
             }
             i++;
         }
-    }
-    /*for(int i=0, j=0; i<textEdit->toPlainText().size(); i++){
-            if(_symbols[i]->getSiteId() == siteIdTmp){
-                for(j=1; j<textEdit->toPlainText().size()-i; j++){
-                    if(_symbols[i+j]->getSiteId() != siteIdTmp){
-                        break;
-                    }else if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
-                        break;
-                    }else if(_symbols[i+j]->isBold() != _symbols[i]->isBold()){
-                        break;
-                    }else if(_symbols[i+j]->isUnderlined() != _symbols[i]->isUnderlined()){
-                        break;
-                    }else if(_symbols[i+j]->isItalic() != _symbols[i]->isItalic()){
-                        break;
-                    }else if(_symbols[i+j]->getTextSize() != _symbols[i]->getTextSize()){
-                        break;
-                    }else if(_symbols[i+j]->getColor() != _symbols[i]->getColor()){
-                        break;
-                    }
-                }
-                qDebug() << i << " " << j << " " << siteIdTmp;
-                const QSignalBlocker blocker(textEdit);
-                QTextCursor cursor = textEdit->textCursor();
-                cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
-                cursor.setPosition(i + j, QTextCursor::KeepAnchor);
-                if (colorableUsers.contains(siteIdTmp)) {
-                    QTextCharFormat plainFormat(cursor.charFormat());
-                    plainFormat.setBackground(colorableUsers[siteIdTmp]->getColor());
-                    cursor.setCharFormat(plainFormat);
-                }
-                i = i+j-1;
-            }else{
-                for(j=1; j<textEdit->toPlainText().size()-i; j++){
-                    if(_symbols[i+j]->getSiteId() != siteIdTmp){
-                        break;
-                    }else if(_symbols[i+j]->getFont() != _symbols[i]->getFont()){
-                        break;
-                    }else if(_symbols[i+j]->isBold() != _symbols[i]->isBold()){
-                        break;
-                    }else if(_symbols[i+j]->isUnderlined() != _symbols[i]->isUnderlined()){
-                        break;
-                    }else if(_symbols[i+j]->isItalic() != _symbols[i]->isItalic()){
-                        break;
-                    }else if(_symbols[i+j]->getTextSize() != _symbols[i]->getTextSize()){
-                        break;
-                    }else if(_symbols[i+j]->getColor() != _symbols[i]->getColor()){
-                        break;
-                    }
-                }
-                qDebug() << i << " " << j << " " << siteIdTmp;
-                //const QSignalBlocker blocker(textEdit);
-                QTextCursor cursor = textEdit->textCursor();
-                cursor.setPosition(i, QTextCursor::MoveAnchor); //per selezionare un carattere
-                cursor.setPosition(i + j, QTextCursor::KeepAnchor);
-                QTextCharFormat plainFormat(cursor.charFormat());
-                plainFormat.setBackground(Qt::white);
-                cursor.setCharFormat(plainFormat);
-                i = i+j-1;
 
+        if(highlight){
+            cursor.setPosition(j, QTextCursor::MoveAnchor); //per selezionare un carattere
+            cursor.setPosition(i+1, QTextCursor::KeepAnchor);
+            if (colorableUsers.contains(highlightedUserSiteId)) {
+                QTextCharFormat fmt;
+                fmt.setBackground(colorableUsers[highlightedUserSiteId]->getColor());
+                cursor.mergeCharFormat(fmt);
             }
+            highlight = false;
         }
-}*/
+    }
+
     connect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::onTextChanged);
 }
 
@@ -1102,7 +991,6 @@ void TextEdit::textBold()
     fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
     QTextCursor cursor = textEdit->textCursor();
     mergeFormatOnWordOrSelection(fmt);
-    //mergeFormatOnWordOrSelection(fmt);
 }
 
 void TextEdit::textUnderline()
@@ -1363,21 +1251,21 @@ void TextEdit::clipboardDataChanged()
 {
 #ifndef QT_NO_CLIPBOARD
     if (const QMimeData *md = QApplication::clipboard()->mimeData()){
-            actionPaste->setEnabled(md->hasText());
-            QTextCursor cursor = textEdit->textCursor();
-            if(textEdit->textCursor().hasSelection()){
-                charsFormat.clear();
-                qDebug() << cursor.selectionStart() << " " << cursor.selectionEnd();
-                int inizio = cursor.selectionStart();
-                int fine = cursor.selectionEnd();
-                cursor.setPosition(cursor.selectionStart());
-                for(int i = inizio ; i < fine; i++){
-                    cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,1);
-                    QTextCharFormat textFormat(cursor.charFormat());
-                    charsFormat.push_back(textFormat);
-                }
+        actionPaste->setEnabled(md->hasText());
+        QTextCursor cursor = textEdit->textCursor();
+        if(textEdit->textCursor().hasSelection()){
+            charsFormat.clear();
+            qDebug() << cursor.selectionStart() << " " << cursor.selectionEnd();
+            int inizio = cursor.selectionStart();
+            int fine = cursor.selectionEnd();
+            cursor.setPosition(cursor.selectionStart());
+            for(int i = inizio ; i < fine; i++){
+                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,1);
+                QTextCharFormat textFormat(cursor.charFormat());
+                charsFormat.push_back(textFormat);
             }
         }
+    }
 #endif
 }
 
@@ -1812,7 +1700,7 @@ QVector<QVector<int>> TextEdit::generatePos(int index, int nPosition) {
         }
         else {
             if (index == 0 && firstPosition==true) { //indice uguale a 0, inserisco con compresa tra 0 e 1. Inserimento in TESTA
-                                                     //Non è più un inserimento in testa, nel caso sia già stato inserito un altro elemento (firstPosition==false)
+                //Non è più un inserimento in testa, nel caso sia già stato inserito un altro elemento (firstPosition==false)
                 QVector<int> pos_successivo = _symbols[index]->getPosition();   //OTTENGO IL POS DELLA PRECEDENTE TESTA, ORA DEVO GENERARE IL NUOVO.
                 QVector<int> vuoto;
                 vuoto.push_back(0);
@@ -2284,7 +2172,7 @@ int TextEdit::findIndexFromExistingPosition(QVector<int> position){
         }
     }
 
-   /*int index=-1;
+    /*int index=-1;
 
     for(int i=0; i<this->_symbols.size(); i++){
         if(this->_symbols[i]->getPosition() == position){
