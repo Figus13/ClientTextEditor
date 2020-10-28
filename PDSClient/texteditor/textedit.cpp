@@ -1332,20 +1332,22 @@ void TextEdit::onTextChanged(int pos, int del, int add){
 
     QString added = textEdit->toPlainText().mid(pos, add);
 
+
+
     QTextCursor cursor(textEdit->textCursor());
     QVector<QFont> fonts;
     QVector<QTextCharFormat> changeFormatVect;
     highlightUserText("Modifica testo - " + QString::number(pos) + " - " + QString::number(add));
 
     if(cursor.position() == pos){
-        for(int i=0; i<del; i++){
+        for(int i=0; i<del-1; i++){
             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
             QTextCharFormat plainFormat(cursor.charFormat());
             changeFormatVect.push_back(plainFormat);
             //fonts.push_back(plainFormat.font());
         }
     }else if (cursor.position() == pos + del){
-        for(int i=0; i<del; i++){
+        for(int i=0; i<del-1; i++){
             QTextCharFormat plainFormat(cursor.charFormat());
             //fonts.push_front(plainFormat.font());
             changeFormatVect.push_back(plainFormat);
@@ -1386,7 +1388,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
         messagesAdd.push_back(mess);
     }else{
         writingFlag=true;
-        messagesAdd = localInsert(pos, added, del, add, changeFormatVect);
+        messagesAdd = localInsert(pos, added, del-1, add, changeFormatVect);
     }
     if(messagesAdd.size() != 0){
         message_ready(messagesAdd, this->fileIndex);
@@ -1680,7 +1682,7 @@ QVector<QVector<int>> TextEdit::generatePos(int index, int nPosition) {
     }
     for(int k=0; k<nPosition; k++){
         QVector<int> pos;
-        if (this->_symbols.empty()) { //il vettore è vuoto, quindi creo un vettore di posizione [1 , siteid] e lo metto da parte
+        if (this->_symbols.empty() && firstPosition == true) { //il vettore è vuoto, quindi creo un vettore di posizione [1 , siteid] e lo metto da parte
             pos.push_back(index + 1);
         }
         else {
@@ -1699,7 +1701,7 @@ QVector<QVector<int>> TextEdit::generatePos(int index, int nPosition) {
                     pos_precedente = vector[k - 1];
                 }
                 if (_symbols.size() == index) {         //Inserimento in CODA
-                    for (i = 0; i < _symbols[index - 1]->getPosition().size(); i++) {
+                    for (i = 0; i < pos_precedente.size(); i++) {
                         if (pos_precedente[i] == INT_MAX) {
                             pos.push_back(INT_MAX);
                         }
