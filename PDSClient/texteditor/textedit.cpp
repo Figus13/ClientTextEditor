@@ -1932,6 +1932,12 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
             index = findIndexFromExistingPosition(sym->getPosition());
             startRemove=index;
             cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
+        }else if(counter ==1){
+            //da qui
+            startRemove =findIndexFromExistingPosition(sym->getPosition());
+            cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
+            //a qui
+            index = nextIndex;
         }else{
             index = nextIndex;
         }
@@ -1950,8 +1956,6 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
             //cursor.deleteChar();            //ATTENZIONE BISOGNA CANCELLARNE PIù DI UNO
             this->_symbols.remove(startRemove, counter);
             counter=1;
-            startRemove=nextIndex;
-            cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
         }
     }
     remoteCursorChangePosition(index, siteIdSender);
