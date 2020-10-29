@@ -2156,7 +2156,7 @@ int TextEdit::findIndexFromNewPosition(QVector<int> position){
         {
             i = (dx + sx) / 2;
             qDebug() << i << dx << sx;
-            if (this->_symbols[i - 1]->getPosition() < position && position < this->_symbols[i]->getPosition()) {
+            if (i != 0 && this->_symbols[i - 1]->getPosition() < position && position < this->_symbols[i]->getPosition()) {
                 flag = 1;
                 index = i;
             }else if(dx == sx+1){
