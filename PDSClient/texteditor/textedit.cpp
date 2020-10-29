@@ -246,6 +246,7 @@ void TextEdit::onSignalConnection(int siteId, QString nickname, int ins){
         bar->showMessage(tr(qPrintable(s)));
     }else if(ins == 0){
         if(cursorsMap.contains(siteId)){
+            cursorsMap[siteId]->getCursor()->hide();
             cursorsMap.remove(siteId);
             bar->clearMessage();
             QString s("Utenti Connessi: " + QString::number(this->cursorsMap.size() + 1) );
@@ -290,6 +291,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
     /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
 
     /*aggiunta*/
+
     client.get()->closeFile(this->fileIndex);
     emit closeWindow();
     disconnect(this, &TextEdit::message_ready, client.get(), &Client::onMessageReady);
@@ -336,9 +338,10 @@ void TextEdit::onRefreshTextEdit(QString oldNick, QString newNick) {
             comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - (Io)", siteId);
         }else{
             if(this->cursorsMap.contains(siteId)){
-                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - connesso", siteId);
+                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - (connesso)", siteId);
             }else{
-                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - disconnesso", siteId);
+
+                comboUser->addItem(icon, QString::number(siteId) + " - " + colorableUsers[siteId]->getNickname() + " - (disconnesso)", siteId);
             }
         }
     }
