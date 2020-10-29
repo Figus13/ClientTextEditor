@@ -1972,7 +1972,7 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
                 cursor.setPosition(index+1, QTextCursor::KeepAnchor);
                 cursor.selectedText();
                 cursor.removeSelectedText();
-                qDebug() << startRemove << this->_symbols.size() << counter << index << nextIndex;
+               // qDebug() << startRemove << this->_symbols.size() << counter << index << nextIndex;
                 this->_symbols.remove(startRemove, counter);
                 counter=1;
             }

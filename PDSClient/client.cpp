@@ -568,7 +568,7 @@ QTcpSocket* Client::getSocket(){
  * @param fileIndex: indice del file di cui chiedo l'URI
  */
 void Client::requestURI(int fileIndex){
-    qDebug() << files[fileIndex].get();
+   // qDebug() << files[fileIndex].get();
     QByteArray buf;
     QDataStream out(&buf, QIODevice::WriteOnly);
     QByteArray bufOut;
