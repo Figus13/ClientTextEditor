@@ -1868,6 +1868,8 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
     int startBufferIndex, index, nextIndex, flag=0;
     QTextCharFormat headingFormat;
     QTextCursor cursor = textEdit->textCursor();
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
     for(int i=0; i<messages.size(); i++){
         std::shared_ptr<Symbol> sym = messages[i].getSymbol();
         index = findIndexFromNewPosition(sym->getPosition());
@@ -1910,6 +1912,8 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
             }
         }
     }
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
     if(index != -1){
         remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
     }else{
