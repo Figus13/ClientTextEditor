@@ -284,7 +284,7 @@ void Client::onReadyRead(){
             int siteIdSender, cursorIndex;
             QString filepath;
             in >> filepath >> cursorIndex >> siteIdSender;
-            if(filepath == this->files[this->fileIndexOpened]->getFilePath())
+            if(this->fileIndexOpened != -1 && filepath == this->files[this->fileIndexOpened]->getFilePath())
                 remote_cursor_changed(cursorIndex, siteIdSender);
             break;
         }
