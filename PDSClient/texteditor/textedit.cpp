@@ -2122,7 +2122,7 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
  * @param position
  * @return
  */
-/*int TextEdit::findIndexFromNewPosition(QVector<int> position){
+int TextEdit::findIndexFromNewPosition(QVector<int> position){
     int index = this->_symbols.size();
     int size = this->_symbols.size();
     if (size == 0) {
@@ -2156,72 +2156,14 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
         {
             i = (dx + sx) / 2;
             qDebug() << i << dx << sx;
-            if (i != 0 && this->_symbols[i - 1]->getPosition() < position && position < this->_symbols[i]->getPosition()) {
+            if (i != 0 && this->_symbols[i]->getPosition() < position && position < this->_symbols[i+1]->getPosition()) {
                 flag = 1;
                 index = i;
             }else if(dx == sx+1){
                 flag = 1;
                 index = -1;
             }else{
-                if (this->_symbols[i - 1]->getPosition() > position) {// il nostro simbolo ha pos minore del simbolo indicizzato -> andare a sinistra;
-                    dx = i;
-                }
-                else if(this->_symbols[i]->getPosition() < position){
-                    sx = i;
-                }else{
-                    flag = 1;
-                    index = -1;
-                }
-            }
-
-        }
-    }
-    return index;
-}*/
-
-int TextEdit::findIndexFromNewPosition(QVector<int> position){
-    int index = _symbols.size();
-    int size = _symbols.size();
-    if (size == 0) {
-        index = 0;
-    }
-
-    if (size == 1) {
-        if (_symbols[0]->getPosition() > position) {
-            index = 0;
-        }
-        else {
-            index = 1;
-        }
-    }
-    if (size > 1) {
-        int flag = 0;
-        if (position < _symbols[0]->getPosition()) {
-            index = 0;
-            flag = 1;
-        }
-        else if(position > _symbols[size-1]->getPosition()){
-            index = size;
-            flag = 1;
-        }
-        int i;
-        int dx, sx;
-        dx = size -1;
-        sx = 0;
-
-        while (flag == 0)
-        {
-            i = (dx + sx) / 2;
-            if (_symbols[i]->getPosition() < position && position < _symbols[i + 1]->getPosition()) {
-                flag = 1;
-                index = i;
-            }
-            else if((dx == sx + 1) || dx == sx) {
-                flag = 1;
-                index = -1;
-            }
-            else {
-                if (_symbols[i]->getPosition() > position) {// il nostro simbolo ha pos minore del simbolo indicizzato -> andare a sinistra;
+                if (this->_symbols[i]->getPosition() > position) {// il nostro simbolo ha pos minore del simbolo indicizzato -> andare a sinistra;
                     dx = i;
                 }
                 else if(this->_symbols[i+1]->getPosition() < position){
@@ -2231,6 +2173,7 @@ int TextEdit::findIndexFromNewPosition(QVector<int> position){
                     index = -1;
                 }
             }
+
         }
     }
     return index;
