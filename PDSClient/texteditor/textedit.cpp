@@ -1935,7 +1935,7 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
  * @param messages: messaggi contenenti i simboli da cancellare
  * @param siteIdSender: siteId del mittente dei simboli da cancellare
  */
-void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
+/*void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
@@ -1965,7 +1965,7 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
             nextIndex=findIndexFromExistingPosition(messages[i+1].getSymbol()->getPosition());
         }
 
-        if(i!=(messages.size()-1) && index==nextIndex-1 && index != -1 && nextIndex != -1){//sono di fila, posso cancellarli con una operazione
+        if(i!=(messages.size()-1) && index==nextIndex-1 &&  index != -1 && messages[i].getSymbol()->getCounter()==this->_symbols[index]->getCounter() && nextIndex != -1){//sono di fila, posso cancellarli con una operazione
             counter++;
         }else{
             if(index != -1){
@@ -1988,6 +1988,67 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     }
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
+}*/
+
+void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,
+               this, &TextEdit::onTextChanged);
+    int startIndex, controlloIndice, lastIndex=-1;
+    QTextCursor cursor = textEdit->textCursor();
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+                this, &TextEdit::cursorPositionChanged);
+    for(int i=0; i<messages.size(); i++){
+        std::shared_ptr<Symbol> sym = messages[i].getSymbol();
+
+        if(startIndex==-1) //CASO DI START-INDEX NON ANCORA TROVATO
+        {
+            controlloIndice = findIndexFromExistingPosition(sym->getPosition());
+            if(controlloIndice==-1 || (this->_symbols[controlloIndice]->getSiteId()!=sym->getSiteId())
+                                   || (this->_symbols[controlloIndice]->getCounter()!=sym->getCounter())){
+                continue; //il simbolo che ci hanno chiesto di cancellare è già stato cancellato in locale.
+            }else{
+                startIndex=controlloIndice;
+                lastIndex=controlloIndice;
+            }
+
+        }else{ //HO GIA' UNO START-INDEX, CONTROLLO SE IL SIMBOLO CHE STO SCANNERIZZANDO è ADIACENTE A QUELLI GIA' TRATTATI
+
+            controlloIndice=findIndexFromExistingPosition(messages[i].getSymbol()->getPosition());
+            if(controlloIndice==-1 || (this->_symbols[controlloIndice]->getSiteId()!=sym->getSiteId())
+                                   || (this->_symbols[controlloIndice]->getCounter()!=sym->getCounter())){
+                deleteFromEditor(startIndex, lastIndex, cursor);
+                lastIndex=-1;
+                startIndex=-1;
+
+            }else{ //il simbolo esiste ed è da cancellare, ma devo controllare che sia consecutivo.
+                if(controlloIndice!=lastIndex+1){ //non sono consecutivi.
+                    deleteFromEditor(startIndex, lastIndex, cursor);
+                    startIndex=controlloIndice;
+                    lastIndex=controlloIndice;
+                }else{                            //sono consecutivi
+                    lastIndex=controlloIndice;
+                }
+            }
+        }
+    }
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+                this, &TextEdit::cursorPositionChanged);
+    cursorPositionChanged();
+    if(startIndex!=-1){
+        remoteCursorChangePosition(startIndex, siteIdSender);
+    }
+    connect(textEdit->document(), &QTextDocument::contentsChange,
+            this, &TextEdit::onTextChanged);
+}
+
+void TextEdit::deleteFromEditor(int firstIndex, int lastIndex, QTextCursor cursor){
+    cursor.setPosition(firstIndex, QTextCursor::MoveAnchor);
+    cursor.setPosition(lastIndex+1, QTextCursor::KeepAnchor);
+    cursor.selectedText();
+    cursor.removeSelectedText();
+    QVector<std::shared_ptr<Symbol>> fine = this->_symbols.mid(lastIndex+1, this->_symbols.size() - lastIndex+1);
+    this->_symbols = this->_symbols.mid(0, firstIndex);
+    this->_symbols.append(fine);
 }
 
 /*void TextEdit::remoteInsert(std::shared_ptr<Symbol> sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
