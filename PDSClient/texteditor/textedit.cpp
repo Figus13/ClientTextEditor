@@ -2015,8 +2015,8 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
         }
         else {
             bool successivo = false;
-            if (this->_symbols[index + count]->getPosition() == sym->getPosition()) {
-                if (index + count < size && this->_symbols[index + count]->getSiteId() == sym->getSiteId() && this->_symbols[index + count]->getCounter() == sym->getCounter()) {
+            if (index + count < size && this->_symbols[index + count]->getPosition() == sym->getPosition()) {
+                if (this->_symbols[index + count]->getSiteId() == sym->getSiteId() && this->_symbols[index + count]->getCounter() == sym->getCounter()) {
                     count++;
                     successivo = true;
                 }
