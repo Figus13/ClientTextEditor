@@ -1993,7 +1993,7 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
 void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
-    int startIndex, controlloIndice, lastIndex=-1;
+    int startIndex=-1, controlloIndice, lastIndex=-1;
     QTextCursor cursor = textEdit->textCursor();
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
                 this, &TextEdit::cursorPositionChanged);
@@ -2023,8 +2023,9 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
             }else{ //il simbolo esiste ed è da cancellare, ma devo controllare che sia consecutivo.
                 if(controlloIndice!=lastIndex+1){ //non sono consecutivi.
                     deleteFromEditor(startIndex, lastIndex, cursor);
-                    startIndex=controlloIndice;
-                    lastIndex=controlloIndice;
+                    startIndex=-1;
+                    lastIndex=-1;
+                    i--;
                 }else{                            //sono consecutivi
                     lastIndex=controlloIndice;
                 }
