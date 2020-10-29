@@ -2032,6 +2032,10 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
             }
         }
     }
+    if(startIndex!=-1 && lastIndex!=-1){
+        deleteFromEditor(startIndex, lastIndex, cursor);
+    }
+
     connect(textEdit, &QTextEdit::cursorPositionChanged,
                 this, &TextEdit::cursorPositionChanged);
     cursorPositionChanged();
