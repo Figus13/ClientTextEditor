@@ -2006,11 +2006,11 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
         std::shared_ptr<Symbol> sym = messages[i].getSymbol();
         if (count == 0) {
             index = findIndexFromExistingPosition(sym->getPosition());
-            if(this->_symbols[index]->getSiteId() == sym->getSiteId() && this->_symbols[index]->getCounter() == sym->getCounter()) {
-                index = -1;
+            if(index != -1 && this->_symbols[index]->getSiteId() == sym->getSiteId() && this->_symbols[index]->getCounter() == sym->getCounter()) {
+                count++;
             }
             else {
-                count++;
+                index = -1;
             }
         }
         else {
