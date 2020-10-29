@@ -1255,7 +1255,7 @@ void TextEdit::clipboardDataChanged()
         QTextCursor cursor = textEdit->textCursor();
         if(textEdit->textCursor().hasSelection()){
             charsFormat.clear();
-            qDebug() << cursor.selectionStart() << " " << cursor.selectionEnd();
+            //qDebug() << cursor.selectionStart() << " " << cursor.selectionEnd();
             int inizio = cursor.selectionStart();
             int fine = cursor.selectionEnd();
             cursor.setPosition(cursor.selectionStart());
@@ -1372,11 +1372,11 @@ void TextEdit::onTextChanged(int pos, int del, int add){
             messagesDel.push_back(mess);
         }
     }
-    qDebug() << pos << del ;
+    //qDebug() << pos << del ;
     if(del>0){
         this->_symbols.remove(pos, counter);
     }
-    qDebug() << messagesDel.size();
+    //qDebug() << messagesDel.size();
     if(messagesDel.size() != 0){
         message_ready(messagesDel, this->fileIndex);
     }
@@ -1912,6 +1912,7 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
             }
         }
     }
+    cursorPositionChanged();
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &TextEdit::cursorPositionChanged);
     if(index != -1){
@@ -1934,6 +1935,8 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
 void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+                this, &TextEdit::cursorPositionChanged);
     int index, nextIndex = -1, counter=1, startRemove;
     QTextCursor cursor = textEdit->textCursor();
     for(int i=0; i<messages.size(); i++){
@@ -1972,6 +1975,9 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
             }
         }
     }
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+                this, &TextEdit::cursorPositionChanged);
+    cursorPositionChanged();
     if(index != -1 && index <this->_symbols.size()){
         remoteCursorChangePosition(index, siteIdSender);
     }else{
@@ -2159,7 +2165,7 @@ int TextEdit::findIndexFromNewPosition(QVector<int> position){
         while (flag == 0)
         {
             i = (dx + sx) / 2;
-            qDebug() << i << dx << sx;
+            //qDebug() << i << dx << sx;
             if (i != 0 && this->_symbols[i - 1]->getPosition() < position && position < this->_symbols[i]->getPosition()) {
                 flag = 1;
                 index = i;
@@ -2293,7 +2299,7 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     int rt_height = rt.height();
     std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
     uc->setPos(cursorPos);
-    qDebug() << rt << " posizione";
+    //qDebug() << rt << " posizione";
 
 
     //label con il nome utente
