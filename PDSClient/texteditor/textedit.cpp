@@ -1958,7 +1958,7 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
         if(i!=(messages.size()-1) && index==nextIndex-1 && index != -1 && nextIndex != -1){//sono di fila, posso cancellarli con una operazione
             counter++;
         }else{
-            if(startRemove != -1){
+            if(index != -1){
                 cursor.setPosition(index+1, QTextCursor::KeepAnchor);
                 cursor.selectedText();
                 cursor.removeSelectedText();
