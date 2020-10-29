@@ -1860,19 +1860,104 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
     return pos;
 }
 
+void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
+
+    QString buffer;
+    int index = _symbols.size();
+    int count = 0;
+    int flag = 0;
+    QTextCharFormat headingFormat;
+    QTextCursor cursor = textEdit->textCursor();
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
+    for(int i=0; i<messages.size(); i++) {
+        std::shared_ptr<Symbol> sym = messages[i].getSymbol();
+        int size = _symbols.size();
+        if (count == 0) {
+            index = findIndexFromNewPosition(sym->getPosition());
+            if(index!=-1) {
+                cursor.setPosition(index);
+                QTextCharFormat plainFormat(cursor.charFormat());
+                headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
+                headingFormat.setFontItalic(sym->isItalic());
+                headingFormat.setFontUnderline(sym->isUnderlined());
+                headingFormat.setForeground(sym->getColor());
+                headingFormat.setFontPointSize(sym->getTextSize());
+                headingFormat.setFontFamily(sym->getFont());
+                /*In un inserimento non si possono avere messaggi da diversi client*/
+                if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
+                    headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
+                }else{
+                    headingFormat.setBackground(Qt::white);
+                }
+                Qt::Alignment intAlign = intToAlign(sym->getAlignment());
+                textEdit->setAlignment(intAlign);
+                count++;
+                buffer.append(sym->getValue());
+            }
+        }
+        else
+        {
+            bool successivo = false;
+            if (sym->getPosition() > messages[i-1].getSymbol()->getPosition()) {
+                if ((index != size && sym->getPosition() < _symbols[index]->getPosition()) || (index == size)) {
+                    if(styleIsEqual(sym, messages[i-1].getSymbol())) {
+                        count++;
+                        successivo = true;
+                        buffer.append(sym->getValue());
+                    }
+                }
+            }
+            if (!successivo) {
+                QVector<std::shared_ptr<Symbol>> inizio = _symbols.mid(0, index);
+                QVector<std::shared_ptr<Symbol>> fine = _symbols.mid(index, _symbols.size()-index);
+                QVector<std::shared_ptr<Symbol>> added;
+                for(int j = i-count; j < i; j++) {
+                   added.append(messages[j].getSymbol());
+                }
+                _symbols = inizio;
+                _symbols.append(added);
+                _symbols.append(fine);
+                count = 0;
+                i--;
+                cursor.insertText(buffer, headingFormat);
+                buffer.clear();
+            }
+        }
+    }
+    if (index != -1) {
+        QVector<std::shared_ptr<Symbol>> inizio = _symbols.mid(0, index);
+        QVector<std::shared_ptr<Symbol>> fine = _symbols.mid(index, _symbols.size()-index);
+        QVector<std::shared_ptr<Symbol>> added;
+        for(int j = messages.size()-count; j < messages.size(); j++) {
+           added.append(messages[j].getSymbol());
+        }
+        _symbols = inizio;
+        _symbols.append(added);
+        _symbols.append(fine);
+        cursor.insertText(buffer, headingFormat);
+        buffer.clear();
+    }
+    cursorPositionChanged();
+    connect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
+    if(index != -1){
+        remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
+    }else{
+        remoteCursorChangePosition(0, messages[messages.size()-1].getSymbol()->getSiteId());
+    }
+    connect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
+}
 /**
  * @brief funzione che inserisce simboli arrivati dal server
  * @param messages: messaggi contenenti i simboli da inserire
  */
-void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
-    disconnect(textEdit->document(), &QTextDocument::contentsChange,
-               this, &TextEdit::onTextChanged);
+/*void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
     QString buffer;
     int startBufferIndex, index, nextIndex, flag=0;
     QTextCharFormat headingFormat;
     QTextCursor cursor = textEdit->textCursor();
-    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-            this, &TextEdit::cursorPositionChanged);
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
     for(int i=0; i<messages.size(); i++){
         std::shared_ptr<Symbol> sym = messages[i].getSymbol();
         index = findIndexFromNewPosition(sym->getPosition());
@@ -1889,7 +1974,7 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
                 headingFormat.setForeground(sym->getColor());
                 headingFormat.setFontPointSize(sym->getTextSize());
                 headingFormat.setFontFamily(sym->getFont());
-                /*In un inserimento non si possono avere messaggi da diversi client*/
+                /*In un inserimento non si possono avere messaggi da diversi client*#############################
                 if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
                     headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
                 }else{
@@ -1916,15 +2001,14 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
         }
     }
     cursorPositionChanged();
-    connect(textEdit, &QTextEdit::cursorPositionChanged,
-            this, &TextEdit::cursorPositionChanged);
+    connect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
     if(index != -1){
         remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
     }else{
         remoteCursorChangePosition(0, messages[messages.size()-1].getSymbol()->getSiteId());
     }
     connect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
-}
+}*/
 
 /**
  * @brief funzione che inserisce simboli arrivati dal server
