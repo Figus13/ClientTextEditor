@@ -1334,7 +1334,13 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 void TextEdit::onTextChanged(int pos, int del, int add){
 
     QString added = textEdit->toPlainText().mid(pos, add);
-
+     // 10      15      5
+    qDebug() << charsFormat.size();
+    if( charsFormat.size() != 0  && (del == add - charsFormat.size())){
+        added = textEdit->toPlainText().mid(0, this->charsFormat.size());
+        del = 0;
+        add = charsFormat.size();
+    }
 
 
     QTextCursor cursor(textEdit->textCursor());
