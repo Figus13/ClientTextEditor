@@ -1989,8 +1989,58 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
 }*/
-
 void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
+
+    disconnect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
+
+    //int  nextIndex = -1, counter=1, startRemove;
+    QTextCursor cursor = textEdit->textCursor();
+
+    int index = this->_symbols.size();
+    int size = this->_symbols.size();
+
+    int count = 0;
+
+    for(int i=0; i<messages.size(); i++){
+        std::shared_ptr<Symbol> sym = messages[i].getSymbol();
+        if (count == 0) {
+            index = findIndexFromExistingPosition(sym->getPosition());
+            if(this->_symbols[index]->getSiteId() == sym->getSiteId() && this->_symbols[index]->getCounter() == sym->getCounter()) {
+                index = -1;
+            }
+            else {
+                count++;
+            }
+        }
+        else {
+            bool successivo = false;
+            if (this->_symbols[index + count]->getPosition() == sym->getPosition()) {
+                if (index + count < size && this->_symbols[index + count]->getSiteId() == sym->getSiteId() && this->_symbols[index + count]->getCounter() == sym->getCounter()) {
+                    count++;
+                    successivo = true;
+                }
+            }
+            if (!successivo) {
+                deleteFromEditor(index, index + count - 1, cursor);
+                count = 0;
+                i--;
+            }
+        }
+
+    }
+    if (count != 0) {
+        deleteFromEditor(index, index + count - 1, cursor);
+    }
+    connect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
+    cursorPositionChanged();
+    if(index!=-1){
+        remoteCursorChangePosition(index, siteIdSender);
+    }
+    connect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
+}
+
+/*void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
     int startIndex, controlloIndice, lastIndex=-1;
@@ -2031,15 +2081,13 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
             }
         }
     }
-    connect(textEdit, &QTextEdit::cursorPositionChanged,
-                this, &TextEdit::cursorPositionChanged);
+    connect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
     cursorPositionChanged();
     if(startIndex!=-1){
         remoteCursorChangePosition(startIndex, siteIdSender);
     }
-    connect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
-}
+    connect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
+}*/
 
 void TextEdit::deleteFromEditor(int firstIndex, int lastIndex, QTextCursor cursor){
     cursor.setPosition(firstIndex, QTextCursor::MoveAnchor);
