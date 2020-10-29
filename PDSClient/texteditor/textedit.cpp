@@ -2158,8 +2158,10 @@ int TextEdit::findIndexFromNewPosition(QVector<int> position){
             if (this->_symbols[i - 1]->getPosition() < position && position < this->_symbols[i]->getPosition()) {
                 flag = 1;
                 index = i;
-            }
-            else {
+            }else if(dx == sx+1){
+                flag = 1;
+                index = -1;
+            }else{
                 if (this->_symbols[i - 1]->getPosition() > position) {// il nostro simbolo ha pos minore del simbolo indicizzato -> andare a sinistra;
                     dx = i;
                 }
@@ -2205,7 +2207,6 @@ int TextEdit::findIndexFromExistingPosition(QVector<int> position){
 
         while (flag == 0)
         {
-
             i = (dx + sx) / 2;
             if (this->_symbols[i]->getPosition() == position) {
                 flag = 1;
