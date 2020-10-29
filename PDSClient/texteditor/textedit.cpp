@@ -1357,7 +1357,7 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     int counter = 0;
     //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
 
-   /* if(added.size() > 0) {
+    /* if(added.size() > 0) {
         del--;
     }*/
 
@@ -1871,45 +1871,51 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
     for(int i=0; i<messages.size(); i++){
         std::shared_ptr<Symbol> sym = messages[i].getSymbol();
         index = findIndexFromNewPosition(sym->getPosition());
-        this->_symbols.insert(this->_symbols.begin() + index, sym);
-        if(flag==0){
-            flag=1;
-            startBufferIndex = index;
-            cursor.setPosition(startBufferIndex);
-            QTextCharFormat plainFormat(cursor.charFormat());
-            headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
-            headingFormat.setFontItalic(sym->isItalic());
-            headingFormat.setFontUnderline(sym->isUnderlined());
-            headingFormat.setForeground(sym->getColor());
-            headingFormat.setFontPointSize(sym->getTextSize());
-            headingFormat.setFontFamily(sym->getFont());
-            /*In un inserimento non si possono avere messaggi da diversi client*/
-            if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
-                headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
-            }else{
-                headingFormat.setBackground(Qt::white);
+        if(index != -1){
+            this->_symbols.insert(this->_symbols.begin() + index, sym);
+            if(flag==0){
+                flag=1;
+                startBufferIndex = index;
+                cursor.setPosition(startBufferIndex);
+                QTextCharFormat plainFormat(cursor.charFormat());
+                headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
+                headingFormat.setFontItalic(sym->isItalic());
+                headingFormat.setFontUnderline(sym->isUnderlined());
+                headingFormat.setForeground(sym->getColor());
+                headingFormat.setFontPointSize(sym->getTextSize());
+                headingFormat.setFontFamily(sym->getFont());
+                /*In un inserimento non si possono avere messaggi da diversi client*/
+                if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
+                    headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
+                }else{
+                    headingFormat.setBackground(Qt::white);
+                }
+                Qt::Alignment intAlign = intToAlign(sym->getAlignment());
+                textEdit->setAlignment(intAlign);
+
             }
-            Qt::Alignment intAlign = intToAlign(sym->getAlignment());
-            textEdit->setAlignment(intAlign);
-        }
-        if(i==(messages.size()-1)){ //ultimo carattere devo scrivere tutto quello che ho nel buffer
-            buffer.append(sym->getValue());
-            cursor.insertText(buffer, headingFormat);
-        }else{
-            nextIndex=findIndexFromNewPosition(messages[i+1].getSymbol()->getPosition());
-            if(nextIndex-1 == index && styleIsEqual(sym, messages[i+1].getSymbol())){//il prossimo simbolo ha lo stesso font, appendo al buffer.
-                buffer.append(sym->getValue());
-            }else{
-                flag=0;
+            if(i==(messages.size()-1)){ //ultimo carattere devo scrivere tutto quello che ho nel buffer
                 buffer.append(sym->getValue());
                 cursor.insertText(buffer, headingFormat);
-                buffer.clear();
+            }else{
+                nextIndex=findIndexFromNewPosition(messages[i+1].getSymbol()->getPosition());
+                if(nextIndex-1 == index && styleIsEqual(sym, messages[i+1].getSymbol())){//il prossimo simbolo ha lo stesso font, appendo al buffer.
+                    buffer.append(sym->getValue());
+                }else{
+                    flag=0;
+                    buffer.append(sym->getValue());
+                    cursor.insertText(buffer, headingFormat);
+                    buffer.clear();
+                }
             }
         }
     }
-    remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
-    connect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
+    if(index != -1){
+        remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
+    }else{
+        remoteCursorChangePosition(0, messages[messages.size()-1].getSymbol()->getSiteId());
+    }
+    connect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
 }
 
 /**
@@ -2148,6 +2154,7 @@ int TextEdit::findIndexFromNewPosition(QVector<int> position){
         while (flag == 0)
         {
             i = (dx + sx) / 2;
+            qDebug() << i << dx << sx;
             if (this->_symbols[i - 1]->getPosition() < position && position < this->_symbols[i]->getPosition()) {
                 flag = 1;
                 index = i;
@@ -2156,8 +2163,11 @@ int TextEdit::findIndexFromNewPosition(QVector<int> position){
                 if (this->_symbols[i - 1]->getPosition() > position) {// il nostro simbolo ha pos minore del simbolo indicizzato -> andare a sinistra;
                     dx = i;
                 }
-                else {
+                else if(this->_symbols[i]->getPosition() < position){
                     sx = i;
+                }else{
+                    flag = 1;
+                    index = -1;
                 }
             }
 
