@@ -179,7 +179,6 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
 #endif
 
     textEdit->setFocus();
-    //setCurrentFileName(QString());  ****MODIFICATA DA NOI*****
     setCurrentFileName(fileName);
 
     this->bar =  statusBar();
@@ -289,19 +288,10 @@ void TextEdit::onSignalOwners(QMap<int, QString> owners){
  */
 void TextEdit::closeEvent(QCloseEvent *e)
 {
-    /*qui devo sostituirlo con la disconnessione non dal server ma eliminare il file dalla connessione */
-
-    /*aggiunta*/
-
     client.get()->closeFile(this->fileIndex);
     emit closeWindow();
     disconnect(this, &TextEdit::message_ready, client.get(), &Client::onMessageReady);
-    /*fine aggiunta*/
     hide();
-    /*if (maybeSave())
-        e->accept();
-    else
-        e->ignore();*/
 }
 
 /**
@@ -354,43 +344,13 @@ void TextEdit::setupFileActions()
     QToolBar *tb = addToolBar(tr("File Actions"));
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
-    /*const QIcon newIcon = QIcon::fromTheme("document-new", QIcon(rsrcPath + "/filenew.png"));//capire crush: da commentare INIZIO COMMENTO
-    QAction *a = menu->addAction(newIcon,  tr("&New"), this, &TextEdit::fileNew);
-    tb->addAction(a);
-    a->setPriority(QAction::LowPriority);
-    a->setShortcut(QKeySequence::New);
 
-    const QIcon openIcon = QIcon::fromTheme("document-open", QIcon(rsrcPath + "/fileopen.png"));
-    a = menu->addAction(openIcon, tr("&Open..."), this, &TextEdit::fileOpen);
-    a->setShortcut(QKeySequence::Open);
-    tb->addAction(a);
-
-    menu->addSeparator();
-
-    const QIcon saveIcon = QIcon::fromTheme("document-save", QIcon(rsrcPath + "/filesave.png"));
-    actionSave = menu->addAction(saveIcon, tr("&Save"), this, &TextEdit::fileSave);
-    actionSave->setShortcut(QKeySequence::Save);
-    actionSave->setEnabled(false);
-    tb->addAction(actionSave);
-
-    a = menu->addAction(tr("Save &As..."), this, &TextEdit::fileSaveAs);
-    a->setPriority(QAction::LowPriority);
-    menu->addSeparator();                                                                       //capire crush: da commentare FINE COMMENTO
-
-
-     *
-     */
-    //a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::onShareURIButtonPressed);  //capire crush: da commentare
     const QIcon newIcon = QIcon::fromTheme("document-share", QIcon(rsrcPath + "/share.png"));   //capire crush: togliere commento
     QAction *a = menu->addAction( tr("&Condividi Documento"), this, &TextEdit::onShareURIButtonPressed);  //capire crush: togliere commento
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
-    /*      capire crush: INIZIO DA COMMENTARE */
-    /* a = menu->addAction( tr("&Stampa in PDF"), this, &TextEdit::onPrintOnPDF);
-    a->setPriority(QAction::LowPriority);
-    menu->addSeparator();*/
-    /*      capire crush:fine commento*/
+
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
     const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
     a = menu->addAction(printIcon, tr("&Print..."), this, &TextEdit::filePrint);
@@ -528,18 +488,7 @@ void TextEdit::setupTextActions()
     actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
     actionAlignJustify->setCheckable(true);
     actionAlignJustify->setPriority(QAction::LowPriority);
-    //capire crush: INIZIO DA COMMENTARE
-    /*const QIcon indentMoreIcon = QIcon::fromTheme("format-indent-more", QIcon(rsrcPath + "/format-indent-more.png"));
-    actionIndentMore = menu->addAction(indentMoreIcon, tr("&Indent"), this, &TextEdit::indent);
-    actionIndentMore->setShortcut(Qt::CTRL + Qt::Key_BracketRight);
-    actionIndentMore->setPriority(QAction::LowPriority);
-    const QIcon indentLessIcon = QIcon::fromTheme("format-indent-less", QIcon(rsrcPath + "/format-indent-less.png"));
-    actionIndentLess = menu->addAction(indentLessIcon, tr("&Unindent"), this, &TextEdit::unindent);
-    actionIndentLess->setShortcut(Qt::CTRL + Qt::Key_BracketLeft);
-    actionIndentLess->setPriority(QAction::LowPriority);
-    //capire crush: FINE DA commentare
 
-*/
     // Make sure the alignLeft  is always left of the alignRight
     QActionGroup *alignGroup = new QActionGroup(this);
     connect(alignGroup, &QActionGroup::triggered, this, &TextEdit::textAlign);
@@ -557,14 +506,6 @@ void TextEdit::setupTextActions()
 
     tb->addActions(alignGroup->actions());
     menu->addActions(alignGroup->actions());
-    // capire crush: INIZIO DA COMMENTARE
-    /*tb->addAction(actionIndentMore);
-    tb->addAction(actionIndentLess);
-    menu->addAction(actionIndentMore);
-    menu->addAction(actionIndentLess);*/
-    // capire crush: FINE DA COMMENTARE
-
-
     menu->addSeparator();
 
     QPixmap pix(16, 16);
@@ -574,44 +515,11 @@ void TextEdit::setupTextActions()
 
     menu->addSeparator();
 
-    // capire crush: INIZIO DA COMMENTARE
-    /*const QIcon checkboxIcon = QIcon::fromTheme("status-checkbox-checked", QIcon(rsrcPath + "/checkbox-checked.png"));
-    actionToggleCheckState = menu->addAction(checkboxIcon, tr("Chec&ked"), this, &TextEdit::setChecked);
-    actionToggleCheckState->setShortcut(Qt::CTRL + Qt::Key_K);
-    actionToggleCheckState->setCheckable(true);
-    actionToggleCheckState->setPriority(QAction::LowPriority);
-    tb->addAction(actionToggleCheckState);*/
-    // capire crush: FINE DA COMMENTARE
-
-
     tb = addToolBar(tr("Format Actions"));
     tb->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
     addToolBarBreak(Qt::TopToolBarArea);
     addToolBar(tb);
 
-    // capire crush: inizio DA COMMENTARE
-    /*comboStyle = new QComboBox(tb);
-    tb->addWidget(comboStyle);
-    comboStyle->addItem("Standard");
-    comboStyle->addItem("Bullet List (Disc)");
-    comboStyle->addItem("Bullet List (Circle)");
-    comboStyle->addItem("Bullet List (Square)");
-    comboStyle->addItem("Task List (Unchecked)");
-    comboStyle->addItem("Task List (Checked)");
-    comboStyle->addItem("Ordered List (Decimal)");
-    comboStyle->addItem("Ordered List (Alpha lower)");
-    comboStyle->addItem("Ordered List (Alpha upper)");
-    comboStyle->addItem("Ordered List (Roman lower)");
-    comboStyle->addItem("Ordered List (Roman upper)");
-    comboStyle->addItem("Heading 1");
-    comboStyle->addItem("Heading 2");
-    comboStyle->addItem("Heading 3");
-    comboStyle->addItem("Heading 4");
-    comboStyle->addItem("Heading 5");
-    comboStyle->addItem("Heading 6");
-
-    connect(comboStyle, QOverload<int>::of(&QComboBox::activated), this, &TextEdit::textStyle);*/
-    // capire crush: FINE DA COMMENTARE
     comboFont = new QFontComboBox(tb);
     comboFont->setEditable(false);
     tb->addWidget(comboFont);
@@ -630,8 +538,8 @@ void TextEdit::setupTextActions()
 
     connect(comboSize, &QComboBox::textActivated, this, &TextEdit::textSize);
     /*AGGIUNTA DA NOI */
-    tb->addSeparator(); // CAPIRE CRUSH: ELIMINARE COMMENTO
-    menu->addSeparator(); // CAPIRE CRUSH: ELIMINARE COMMENTO
+    tb->addSeparator();
+    menu->addSeparator();
 
     comboUser = new QComboBox(tb);
     comboUser->setObjectName("comboUser");
@@ -922,18 +830,7 @@ bool TextEdit::fileSaveAs()
 }
 
 void TextEdit::getURI(){
-    /*
 
-      PROVA GET URI
-
-    QLabel *label = new QLabel(this);
-    label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-    label->setText("first line\nsecond line");
-    label->setAlignment(Qt::AlignBottom | Qt::AlignRight);
-    label->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    label->show();
-
-    */
 }
 
 void TextEdit::filePrint()
@@ -1193,56 +1090,6 @@ void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
 void TextEdit::cursorPositionChanged()
 {
     alignmentChanged(textEdit->alignment());
-
-    /*QTextList *list = textEdit->textCursor().currentList();
-
-    if (list) {
-        switch (list->format().style()) {
-        case QTextListFormat::ListDisc:
-            comboStyle->setCurrentIndex(1);
-            break;
-        case QTextListFormat::ListCircle:
-            comboStyle->setCurrentIndex(2);
-            break;
-        case QTextListFormat::ListSquare:
-            comboStyle->setCurrentIndex(3);
-            break;
-        case QTextListFormat::ListDecimal:
-            comboStyle->setCurrentIndex(6);
-            break;
-        case QTextListFormat::ListLowerAlpha:
-            comboStyle->setCurrentIndex(7);
-            break;
-        case QTextListFormat::ListUpperAlpha:
-            comboStyle->setCurrentIndex(8);
-            break;
-        case QTextListFormat::ListLowerRoman:
-            comboStyle->setCurrentIndex(9);
-            break;
-        case QTextListFormat::ListUpperRoman:
-            comboStyle->setCurrentIndex(10);
-            break;
-        default:
-            comboStyle->setCurrentIndex(-1);
-            break;
-        }
-        switch (textEdit->textCursor().block().blockFormat().marker()) {
-        case QTextBlockFormat::MarkerType::NoMarker:
-            actionToggleCheckState->setChecked(false);
-            break;
-        case QTextBlockFormat::MarkerType::Unchecked:
-            comboStyle->setCurrentIndex(4);
-            actionToggleCheckState->setChecked(false);
-            break;
-        case QTextBlockFormat::MarkerType::Checked:
-            comboStyle->setCurrentIndex(5);
-            actionToggleCheckState->setChecked(true);
-            break;
-        }
-    } else {
-        int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
-        comboStyle->setCurrentIndex(headingLevel ? headingLevel + 10 : 0);
-    }*/
     if(!writingFlag){
         int index = textEdit->textCursor().anchor();
         my_cursor_position_changed(index);
@@ -1261,7 +1108,7 @@ void TextEdit::clipboardDataChanged()
         QTextCursor cursor = textEdit->textCursor();
         if(textEdit->textCursor().hasSelection()){
             charsFormat.clear();
-            //qDebug() << cursor.selectionStart() << " " << cursor.selectionEnd();
+
             int inizio = cursor.selectionStart();
             int fine = cursor.selectionEnd();
             cursor.setPosition(cursor.selectionStart());
@@ -1325,9 +1172,6 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
         actionAlignJustify->setChecked(true);
 }
 
-/*-----FATTE DA NOI-----*/
-
-
 /**
  * @brief a ogni modifica del testo viene scatenata, si occupa di gestire i simboli che vengono poi mandati al server
  * @param pos
@@ -1337,7 +1181,6 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 void TextEdit::onTextChanged(int pos, int del, int add){
 
     QString added = textEdit->toPlainText().mid(pos, add);
-     // 10      15      5
     qDebug() << charsFormat.size();
     if( charsFormat.size() != 0  && (del == add - charsFormat.size())){
         added = textEdit->toPlainText().mid(0, this->charsFormat.size());
@@ -1369,10 +1212,6 @@ void TextEdit::onTextChanged(int pos, int del, int add){
     int counter = 0;
     //qDebug() << "Modifica: " << FLAG_MODIFY_SYMBOL;
 
-    /* if(added.size() > 0) {
-        del--;
-    }*/
-
     QVector<Message> messagesDel;
     for(int i=0; i<del; i++){
         writingFlag= true;
@@ -1384,11 +1223,9 @@ void TextEdit::onTextChanged(int pos, int del, int add){
             messagesDel.push_back(mess);
         }
     }
-    //qDebug() << pos << del ;
     if(del>0){
         this->_symbols.remove(pos, counter);
     }
-    //qDebug() << messagesDel.size();
     if(messagesDel.size() != 0){
         message_ready(messagesDel, this->fileIndex);
     }
@@ -1440,7 +1277,7 @@ bool TextEdit::localInsert(int index, QChar value, QTextCharFormat *format, Mess
     }
     QVector<int> pos;
     if ((index > (this->_symbols.size())) || index < 0) {
-        return false;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
+        return false;
     }
     this->counter++;
     pos = generatePos(index);
@@ -1448,8 +1285,6 @@ bool TextEdit::localInsert(int index, QChar value, QTextCharFormat *format, Mess
         return false;
     }
 
-    /*  ATTENZIONE PRIMA ERA COSI  */
-    //std::shared_ptr<Symbol> s(new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family()));
     std::shared_ptr<Symbol> s = std::make_shared<Symbol>(Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(),
                                                                 actionTextItalic->isChecked(), actionTextUnderline->isChecked(),
                                                                 alignToInt(textEdit->textCursor().blockFormat().alignment()) ,
@@ -1512,17 +1347,11 @@ std::shared_ptr<Symbol> TextEdit::createSymbol(int index, QChar value, QTextChar
         QTextCharFormat plainFormat(textEdit->textCursor().charFormat());
         qf = plainFormat.font();
     }
-    //QVector<int> pos;
-    /*if ((index > (this->_symbols.size())) || index < 0) {
-        return nullptr;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
-    }*/
+
     this->counter++;
-    //pos = generatePos(index);
     if (position.size() == 0) {
         return nullptr;
     }
-    /*  ATTENZIONE PRIMA ERA COSI  */
-    //std::shared_ptr<Symbol> s(new Symbol(pos, this->counter, this->siteId, value, actionTextBold->isChecked(), actionTextItalic->isChecked(), actionTextUnderline->isChecked(), alignToInt(textEdit->textCursor().blockFormat().alignment()) , qf.pointSize(),  textEdit->textColor(), qf.family()));
     std::shared_ptr<Symbol> s = std::make_shared<Symbol>(Symbol(position, this->counter, this->siteId, value, actionTextBold->isChecked(),
                                                                 actionTextItalic->isChecked(), actionTextUnderline->isChecked(),
                                                                 alignToInt(textEdit->textCursor().blockFormat().alignment()) ,
@@ -1533,35 +1362,6 @@ std::shared_ptr<Symbol> TextEdit::createSymbol(int index, QChar value, QTextChar
     return s;
 }
 
-/*void TextEdit::onMessagesFromServer(QVector<Message> messages, int siteIdSender){
-
-    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-               this, &TextEdit::cursorPositionChanged);
-
-    if( messages[0].getAction() == 'i'){
-
-        for( int i = 0 ; i < messages.size(); i++){
-            if(i == messages.size()-1){
-             connect(textEdit, &QTextEdit::cursorPositionChanged,
-                     this, &TextEdit::cursorPositionChanged);
-            }
-            this->remoteInsert(messages[i].getSymbol());
-
-        }
-    }else if(messages[0].getAction()=='d'){
-        if(siteIdSender == -1){
-            qDebug() << "Errore, non può esserci un site id -1";
-        }
-        for( int i = 0 ; i < messages.size(); i++){
-            if(i == messages.size()-1){
-             connect(textEdit, &QTextEdit::cursorPositionChanged,
-                     this, &TextEdit::cursorPositionChanged);
-            }
-            this->remoteDelete(messages[i].getSymbol(), siteIdSender);
-        }
-
-    }
-}*/
 
 /**
  * @brief chiamata quando viene aperto un file, renderizza a schermo tutto il testo in maniera corretta
@@ -1573,7 +1373,6 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
 
     this->_symbols = s;
     textEdit->textCursor().beginEditBlock();
-    //FLAG_OPEN_FILE = true; sostituita con il disconnect, evitiamo di fare signal->slot
     disconnect(textEdit->document(), &QTextDocument::contentsChange,
                this, &TextEdit::onTextChanged);
     int flag=0;
@@ -1619,10 +1418,8 @@ void TextEdit::onFileReady(QVector<std::shared_ptr<Symbol>> s){
     }
 
     textEdit->textCursor().endEditBlock();
-    //FLAG_OPEN_FILE = false;
     connect(textEdit->document(), &QTextDocument::contentsChange,
             this, &TextEdit::onTextChanged);
-    //textEdit->setPlainText(text);
     textEdit->textCursor();
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &TextEdit::cursorPositionChanged);
@@ -1695,9 +1492,9 @@ QVector<QVector<int>> TextEdit::generatePos(int index, int nPosition) {
     QVector<QVector<int>> vector;
     bool firstPosition=true;
     int i;
-    // qDebug() << index;
+
     if ((index > (this->_symbols.size())) || index < 0) {
-        return vector;   //IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
+        return vector;
     }
     for(int k=0; k<nPosition; k++){
         QVector<int> pos;
@@ -1753,7 +1550,6 @@ QVector<QVector<int>> TextEdit::generatePos(int index, int nPosition) {
 QVector<int> TextEdit::generatePos(int index) {
     QVector<int> pos;
     int i;
-    // qDebug() << index;
     if ((index > (this->_symbols.size())) || index < 0) {
         return pos;//IO NON PERMETTEREI DI INSERIRE IN QUALSIASI PUNTO DEL NOSTRO VETTORE. SOLO INDICI DA 1 A SIZE+1 TODO ECCEZIONE
     }
@@ -1869,13 +1665,16 @@ QVector<int> TextEdit::calcIntermediatePos(QVector<int> pos_sup, QVector<int> po
     return pos;
 }
 
+/**
+ * @brief funzione che inserisce simboli arrivati dal server
+ * @param messages: messaggi contenenti i simboli da inserire
+ */
 void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
     disconnect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
 
     QString buffer;
     int index = _symbols.size();
     int count = 0;
-    int flag = 0;
     QTextCharFormat headingFormat;
     QTextCursor cursor = textEdit->textCursor();
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
@@ -1956,132 +1755,13 @@ void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo i
     }
     connect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
 }
-/**
- * @brief funzione che inserisce simboli arrivati dal server
- * @param messages: messaggi contenenti i simboli da inserire
- */
-/*void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
-    disconnect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
-    QString buffer;
-    int startBufferIndex, index, nextIndex, flag=0;
-    QTextCharFormat headingFormat;
-    QTextCursor cursor = textEdit->textCursor();
-    disconnect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
-    for(int i=0; i<messages.size(); i++){
-        std::shared_ptr<Symbol> sym = messages[i].getSymbol();
-        index = findIndexFromNewPosition(sym->getPosition());
-        if(index != -1){
-            this->_symbols.insert(this->_symbols.begin() + index, sym);
-            if(flag==0){
-                flag=1;
-                startBufferIndex = index;
-                cursor.setPosition(startBufferIndex);
-                QTextCharFormat plainFormat(cursor.charFormat());
-                headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
-                headingFormat.setFontItalic(sym->isItalic());
-                headingFormat.setFontUnderline(sym->isUnderlined());
-                headingFormat.setForeground(sym->getColor());
-                headingFormat.setFontPointSize(sym->getTextSize());
-                headingFormat.setFontFamily(sym->getFont());
-                /*In un inserimento non si possono avere messaggi da diversi client*#############################
-                if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
-                    headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
-                }else{
-                    headingFormat.setBackground(Qt::white);
-                }
-                Qt::Alignment intAlign = intToAlign(sym->getAlignment());
-                textEdit->setAlignment(intAlign);
 
-            }
-            if(i==(messages.size()-1)){ //ultimo carattere devo scrivere tutto quello che ho nel buffer
-                buffer.append(sym->getValue());
-                cursor.insertText(buffer, headingFormat);
-            }else{
-                nextIndex=findIndexFromNewPosition(messages[i+1].getSymbol()->getPosition());
-                if(nextIndex-1 == index && styleIsEqual(sym, messages[i+1].getSymbol())){//il prossimo simbolo ha lo stesso font, appendo al buffer.
-                    buffer.append(sym->getValue());
-                }else{
-                    flag=0;
-                    buffer.append(sym->getValue());
-                    cursor.insertText(buffer, headingFormat);
-                    buffer.clear();
-                }
-            }
-        }
-    }
-    cursorPositionChanged();
-    connect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
-    if(index != -1){
-        remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
-    }else{
-        remoteCursorChangePosition(0, messages[messages.size()-1].getSymbol()->getSiteId());
-    }
-    connect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
-}*/
 
-/**
- * @brief funzione che inserisce simboli arrivati dal server
- * @param messages: messaggi contenenti i simboli da inserire
- */
 /**
  * @brief funzione che cancella i simboli arrivati dal server
  * @param messages: messaggi contenenti i simboli da cancellare
  * @param siteIdSender: siteId del mittente dei simboli da cancellare
  */
-/*void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
-    disconnect(textEdit->document(), &QTextDocument::contentsChange,
-               this, &TextEdit::onTextChanged);
-    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-                this, &TextEdit::cursorPositionChanged);
-    int index, nextIndex = -1, counter=1, startRemove;
-    QTextCursor cursor = textEdit->textCursor();
-    for(int i=0; i<messages.size(); i++){
-        std::shared_ptr<Symbol> sym = messages[i].getSymbol();
-        if(i==0){
-            index = findIndexFromExistingPosition(sym->getPosition());
-            if(index != -1){
-                startRemove=index;
-                cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
-            }
-        }else if(counter ==1){
-            //da qui
-            index =findIndexFromExistingPosition(sym->getPosition());
-            if(index != -1){
-                startRemove = index;
-                cursor.setPosition(startRemove, QTextCursor::MoveAnchor);
-            }
-            //a qui
-        }else{
-            index = nextIndex;
-        }
-        if(i!=(messages.size()-1)){
-            nextIndex=findIndexFromExistingPosition(messages[i+1].getSymbol()->getPosition());
-        }
-
-        if(i!=(messages.size()-1) && index==nextIndex-1 &&  index != -1 && messages[i].getSymbol()->getCounter()==this->_symbols[index]->getCounter() && nextIndex != -1){//sono di fila, posso cancellarli con una operazione
-            counter++;
-        }else{
-            if(index != -1){
-                cursor.setPosition(index+1, QTextCursor::KeepAnchor);
-                cursor.selectedText();
-                cursor.removeSelectedText();
-               // qDebug() << startRemove << this->_symbols.size() << counter << index << nextIndex;
-                this->_symbols.remove(startRemove, counter);
-                counter=1;
-            }
-        }
-    }
-    connect(textEdit, &QTextEdit::cursorPositionChanged,
-                this, &TextEdit::cursorPositionChanged);
-    cursorPositionChanged();
-    if(index != -1 && index <this->_symbols.size()){
-        remoteCursorChangePosition(index, siteIdSender);
-    }else{
-        remoteCursorChangePosition(0, siteIdSender);
-    }
-    connect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
-}*/
 void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
 
     disconnect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
@@ -2134,54 +1814,7 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     connect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
 }
 
-/*void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
-    disconnect(textEdit->document(), &QTextDocument::contentsChange,
-               this, &TextEdit::onTextChanged);
-    int startIndex, controlloIndice, lastIndex=-1;
-    QTextCursor cursor = textEdit->textCursor();
-    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-                this, &TextEdit::cursorPositionChanged);
-    for(int i=0; i<messages.size(); i++){
-        std::shared_ptr<Symbol> sym = messages[i].getSymbol();
 
-        if(startIndex==-1) //CASO DI START-INDEX NON ANCORA TROVATO
-        {
-            controlloIndice = findIndexFromExistingPosition(sym->getPosition());
-            if(controlloIndice==-1 || (this->_symbols[controlloIndice]->getSiteId()!=sym->getSiteId())
-                                   || (this->_symbols[controlloIndice]->getCounter()!=sym->getCounter())){
-                continue; //il simbolo che ci hanno chiesto di cancellare è già stato cancellato in locale.
-            }else{
-                startIndex=controlloIndice;
-                lastIndex=controlloIndice;
-            }
-
-        }else{ //HO GIA' UNO START-INDEX, CONTROLLO SE IL SIMBOLO CHE STO SCANNERIZZANDO è ADIACENTE A QUELLI GIA' TRATTATI
-
-            controlloIndice=findIndexFromExistingPosition(messages[i].getSymbol()->getPosition());
-            if(controlloIndice==-1 || (this->_symbols[controlloIndice]->getSiteId()!=sym->getSiteId())
-                                   || (this->_symbols[controlloIndice]->getCounter()!=sym->getCounter())){
-                deleteFromEditor(startIndex, lastIndex, cursor);
-                lastIndex=-1;
-                startIndex=-1;
-
-            }else{ //il simbolo esiste ed è da cancellare, ma devo controllare che sia consecutivo.
-                if(controlloIndice!=lastIndex+1){ //non sono consecutivi.
-                    deleteFromEditor(startIndex, lastIndex, cursor);
-                    startIndex=controlloIndice;
-                    lastIndex=controlloIndice;
-                }else{                            //sono consecutivi
-                    lastIndex=controlloIndice;
-                }
-            }
-        }
-    }
-    connect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
-    cursorPositionChanged();
-    if(startIndex!=-1){
-        remoteCursorChangePosition(startIndex, siteIdSender);
-    }
-    connect(textEdit->document(), &QTextDocument::contentsChange,this, &TextEdit::onTextChanged);
-}*/
 
 void TextEdit::deleteFromEditor(int firstIndex, int lastIndex, QTextCursor cursor){
     cursor.setPosition(firstIndex, QTextCursor::MoveAnchor);
@@ -2193,145 +1826,6 @@ void TextEdit::deleteFromEditor(int firstIndex, int lastIndex, QTextCursor curso
     this->_symbols.append(fine);
 }
 
-/*void TextEdit::remoteInsert(std::shared_ptr<Symbol> sym){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
-    disconnect(textEdit->document(), &QTextDocument::contentsChange,
-               this, &TextEdit::onTextChanged);
-    int index = findIndexFromNewPosition(sym->getPosition());
-    QTextCursor cursor = textEdit->textCursor();
-    cursor.setPosition(index, QTextCursor::MoveAnchor);
-    //QFont x = comboFont->currentFont();
-
-    QTextCharFormat plainFormat(cursor.charFormat());
-    QTextCharFormat headingFormat;
-    headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
-    headingFormat.setFontItalic(sym->isItalic());
-    headingFormat.setFontUnderline(sym->isUnderlined());
-    headingFormat.setForeground(sym->getColor());
-    headingFormat.setFontPointSize(sym->getTextSize());
-    headingFormat.setFontFamily(sym->getFont());
-    if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
-        headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
-    }else{
-        headingFormat.setBackground(Qt::white);
-    }
-    Qt::Alignment intAlign = intToAlign(sym->getAlignment());
-    textEdit->setAlignment(intAlign);
-    cursor.insertText((const QString)sym->getValue(), headingFormat);
-
-    this->_symbols.insert(this->_symbols.begin() + index, sym);
-
-    remoteCursorChangePosition(index+1, sym->getSiteId());
-    connect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
-
-}
-void TextEdit::remoteDelete(std::shared_ptr<Symbol> sym, int siteIdSender){
-    disconnect(textEdit->document(), &QTextDocument::contentsChange,
-               this, &TextEdit::onTextChanged);
-
-    int index = findIndexFromExistingPosition(sym->getPosition());
-    if(index!=-1){
-        QTextCursor cursor = textEdit->textCursor();
-        cursor.setPosition(index, QTextCursor::MoveAnchor);
-        cursor.deleteChar();
-        this->_symbols.erase(this->_symbols.begin() + index);
-        remoteCursorChangePosition(index, siteIdSender);
-    }
-    connect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
-}*/
-
-/*void TextEdit::remoteInsert(QVector<Message> messages){ //per ora gestito solo il caso in cui ci siano solo caratteri normali nella nostra app.
-    disconnect(textEdit->document(), &QTextDocument::contentsChange,
-               this, &TextEdit::onTextChanged);
-    QString buffer;
-    int startBufferIndex;
-    QTextCharFormat headingFormat;
-    int index;
-    QTextCursor cursor = textEdit->textCursor();
-    for(int i=0; i<messages.size(); i++){
-        Symbol* sym = messages[i].getSymbol();
-        index = findIndexFromNewPosition(sym->getPosition());
-        this->_symbols.insert(this->_symbols.begin() + index, sym);
-        if(i != 0 && styleIsEqual(sym, messages[i-1].getSymbol())){
-                buffer.append(sym->getValue());
-        }else{
-            if(buffer.size()==0){
-                startBufferIndex = findIndexFromNewPosition(sym->getPosition());
-                cursor.setPosition(startBufferIndex, QTextCursor::MoveAnchor);
-                QTextCharFormat plainFormat(cursor.charFormat());
-                headingFormat.setFontWeight(sym->isBold() ? QFont::Bold : QFont::Normal);
-                headingFormat.setFontItalic(sym->isItalic());
-                headingFormat.setFontUnderline(sym->isUnderlined());
-                headingFormat.setForeground(sym->getColor());
-                headingFormat.setFontPointSize(sym->getTextSize());
-                headingFormat.setFontFamily(sym->getFont());
-               if(sym->getSiteId() == flag_one_highlighted || flag_all_highlighted){
-                    headingFormat.setBackground(colorableUsers[sym->getSiteId()]->getColor());
-               }else{
-                    headingFormat.setBackground(Qt::white);
-               }
-               Qt::Alignment intAlign = intToAlign(sym->getAlignment());
-               textEdit->setAlignment(intAlign);
-               buffer.append(sym->getValue());
-            }else{
-                cursor.setPosition(startBufferIndex + buffer.size(), QTextCursor::KeepAnchor);
-                cursor.insertText(buffer, headingFormat);
-                buffer="";
-                buffer.append(sym->getValue());
-            }
-        }
-    }
-    cursor.insertText(buffer, headingFormat);
-    remoteCursorChangePosition(index+1, messages[messages.size()-1].getSymbol()->getSiteId());
-    connect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
-}
-void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
-    disconnect(textEdit->document(), &QTextDocument::contentsChange,
-               this, &TextEdit::onTextChanged);
-    for(int i=0; i<messages.size(); i++){
-        Symbol* sym = messages[i].getSymbol();
-        int index = findIndexFromExistingPosition(sym->getPosition());
-        if(index!=-1){
-            QTextCursor cursor = textEdit->textCursor();
-            cursor.setPosition(index, QTextCursor::MoveAnchor);
-            cursor.deleteChar();
-            this->_symbols.erase(this->_symbols.begin() + index);
-            remoteCursorChangePosition(index, siteIdSender);
-        }
-    }
-    connect(textEdit->document(), &QTextDocument::contentsChange,
-            this, &TextEdit::onTextChanged);
-}*/
-
-
-/*int TextEdit::findIndexFromNewPosition(QVector<int> position){
-    int index = _symbols.size();
-    if (_symbols.size() == 0) {
-        index = 0;
-    }
-    if (_symbols.size() == 1) {
-        if (_symbols[0]->getPosition() > position) {
-            index = 0;
-        }
-        else {
-            index = 1;
-        }
-    }
-    if (_symbols.size() > 1) {
-        if (position < _symbols[0]->getPosition()) {
-            index = 0;
-        }
-        for (int i = 1; i < _symbols.size(); i++) {
-            if (_symbols[i - 1]->getPosition() < position && position < _symbols[i]->getPosition()) {
-                index = i;
-                break;
-            }
-        }
-    }
-    return index;
-}*/
 
 /**
  * @brief TextEdit::findIndexFromNewPosition
@@ -2444,14 +1938,6 @@ int TextEdit::findIndexFromExistingPosition(QVector<int> position){
         }
     }
 
-    /*int index=-1;
-
-    for(int i=0; i<this->_symbols.size(); i++){
-        if(this->_symbols[i]->getPosition() == position){
-            index=i;
-            break;
-        }
-    }*/
     return index;
 }
 
@@ -2494,34 +1980,15 @@ void TextEdit::onShareURIButtonPressed(){
  */
 void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
     QTextCursor cursor(textEdit->textCursor());
-    //int pos_entry = cursor.position();//DEBUG
     cursor.setPosition(cursorPos);//setto la posizione per poter prendere le coordinate
     QTextCharFormat plainFormat(cursor.charFormat());
     QRect editor = textEdit->rect();
 
     int editor_height = editor.height();//altezza editor;
-    // int editor_width = editor.width();//larghezza editor;
     QRect rt = textEdit->cursorRect(cursor);
     int rt_height = rt.height();
     std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
     uc->setPos(cursorPos);
-    //qDebug() << rt << " posizione";
-
-
-    //label con il nome utente
-    /*int label_width = cursorsMap[siteId]->getLabel()->width();//larghezza label da aggiornare/inserire
-    int x = rt.x() + 7;
-    int y = rt.y() - 8;
-    if (editor_width - x < label_width) {//se sono infondo a destra non si vedrà, allora la posto più a sinistra
-        x = x - label_width;
-    }
-    if (y < 0) y = 0;
-    if (y > editor_height) y = editor_height - 20;
-
-    std::shared_ptr<UserCursor> uc = cursorsMap[siteId];
-    uc->getLabel()->hide();
-    uc->getLabel()->move(x, y);
-    uc->getLabel()->show();*/
 
     uc->getCursor()->setFixedHeight(rt_height);
     uc->getCursor()->setFixedWidth(2);
@@ -2540,6 +2007,6 @@ void TextEdit::remoteCursorChangePosition(int cursorPos, int siteId) {
  * @param cursorIndex: posizione del cursore
  * @param siteIdSender: siteId dell'utente proprietario del cursore
  */
-void TextEdit::onRemoteCursorChanged(int cursorIndex, int siteIdSender){ //forse è un ERRORE: ci vuole il vettore delle pos non
-    remoteCursorChangePosition(cursorIndex, siteIdSender);                    // l'indice (cursorIndex);
+void TextEdit::onRemoteCursorChanged(int cursorIndex, int siteIdSender){
+    remoteCursorChangePosition(cursorIndex, siteIdSender);
 }
