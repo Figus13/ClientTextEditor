@@ -152,6 +152,9 @@ font:bold;
             <height>51</height>
            </rect>
           </property>
+          <property name="focusPolicy">
+           <enum>Qt::ClickFocus</enum>
+          </property>
           <property name="styleSheet">
            <string notr="true">
 loginButton{ 
@@ -421,7 +424,7 @@ font:bold;
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>
