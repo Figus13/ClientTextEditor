@@ -106,6 +106,10 @@ void FilesSelection::on_newDocumentButton_clicked()
                 mw->show();
                 QObject::connect(mw, &TextEdit::closeWindow, this, &FilesSelection::showWindow);
                 client.get()->addFile(file);
+
+                QMap<int,QString> owners;
+                owners.insert(client->getSiteId(), client->getNickname());
+                emit client->signal_owners(owners);
             }
         }
     }
