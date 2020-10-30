@@ -23,7 +23,7 @@ QString changeProfileDialog::getNickname() {
 
 void changeProfileDialog::setNickname(QString nick) {
     this->nickname = nick;
-    ui->Nickname->appendPlainText(nickname);
+    ui->Nickname->setText(nick);
 }
 
 void changeProfileDialog::setPixmap(QPixmap pixmap) {
@@ -54,7 +54,7 @@ void changeProfileDialog::on_selectImageButton_clicked() {
 
 void changeProfileDialog::on_buttonBox_accepted()
 {
-    nickname = ui->Nickname->toPlainText();
+    nickname = ui->Nickname->text();
     this->close();
 }
 
