@@ -620,6 +620,7 @@ void TextEdit::setupTextActions()
     comboSize = new QComboBox(tb);
     comboSize->setObjectName("comboSize");
     tb->addWidget(comboSize);
+
     comboSize->setEditable(true);
 
     const QList<int> standardSizes = QFontDatabase::standardSizes();
@@ -634,7 +635,7 @@ void TextEdit::setupTextActions()
 
     comboUser = new QComboBox(tb);
     comboUser->setObjectName("comboUser");
-    comboUser->setMinimumWidth(100);
+    comboUser->setMinimumWidth(200);
     tb->addWidget(comboUser);
     comboUser->setEditable(false);
     comboUser->clear();
@@ -2089,12 +2090,13 @@ void TextEdit::remoteDelete(QVector<Message> messages, int siteIdSender){
     //int  nextIndex = -1, counter=1, startRemove;
     QTextCursor cursor = textEdit->textCursor();
 
-    int index = this->_symbols.size();
-    int size = this->_symbols.size();
+    int index;
+    int size;
 
     int count = 0;
 
     for(int i=0; i<messages.size(); i++){
+        size = this->_symbols.size();
         std::shared_ptr<Symbol> sym = messages[i].getSymbol();
         if (count == 0) {
             index = findIndexFromExistingPosition(sym->getPosition());

@@ -28,7 +28,7 @@ Client::Client(QObject* parent) : QObject(parent), counter(0)
     //address = "192.168.1.131";
     //port = 1500;
     //std::cout << "Dati inseriti:" << address << " " << port << std::endl;
-
+    //socket->connectToHost("127.0.0.1", 49002);
     socket->connectToHost("25.69.120.225", 49002);//emette SIGNAL:connected
     //socket->connectToHost(QString::fromStdString(address), port);//emette SIGNAL:connected
 
