@@ -150,6 +150,7 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
 
     QFont textFont("Arial");
     textFont.setStyleHint(QFont::SansSerif);
+    textFont.setPointSize(10); //FONT SIZE CAMBIATA
     textEdit->setFont(textFont);
     fontChanged(textEdit->font());
     colorChanged(textEdit->textColor());
@@ -633,6 +634,7 @@ void TextEdit::setupTextActions()
 
     comboUser = new QComboBox(tb);
     comboUser->setObjectName("comboUser");
+    comboUser->setMinimumWidth(100);
     tb->addWidget(comboUser);
     comboUser->setEditable(false);
     comboUser->clear();
