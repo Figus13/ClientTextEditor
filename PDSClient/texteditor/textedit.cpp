@@ -150,7 +150,7 @@ TextEdit::TextEdit(QWidget *parent, std::shared_ptr<Client> client, QString file
 
     QFont textFont("Arial");
     textFont.setStyleHint(QFont::SansSerif);
-    textFont.setPointSize(10); //FONT SIZE CAMBIATA
+    textFont.setPointSize(12); //FONT SIZE CAMBIATA
     textEdit->setFont(textFont);
     fontChanged(textEdit->font());
     colorChanged(textEdit->textColor());
