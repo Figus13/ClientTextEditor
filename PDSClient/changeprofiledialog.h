@@ -28,6 +28,8 @@ private slots:
 
     void on_buttonBox_rejected();
 
+
+
 private:
     Ui::changeProfileDialog *ui;
     QString nickname;               //nickname dell'utente
