@@ -147,6 +147,10 @@ void FilesSelection::on_changeProfileButton_clicked() {
             QMessageBox::warning(this,"Modifica profilo","Il nickname non può contenere i seguenti caratteri: / \\ : * ? \" < > | 'spazio'");
             flag = true;
         }
+        if(nickname.isEmpty()) {
+            QMessageBox::warning(this,"Modifica profilo","Il nickname deve contenere almeno un carattere!");
+            flag = true;
+        }
         if(dialog.getHavePixmap()) {
             QPixmap image = dialog.getImagePixmap();
             ui->profileImageLabel->setPixmap(image);
