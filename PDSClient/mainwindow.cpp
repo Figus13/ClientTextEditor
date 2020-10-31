@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(client.get(),  SIGNAL(login_successful()), this, SLOT(onLoginSuccess()));
     QObject::connect(client.get(),  SIGNAL(login_failed()), this, SLOT(onLoginFailed()));
     QObject::connect(client.get(),  SIGNAL(registration_successful()), this, SLOT(onRegistrationSuccess()));
-    QObject::connect(client.get(),  SIGNAL(registration_failed()), this, SLOT(onRegistrationFailed()));
+    QObject::connect(client.get(),  &Client::registration_failed, this, &MainWindow::onRegistrationFailed);
     QObject::connect(this,  SIGNAL(closing()), client.get(), SLOT(disconnectFromServer()));
 
 }

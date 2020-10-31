@@ -4,33 +4,13 @@ Client::Client(QObject* parent) : QObject(parent), counter(0)
 {
     socket = new QTcpSocket(this);
 
-    //quando si riceve il SIGNAL:connected viene chiamata la onConnection
     connect(socket, SIGNAL(connected()), this, SLOT(onConnected()));
-
-    //quando si chiama close => disconnectedFromHost => SIGNAL:disconnected => onDisconnected
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-    //quando si chiama close => disconnectedFromHost => SIGNAL:disconnected => SIGNAL:closed = > chiusura applicazione
     connect(socket, SIGNAL(disconnected()), this, SIGNAL(closed()));
 
-
-    /*std::cout << "Inserire indirizzo server:\t";
-    std::cin >> address;
-    if (!std::cin.good()) {
-        std::cout << "ERRORE indirizzo server" << std::endl;
-        return;
-    }
-    std::cout << "Inserire porta server:\t";
-    std::cin >> port;
-    if (!std::cin.good()) {
-        std::cout << "ERRORE porta server" << std::endl;
-        return;
-    }*/
-    //address = "192.168.1.131";
-    //port = 1500;
-    //std::cout << "Dati inseriti:" << address << " " << port << std::endl;
-    //socket->connectToHost("127.0.0.1", 49002);
-    socket->connectToHost("25.69.120.225", 49002);//emette SIGNAL:connected
-    //socket->connectToHost(QString::fromStdString(address), port);//emette SIGNAL:connected
+    socket->connectToHost("127.0.0.1", 49002);
+    //socket->connectToHost("25.69.115.147", 49002); //Andrea
+    //socket->connectToHost("25.69.120.225", 49002);   //Michele
 
     // we need to wait...
     if (!socket->waitForConnected(5000))
@@ -124,7 +104,7 @@ void Client::onReadyRead(){
         case 3:
         {
             int siteIdSender=-1;
-            qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
+            //qDebug() << "3)Mandato dal server dopo l'inserimento o la cancellazione di un simbolo";
             int n_sym;
             QVector<Message> messages;
             in >> insert;
@@ -159,7 +139,7 @@ void Client::onReadyRead(){
         }
         //caso per la ricezione di un file già esistente alla sua apertura
         case 4:
-            qDebug() <<  "4)Dobbiamo gestire la ricezione di un file già scritto.";
+            //qDebug() <<  "4)Dobbiamo gestire la ricezione di un file già scritto.";
             sVector.clear();
             int fileSize;
             int alreadyConnected;
